@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import { usePathname } from "next/navigation";
 
 const geistSans = Geist({
@@ -31,16 +32,20 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAuthPage = ['/login', '/signup'].includes(pathname);
+  const isDashboardPage = pathname === '/dashboard' || pathname?.startsWith('/dashboard/');
 
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-900 text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased ${
+          isDashboardPage ? '' : 'bg-gray-900 text-white'
+        } min-h-screen flex flex-col`}
       >
         <Navbar />
-        <main className={isAuthPage ? '' : 'pt-16'}>
+        <main className={`${isAuthPage ? '' : 'pt-16'} flex-grow`}>
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );

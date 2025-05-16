@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
+import { authService } from '@/app/utils/firebase';
+import { useRouter } from 'next/navigation';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -15,16 +17,64 @@ export default function SignUp() {
     email: '',
     password: '',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = await authService.isLoggedIn();
+      if (user) {
+        // Redirect to dashboard if already authenticated
+        router.push('/dashboard');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing again
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+    setLoading(true);
+    setError(null);
+    
+    const result = await authService.register(formData.email, formData.password);
+    
+    if ('error' in result) {
+      // Handle error response
+      setError(result.message);
+      setLoading(false);
+    } else {
+      // Here you would typically store additional user data (firstName, lastName) in a database
+      // For example, using Firestore or another database
+      
+      // Successful registration
+      router.push('/dashboard');
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError(null);
+    
+    const result = await authService.googleAuth();
+    
+    if ('error' in result) {
+      // Handle error response
+      setError(result.message);
+      setLoading(false);
+    } else {
+      // Successful registration
+      router.push('/dashboard');
+    }
   };
 
   return (
@@ -49,6 +99,12 @@ export default function SignUp() {
           </p>
         </div>
 
+        {error && (
+          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -61,6 +117,7 @@ export default function SignUp() {
                 value={formData.firstName}
                 onChange={handleChange}
                 className="bg-white border-gray-300 text-gray-900"
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -73,6 +130,7 @@ export default function SignUp() {
                 value={formData.lastName}
                 onChange={handleChange}
                 className="bg-white border-gray-300 text-gray-900"
+                disabled={loading}
               />
             </div>
           </div>
@@ -87,6 +145,7 @@ export default function SignUp() {
               value={formData.email}
               onChange={handleChange}
               className="bg-white border-gray-300 text-gray-900"
+              disabled={loading}
             />
           </div>
 
@@ -100,11 +159,16 @@ export default function SignUp() {
               value={formData.password}
               onChange={handleChange}
               className="bg-white border-gray-300 text-gray-900"
+              disabled={loading}
             />
           </div>
 
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-            Sign up
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            disabled={loading}
+          >
+            {loading ? 'Signing up...' : 'Sign up'}
           </Button>
 
           <div className="relative flex items-center justify-center">
@@ -116,7 +180,8 @@ export default function SignUp() {
             type="button" 
             variant="social" 
             className="w-full"
-            onClick={() => console.log('Google sign in')}
+            onClick={handleGoogleSignUp}
+            disabled={loading}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -136,7 +201,7 @@ export default function SignUp() {
                 fill="#EA4335"
               />
             </svg>
-            Sign up with Google
+            {loading ? 'Signing up...' : 'Sign up with Google'}
           </Button>
         </form>
 

@@ -1,28 +1,75 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
+import { authService } from '@/app/utils/firebase';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = await authService.isLoggedIn();
+      if (user) {
+        // Redirect to dashboard if already authenticated
+        router.push('/dashboard');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing again
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+    setLoading(true);
+    setError(null);
+    
+    const result = await authService.login(formData.email, formData.password);
+    
+    if ('error' in result) {
+      // Handle error response
+      setError(result.message);
+      setLoading(false);
+    } else {
+      // Successful login
+      router.push('/dashboard');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    
+    const result = await authService.googleAuth();
+    
+    if ('error' in result) {
+      // Handle error response
+      setError(result.message);
+      setLoading(false);
+    } else {
+      // Successful login
+      router.push('/dashboard');
+    }
   };
 
   return (
@@ -40,12 +87,18 @@ export default function Login() {
           </Link>
           <h1 className="text-center text-3xl font-bold">Log in to your account</h1>
           <p className="text-center text-sm text-gray-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-blue-500 hover:underline">
               Sign up
             </Link>
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-md text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
@@ -58,6 +111,7 @@ export default function Login() {
               value={formData.email}
               onChange={handleChange}
               className="bg-white border-gray-300 text-gray-900"
+              disabled={loading}
             />
           </div>
 
@@ -76,11 +130,16 @@ export default function Login() {
               value={formData.password}
               onChange={handleChange}
               className="bg-white border-gray-300 text-gray-900"
+              disabled={loading}
             />
           </div>
 
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-            Log in
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Log in'}
           </Button>
 
           <div className="relative flex items-center justify-center">
@@ -92,7 +151,8 @@ export default function Login() {
             type="button" 
             variant="social" 
             className="w-full"
-            onClick={() => console.log('Google sign in')}
+            onClick={handleGoogleSignIn}
+            disabled={loading}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -112,7 +172,7 @@ export default function Login() {
                 fill="#EA4335"
               />
             </svg>
-            Sign in with Google
+            {loading ? 'Signing in...' : 'Sign in with Google'}
           </Button>
         </form>
       </div>
