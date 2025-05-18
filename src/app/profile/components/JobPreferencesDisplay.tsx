@@ -1,7 +1,7 @@
 'use client';
 
 import { UserProfile, FieldName } from '@/app/types';
-import { DollarSign, Clock, Info, Briefcase, MapPin } from 'lucide-react';
+import { DollarSign, Clock, Info, Briefcase, MapPin, Layers, Building, Users } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { useEffect, useState } from 'react';
 
@@ -13,6 +13,8 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
   // Initialize state for job types and location preferences
   const [jobTypes, setJobTypes] = useState<string[]>([]);
   const [locationPrefs, setLocationPrefs] = useState<string[]>([]);
+  const [industrySpecs, setIndustrySpecs] = useState<string[]>([]);
+  const [companySizes, setCompanySizes] = useState<string[]>([]);
 
   // Effect to ensure default values are set if not present
   useEffect(() => {
@@ -23,6 +25,14 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
     // Get location preferences from profile or use defaults
     const locations = profile[FieldName.LOCATION_PREFERENCES] as string[];
     setLocationPrefs(locations && locations.length > 0 ? locations : ['Remote']);
+
+    // Get industry specializations from profile or use defaults
+    const specs = profile[FieldName.INDUSTRY_SPECIALIZATIONS] as string[];
+    setIndustrySpecs(specs && specs.length > 0 ? specs : []);
+
+    // Get company sizes from profile or use defaults
+    const sizes = profile[FieldName.COMPANY_SIZE] as string[];
+    setCompanySizes(sizes && sizes.length > 0 ? sizes : []);
   }, [profile]);
 
   // Format salary with commas
@@ -31,68 +41,122 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {profile[FieldName.EXPECTED_SALARY] && (
+    <div className="flex flex-col space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Role Level - Always show */}
         <div className="flex items-start">
-          <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <Layers className="h-5 w-5 text-gray-500 mr-3 mt-1" />
           <div>
-            <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
-            <p className="text-sm text-gray-500">
-              ${formatSalary(profile[FieldName.EXPECTED_SALARY])} USD
-            </p>
+            <p className="text-sm font-medium text-gray-900">Role Level</p>
+            {profile[FieldName.ROLE_LEVEL] ? (
+              <p className="text-sm text-gray-500">{profile[FieldName.ROLE_LEVEL]}</p>
+            ) : (
+              <p className="text-sm text-amber-500 italic">Not specified</p>
+            )}
           </div>
         </div>
-      )}
-
-      {profile[FieldName.NOTICE_PERIOD] && (
+        
+        {/* Industry Specializations - Always show */}
         <div className="flex items-start">
-          <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <Building className="h-5 w-5 text-gray-500 mr-3 mt-1" />
           <div>
-            <p className="text-sm font-medium text-gray-900">Notice Period</p>
-            <p className="text-sm text-gray-500">{profile[FieldName.NOTICE_PERIOD]}</p>
+            <p className="text-sm font-medium text-gray-900">Industry Specializations</p>
+            {industrySpecs.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {industrySpecs.map((spec, index) => (
+                  <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                    {spec}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-amber-500 italic">No specializations selected</p>
+            )}
           </div>
         </div>
-      )}
-
-      {/* Always show job types section with at least default values */}
-      <div className="flex items-start">
-        <Briefcase className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-        <div>
-          <p className="text-sm font-medium text-gray-900">Job Types</p>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {jobTypes.map((type, index) => (
-              <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-                {type}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Always show location preferences section with at least default values */}
-      <div className="flex items-start">
-        <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-        <div>
-          <p className="text-sm font-medium text-gray-900">Location Preferences</p>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {locationPrefs.map((location, index) => (
-              <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-                {location}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {profile[FieldName.SOURCE] && (
-        <div className="flex items-start md:col-span-2">
-          <Info className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+        
+        {/* Company Size - Always show */}
+        <div className="flex items-start">
+          <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
           <div>
-            <p className="text-sm font-medium text-gray-900">How did you hear about us?</p>
-            <p className="text-sm text-gray-500">{profile[FieldName.SOURCE]}</p>
+            <p className="text-sm font-medium text-gray-900">Preferred Company Size</p>
+            {companySizes.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {companySizes.map((size, index) => (
+                  <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                    {size}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-amber-500 italic">No company sizes specified</p>
+            )}
           </div>
         </div>
-      )}
+
+        {profile[FieldName.EXPECTED_SALARY] && (
+          <div className="flex items-start">
+            <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
+              <p className="text-sm text-gray-500">
+                ${formatSalary(profile[FieldName.EXPECTED_SALARY])} USD
+              </p>
+            </div>
+          </div>
+        )}
+
+        {profile[FieldName.NOTICE_PERIOD] && (
+          <div className="flex items-start">
+            <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Notice Period</p>
+              <p className="text-sm text-gray-500">{profile[FieldName.NOTICE_PERIOD]}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Job Types - Always show */}
+        <div className="flex items-start">
+          <Briefcase className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <div>
+            <p className="text-sm font-medium text-gray-900">Job Types</p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {jobTypes.map((type, index) => (
+                <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                  {type}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Location Preferences - Always show */}
+        <div className="flex items-start">
+          <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <div>
+            <p className="text-sm font-medium text-gray-900">Location Preferences</p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {locationPrefs.map((location, index) => (
+                <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                  {location}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Source (How did you hear about us) */}
+        {profile[FieldName.SOURCE] && (
+          <div className="flex items-start">
+            <Info className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">How did you hear about us?</p>
+              <p className="text-sm text-gray-500">{profile[FieldName.SOURCE]}</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 } 

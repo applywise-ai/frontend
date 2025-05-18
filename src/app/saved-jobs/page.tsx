@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import JobCard from '@/app/components/JobCard';
 import { useRouter } from 'next/navigation';
 import { Job } from '@/app/types';
-import { Eye } from 'lucide-react';
+import { Eye, Building, Code, Database, Paintbrush, Laptop } from 'lucide-react';
 
 export default function SavedJobs() {
   const router = useRouter();
@@ -267,9 +267,17 @@ export default function SavedJobs() {
                         {job.logo ? (
                           <img src={job.logo} alt={`${job.company} logo`} className="w-full h-full object-contain" />
                         ) : (
-                          <div className="h-8 w-8 text-gray-400">
-                            {/* Placeholder for company logo */}
-                          </div>
+                          job.title.toLowerCase().includes('frontend') || job.title.toLowerCase().includes('ui') ? (
+                            <Code className="h-8 w-8 text-teal-500" />
+                          ) : job.title.toLowerCase().includes('backend') || job.title.toLowerCase().includes('data') ? (
+                            <Database className="h-8 w-8 text-indigo-500" />
+                          ) : job.title.toLowerCase().includes('design') || job.title.toLowerCase().includes('ux') ? (
+                            <Paintbrush className="h-8 w-8 text-purple-500" />
+                          ) : job.title.toLowerCase().includes('software') || job.title.toLowerCase().includes('developer') ? (
+                            <Laptop className="h-8 w-8 text-blue-500" />
+                          ) : (
+                            <Building className="h-8 w-8 text-gray-500" />
+                          )
                         )}
                       </div>
                     </div>

@@ -4,7 +4,8 @@ import { UserProfile, FieldName } from '@/app/types';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Card, CardContent } from '@/app/components/ui/card';
-import { MapPin, Mail, Phone, User } from 'lucide-react';
+import { Mail, Phone, User, Info } from 'lucide-react';
+import LocationSearch from '@/app/components/LocationSearch';
 
 interface PersonalInfoFormProps {
   profile: UserProfile;
@@ -15,6 +16,10 @@ export default function PersonalInfoForm({ profile, updateProfile }: PersonalInf
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     updateProfile({ [name]: value });
+  };
+
+  const handleLocationChange = (value: string) => {
+    updateProfile({ [FieldName.CURRENT_LOCATION]: value });
   };
 
   return (
@@ -30,7 +35,7 @@ export default function PersonalInfoForm({ profile, updateProfile }: PersonalInf
         <CardContent className="pt-6">
           <h3 className="text-md font-medium text-gray-900 mb-4">Basic Information</h3>
 
-          <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+          <div className="grid grid-cols-1 gap-y-8 gap-x-4 sm:grid-cols-6">
             {/* Full Name */}
             <div className="sm:col-span-6">
               <Label htmlFor={FieldName.FULL_NAME} className="text-sm font-medium text-gray-700">
@@ -86,110 +91,28 @@ export default function PersonalInfoForm({ profile, updateProfile }: PersonalInf
                 />
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      <Card className="border-gray-200">
-        <CardContent className="pt-6">
-          <h3 className="text-md font-medium text-gray-900 mb-4 flex items-center">
-            <MapPin className="h-4 w-4 text-teal-500 mr-2" />
-            Address Information
-          </h3>
-
-          <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            {/* Address Line 1 */}
-            <div className="sm:col-span-6">
-              <Label htmlFor={FieldName.ADDRESS_LINE1} className="text-sm font-medium text-gray-700">
-                Street Address
-              </Label>
-              <div className="mt-1">
-                <Input
-                  type="text"
-                  id={FieldName.ADDRESS_LINE1}
-                  name={FieldName.ADDRESS_LINE1}
-                  value={profile[FieldName.ADDRESS_LINE1] || ''}
-                  onChange={handleInputChange}
-                  className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="123 Main St"
-                />
-              </div>
-            </div>
-
-            {/* City */}
-            <div className="sm:col-span-2">
-              <Label htmlFor={FieldName.CITY} className="text-sm font-medium text-gray-700">
-                City
-              </Label>
-              <div className="mt-1">
-                <Input
-                  type="text"
-                  id={FieldName.CITY}
-                  name={FieldName.CITY}
-                  value={profile[FieldName.CITY] || ''}
-                  onChange={handleInputChange}
-                  className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="San Francisco"
-                />
-              </div>
-            </div>
-
-            {/* Province/State */}
-            <div className="sm:col-span-2">
-              <Label htmlFor={FieldName.PROVINCE} className="text-sm font-medium text-gray-700">
-                Province/State
-              </Label>
-              <div className="mt-1">
-                <Input
-                  type="text"
-                  id={FieldName.PROVINCE}
-                  name={FieldName.PROVINCE}
-                  value={profile[FieldName.PROVINCE] || ''}
-                  onChange={handleInputChange}
-                  className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="CA"
-                />
-              </div>
-            </div>
-
-            {/* Postal Code */}
-            <div className="sm:col-span-2">
-              <Label htmlFor={FieldName.POSTAL_CODE} className="text-sm font-medium text-gray-700">
-                Postal/ZIP Code
-              </Label>
-              <div className="mt-1">
-                <Input
-                  type="text"
-                  id={FieldName.POSTAL_CODE}
-                  name={FieldName.POSTAL_CODE}
-                  value={profile[FieldName.POSTAL_CODE] || ''}
-                  onChange={handleInputChange}
-                  className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="94103"
-                />
-              </div>
-            </div>
-
-            {/* Country */}
-            <div className="sm:col-span-3">
-              <Label htmlFor={FieldName.COUNTRY} className="text-sm font-medium text-gray-700">
-                Country
-              </Label>
-              <div className="mt-1">
-                <Input
-                  type="text"
-                  id={FieldName.COUNTRY}
-                  name={FieldName.COUNTRY}
-                  value={profile[FieldName.COUNTRY] || ''}
-                  onChange={handleInputChange}
-                  className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="United States"
-                />
-              </div>
+            {/* Current Location */}
+            <div className="sm:col-span-6 relative">
+              <LocationSearch
+                value={profile[FieldName.CURRENT_LOCATION] || ''}
+                onChange={handleLocationChange}
+                placeholder="City, State or Remote"
+              />
             </div>
           </div>
         </CardContent>
       </Card>
+      
+      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+        <div className="flex items-start">
+          <Info className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-600">
+            Your personal information is crucial for employers to contact you about job opportunities.
+            Remote or hybrid preferences can be specified in your location, which may expand your job options.
+          </p>
+        </div>
+      </div>
     </div>
   );
 } 

@@ -146,7 +146,7 @@ export default function JobDetailsPage() {
   
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-6 bg-gray-200 rounded w-1/2 mb-8"></div>
@@ -160,7 +160,7 @@ export default function JobDetailsPage() {
   
   if (!job) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h1>
         <p className="text-gray-600 mb-8">The job you&apos;re looking for doesn&apos;t exist or has been removed.</p>
         <Link 
@@ -176,7 +176,7 @@ export default function JobDetailsPage() {
   
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back button */}
         <Link 
           href={referrer}
@@ -192,73 +192,104 @@ export default function JobDetailsPage() {
         <div className="bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden">
           {/* Header */}
           <div className="bg-white border-b border-gray-200 p-6">
-            <div className="flex items-start">
-              <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-200 mr-4">
-                {job.logo ? (
-                  <img src={job.logo} alt={`${job.company} logo`} className="w-full h-full object-contain" />
-                ) : (
-                  <Building className="h-8 w-8 text-gray-400" />
-                )}
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-start">
+                <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-200 mr-4">
+                  {job.logo ? (
+                    <img src={job.logo} alt={`${job.company} logo`} className="w-full h-full object-contain" />
+                  ) : (
+                    <Building className="h-8 w-8 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+                  <div className="flex items-center mt-1">
+                    <span className="text-lg text-gray-600">{job.company}</span>
+                    {job.isVerified && <BadgeCheck className="ml-1 h-5 w-5 text-teal-500" />}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-y-2 gap-x-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <MapPin className="mr-1.5 h-4 w-4 text-gray-400" />
+                      {job.location}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <DollarSign className="mr-1.5 h-4 w-4 text-gray-400" />
+                      {job.salary}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Briefcase className="mr-1.5 h-4 w-4 text-gray-400" />
+                      {job.jobType}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Clock className="mr-1.5 h-4 w-4 text-gray-400" />
+                      {job.postedDate}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-                <div className="flex items-center mt-1">
-                  <span className="text-lg text-gray-600">{job.company}</span>
-                  {job.isVerified && <BadgeCheck className="ml-1 h-5 w-5 text-teal-500" />}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-y-2 gap-x-4">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="mr-1.5 h-4 w-4 text-gray-400" />
-                    {job.location}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <DollarSign className="mr-1.5 h-4 w-4 text-gray-400" />
-                    {job.salary}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Briefcase className="mr-1.5 h-4 w-4 text-gray-400" />
-                    {job.jobType}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Clock className="mr-1.5 h-4 w-4 text-gray-400" />
-                    {job.postedDate}
-                  </div>
-                </div>
+              
+              {/* Action Buttons for large screens */}
+              <div className="hidden lg:flex lg:items-center lg:space-x-3 lg:mt-0 lg:ml-4">
+                <button className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                  <Zap className="mr-2 h-4 w-4" />
+                  Quick Apply
+                </button>
+                
+                <a 
+                  href={job.jobUrl || "#"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-3 py-2.5 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  title="View original job posting"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="sr-only">View original job posting</span>
+                </a>
+                
+                <button
+                  onClick={handleSaveToggle}
+                  className="inline-flex items-center justify-center px-3 py-2.5 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  aria-label={isSaved ? "Unsave job" : "Save job"}
+                >
+                  <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
+                </button>
               </div>
             </div>
           </div>
           
           {/* Content */}
-          <div className="p-6 space-y-8">
-            {/* Apply and Save Buttons */}
-            <div className="flex space-x-3">
-              <button className="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                <Zap className="mr-2 h-5 w-5" />
-                Quick Apply
-              </button>
-              
-              <a 
-                href={job.jobUrl || "#"} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                title="View original job posting"
-              >
-                <ExternalLink className="h-5 w-5" />
-                <span className="sr-only">View original job posting</span>
-              </a>
-              
-              <button
-                onClick={handleSaveToggle}
-                className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                aria-label={isSaved ? "Unsave job" : "Save job"}
-              >
-                <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
-              </button>
+          <div className="p-6">
+            {/* Apply and Save Buttons - Mobile only */}
+            <div className="block lg:hidden mb-8">
+              <div className="flex space-x-3">
+                <button className="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                  <Zap className="mr-2 h-5 w-5" />
+                  Quick Apply
+                </button>
+                
+                <a 
+                  href={job.jobUrl || "#"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  title="View original job posting"
+                >
+                  <ExternalLink className="h-5 w-5" />
+                  <span className="sr-only">View original job posting</span>
+                </a>
+                
+                <button
+                  onClick={handleSaveToggle}
+                  className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  aria-label={isSaved ? "Unsave job" : "Save job"}
+                >
+                  <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
+                </button>
+              </div>
             </div>
             
             {/* Key Details */}
-            <div className="bg-gray-50 rounded-lg p-6 space-y-3">
+            <div className="bg-gray-50 rounded-lg p-6 space-y-3 mb-8">
               <h3 className="font-medium text-gray-900 text-lg">Job Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center space-x-3">
@@ -319,7 +350,7 @@ export default function JobDetailsPage() {
             </div>
             
             {/* Company Section */}
-            <div>
+            <div className="mb-8">
               <h3 className="font-medium text-gray-900 text-lg mb-4">Company Information</h3>
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-200">
@@ -343,7 +374,7 @@ export default function JobDetailsPage() {
             </div>
             
             {/* Description */}
-            <div>
+            <div className="mb-0">
               <h3 className="font-medium text-gray-900 text-lg mb-4">Job Description</h3>
               <div className="prose max-w-none text-gray-600">
                 <p>{job.description}</p>

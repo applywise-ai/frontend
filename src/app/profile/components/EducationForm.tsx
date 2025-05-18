@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { UserProfile, FieldName, Education, degreeOptions } from '@/app/types';
-import { PlusCircle, Trash2, GraduationCap, School, BookOpen, Calendar, BookText, Info } from 'lucide-react';
+import { PlusCircle, Trash2, GraduationCap, School, BookOpen, Calendar, BookText, Info, CheckIcon, X, PencilIcon } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Separator } from '@/app/components/ui/separator';
 import { Badge } from '@/app/components/ui/badge';
+import EducationDisplay from './EducationDisplay';
 
 interface EducationFormProps {
   profile: UserProfile;
@@ -17,13 +18,17 @@ interface EducationFormProps {
 }
 
 export default function EducationForm({ profile, updateProfile }: EducationFormProps) {
-  const [newEducation, setNewEducation] = useState<Education>({
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  
+  const emptyEducation: Education = {
     [FieldName.SCHOOL]: '',
     [FieldName.DEGREE]: '',
     [FieldName.FIELD_OF_STUDY]: '',
     [FieldName.EDUCATION_FROM]: '',
     [FieldName.EDUCATION_TO]: '',
-  });
+  };
+  
+  const [newEducation, setNewEducation] = useState<Education>({...emptyEducation});
 
   const handleAddEducation = () => {
     if (
@@ -39,13 +44,7 @@ export default function EducationForm({ profile, updateProfile }: EducationFormP
     updateProfile({ [FieldName.EDUCATION]: updatedEducation });
 
     // Reset the form
-    setNewEducation({
-      [FieldName.SCHOOL]: '',
-      [FieldName.DEGREE]: '',
-      [FieldName.FIELD_OF_STUDY]: '',
-      [FieldName.EDUCATION_FROM]: '',
-      [FieldName.EDUCATION_TO]: '',
-    });
+    setNewEducation({...emptyEducation});
   };
 
   const handleRemoveEducation = (index: number) => {
@@ -53,6 +52,14 @@ export default function EducationForm({ profile, updateProfile }: EducationFormP
     const updatedEducation = [...currentEducation];
     updatedEducation.splice(index, 1);
     updateProfile({ [FieldName.EDUCATION]: updatedEducation });
+    
+    // If removing the entry we're currently editing, exit edit mode
+    if (editingIndex === index) {
+      setEditingIndex(null);
+    } else if (editingIndex !== null && index < editingIndex) {
+      // If removing an entry before the one we're editing, adjust the editing index
+      setEditingIndex(editingIndex - 1);
+    }
   };
 
   const handleNewEducationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,6 +75,30 @@ export default function EducationForm({ profile, updateProfile }: EducationFormP
       ...prev,
       [FieldName.DEGREE]: value
     }));
+  };
+  
+  const handleEditEducation = (edu: Education, index: number) => {
+    setEditingIndex(index);
+    setNewEducation({...edu});
+  };
+  
+  const handleUpdateEducation = () => {
+    if (editingIndex === null) return;
+    
+    const currentEducation = profile[FieldName.EDUCATION] || [];
+    const updatedEducation = [...currentEducation];
+    updatedEducation[editingIndex] = {...newEducation};
+    
+    updateProfile({ [FieldName.EDUCATION]: updatedEducation });
+    
+    // Exit edit mode and reset form
+    setEditingIndex(null);
+    setNewEducation({...emptyEducation});
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setNewEducation({...emptyEducation});
   };
 
   // Ensure education array exists
@@ -90,63 +121,23 @@ export default function EducationForm({ profile, updateProfile }: EducationFormP
             Your Education
           </h3>
           
-          {educationList.map((edu, index) => (
-            <Card key={index} className="relative border-gray-200 shadow-sm hover:shadow transition-shadow">
-              <Button
-                type="button"
-                onClick={() => handleRemoveEducation(index)}
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                aria-label="Remove education"
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-              
-              <CardContent className="p-5 grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-4">
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <School className="h-3.5 w-3.5 text-gray-400 mr-1" /> School
-                  </p>
-                  <p className="font-medium text-gray-900">{edu[FieldName.SCHOOL]}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <GraduationCap className="h-3.5 w-3.5 text-gray-400 mr-1" /> Degree
-                  </p>
-                  <p className="font-medium text-gray-900">{edu[FieldName.DEGREE]}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <BookOpen className="h-3.5 w-3.5 text-gray-400 mr-1" /> Field of Study
-                  </p>
-                  <p className="font-medium text-gray-900">{edu[FieldName.FIELD_OF_STUDY]}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <Calendar className="h-3.5 w-3.5 text-gray-400 mr-1" /> Years
-                  </p>
-                  <p className="font-medium text-gray-900">
-                    {edu[FieldName.EDUCATION_FROM]} 
-                    {edu[FieldName.EDUCATION_TO] ? 
-                      ` - ${edu[FieldName.EDUCATION_TO]}` : 
-                      <Badge className="ml-2 bg-teal-100 text-teal-800 hover:bg-teal-200 border-teal-200">Present</Badge>
-                    }
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <EducationDisplay 
+            profile={profile} 
+            onEdit={handleEditEducation} 
+            onDelete={handleRemoveEducation}
+          />
         </div>
       )}
 
-      {/* Add New Education Form */}
+      {/* Add/Edit Education Form */}
       <Card className="border-gray-200 shadow-sm hover:shadow transition-shadow">
         <CardContent className="pt-6">
           <div className="flex items-start space-x-3">
             <GraduationCap className="h-5 w-5 text-teal-500 mt-0.5" />
             <div className="w-full">
-              <h3 className="text-md font-medium text-gray-900 mb-4">Add Education</h3>
+              <h3 className="text-md font-medium text-gray-900 mb-4">
+                {editingIndex !== null ? 'Edit Education' : 'Add Education'}
+              </h3>
               
               <div className="grid grid-cols-1 gap-y-5 gap-x-4 sm:grid-cols-6">
                 {/* School */}
@@ -250,16 +241,38 @@ export default function EducationForm({ profile, updateProfile }: EducationFormP
                   </div>
                 </div>
               </div>
-
-              <div className="mt-6">
-                <Button
-                  type="button"
-                  onClick={handleAddEducation}
-                  className="bg-teal-600 hover:bg-teal-700 text-white"
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Education
-                </Button>
+              
+              <div className="mt-6 flex gap-3">
+                {editingIndex !== null ? (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={handleUpdateEducation}
+                      className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                    >
+                      <CheckIcon className="h-4 w-4 mr-2" />
+                      Update
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleAddEducation}
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Education
+                  </Button>
+                )}
               </div>
             </div>
           </div>

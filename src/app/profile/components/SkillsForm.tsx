@@ -1,14 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { UserProfile, FieldName } from '@/app/types';
-import { PlusCircle, X, Lightbulb, Info, Tags } from 'lucide-react';
-import { Button } from '@/app/components/ui/button';
-import { Input } from '@/app/components/ui/input';
+import { Lightbulb, Info, Tags } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
-import { Badge } from '@/app/components/ui/badge';
-import { Separator } from '@/app/components/ui/separator';
-import { Label } from '@/app/components/ui/label';
+import SkillSearch from '@/app/components/SkillSearch';
 
 interface SkillsFormProps {
   profile: UserProfile;
@@ -16,38 +11,12 @@ interface SkillsFormProps {
 }
 
 export default function SkillsForm({ profile, updateProfile }: SkillsFormProps) {
-  const [newSkill, setNewSkill] = useState('');
-
-  const handleAddSkill = () => {
-    if (!newSkill.trim()) return;
-    
-    const skills = profile[FieldName.SKILLS] || [];
-    const skillExists = skills.includes(newSkill.trim());
-    if (skillExists) {
-      setNewSkill('');
-      return;
-    }
-
-    const updatedSkills = [...skills, newSkill.trim()];
-    updateProfile({ [FieldName.SKILLS]: updatedSkills });
-    setNewSkill('');
-  };
-
-  const handleRemoveSkill = (skillToRemove: string) => {
-    const skills = profile[FieldName.SKILLS] || [];
-    const updatedSkills = skills.filter(skill => skill !== skillToRemove);
-    updateProfile({ [FieldName.SKILLS]: updatedSkills });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddSkill();
-    }
-  };
-
   // Ensure skills array exists
   const skillsList = profile[FieldName.SKILLS] || [];
+  
+  const handleSkillsChange = (updatedSkills: string[]) => {
+    updateProfile({ [FieldName.SKILLS]: updatedSkills });
+  };
 
   return (
     <div className="space-y-6">
@@ -66,59 +35,11 @@ export default function SkillsForm({ profile, updateProfile }: SkillsFormProps) 
               <h3 className="text-md font-medium text-gray-900 mb-4">Add Skills</h3>
 
               <div className="space-y-5">
-                <div>
-                  <Label htmlFor="new-skill" className="text-sm font-medium text-gray-700 mb-2 block">
-                    Enter a skill
-                  </Label>
-                  <div className="flex w-full items-center space-x-2">
-                    <Input
-                      id="new-skill"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="e.g. JavaScript, Project Management, Data Analysis"
-                      className="flex-1 shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                    />
-                    <Button 
-                      onClick={handleAddSkill}
-                      type="button"
-                      className="bg-teal-600 hover:bg-teal-700 text-white"
-                    >
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Add
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Skills List */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Your Skills</h4>
-                  
-                  {skillsList.length === 0 ? (
-                    <p className="text-sm text-gray-500 italic">No skills added yet.</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {skillsList.map((skill, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="outline"
-                          className="bg-white px-3 py-1 text-sm font-normal"
-                        >
-                          {skill}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSkill(skill)}
-                            className="ml-2 text-gray-400 hover:text-red-500 focus:outline-none"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <SkillSearch 
+                  value={skillsList}
+                  onChange={handleSkillsChange}
+                  placeholder="Search or enter a skill (e.g. JavaScript, Project Management)"
+                />
               </div>
             </div>
           </div>

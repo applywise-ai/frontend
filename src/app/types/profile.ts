@@ -10,6 +10,7 @@ export enum FieldName {
   COUNTRY = 'country',
   POSTAL_CODE = 'postalCode',
   ADDRESS_LINE1 = 'addressLine1',
+  CURRENT_LOCATION = 'currentLocation',
   
   // Social Links
   LINKEDIN = 'linkedin',
@@ -39,6 +40,9 @@ export enum FieldName {
   EXPECTED_SALARY = 'expectedSalary',
   JOB_TYPES = 'jobTypes',
   LOCATION_PREFERENCES = 'locationPreferences',
+  ROLE_LEVEL = 'roleLevel',
+  INDUSTRY_SPECIALIZATIONS = 'industrySpecializations',
+  COMPANY_SIZE = 'companySize',
   
   // Education
   EDUCATION = 'education',
@@ -55,6 +59,7 @@ export enum FieldName {
   EMPLOYMENT_FROM = 'employmentFrom',
   EMPLOYMENT_TO = 'employmentTo',
   EMPLOYMENT_DESCRIPTION = 'employmentDescription',
+  EMPLOYMENT_LOCATION = 'employmentLocation',
   
   // Skills
   SKILLS = 'skills',
@@ -80,6 +85,7 @@ export interface Employment {
   [FieldName.EMPLOYMENT_FROM]: string;
   [FieldName.EMPLOYMENT_TO]: string;
   [FieldName.EMPLOYMENT_DESCRIPTION]: string;
+  [FieldName.EMPLOYMENT_LOCATION]?: string;
 }
 
 export interface UserProfile {
@@ -89,11 +95,12 @@ export interface UserProfile {
   [FieldName.FULL_NAME]: string;
   [FieldName.EMAIL]: string;
   [FieldName.PHONE_NUMBER]: string;
-  [FieldName.CITY]: string;
-  [FieldName.PROVINCE]: string;
-  [FieldName.COUNTRY]: string;
-  [FieldName.POSTAL_CODE]: string;
-  [FieldName.ADDRESS_LINE1]: string;
+  [FieldName.CITY]?: string;
+  [FieldName.PROVINCE]?: string;
+  [FieldName.COUNTRY]?: string;
+  [FieldName.POSTAL_CODE]?: string;
+  [FieldName.ADDRESS_LINE1]?: string;
+  [FieldName.CURRENT_LOCATION]?: string;
   
   // Social Links
   [FieldName.LINKEDIN]?: string;
@@ -123,6 +130,9 @@ export interface UserProfile {
   [FieldName.EXPECTED_SALARY]?: number;
   [FieldName.JOB_TYPES]?: string[];
   [FieldName.LOCATION_PREFERENCES]?: string[];
+  [FieldName.ROLE_LEVEL]?: string;
+  [FieldName.INDUSTRY_SPECIALIZATIONS]?: string[];
+  [FieldName.COMPANY_SIZE]?: string[];
   
   // Education
   [FieldName.EDUCATION]: Education[];
@@ -148,4 +158,52 @@ export const degreeOptions = ['High School', 'Associate\'s Degree', 'Bachelor\'s
 export const noticePeriodOptions = ['Immediately', '2 weeks', '4 weeks', '8 weeks', '3 months', 'More than 3 months'];
 export const sourceOptions = ['LinkedIn', 'Indeed', 'Company Website', 'Referral', 'Job Board', 'University/College', 'Other'];
 export const jobTypeOptions = ['Full-time', 'Part-time', 'Contract', 'Internship'];
-export const locationOptions = ['Remote', 'Hybrid', 'On-site']; 
+export const locationOptions = ['Remote', 'Hybrid', 'On-site'];
+
+// New options for job preferences
+export const roleLevelOptions = [
+  'Entry Level & New Grad',
+  'Junior (1-3 years)',
+  'Mid-Level (3-5 years)',
+  'Senior (5-8 years)',
+  'Lead/Principal (8+ years)',
+  'Manager',
+  'Director',
+  'VP/Executive'
+];
+
+export const industrySpecializationOptions = [
+  'Backend Engineering',
+  'Frontend Engineering',
+  'Full Stack Engineering',
+  'Mobile Development',
+  'DevOps & Infrastructure',
+  'Data Science',
+  'Data Engineering',
+  'Machine Learning & AI',
+  'Product Management',
+  'UX/UI Design',
+  'QA & Testing',
+  'Security Engineering',
+  'Cloud Computing',
+  'Blockchain',
+  'Game Development',
+  'AR/VR Development',
+  'Embedded Systems',
+  'IoT Engineering',
+  'Robotics',
+  'Fintech',
+  'Healthtech',
+  'Edtech',
+  'E-commerce',
+  'Marketing Technology',
+  'Enterprise Software'
+];
+
+export const companySizeOptions = [
+  'Startup (1-50 employees)',
+  'Small (51-200 employees)',
+  'Medium (201-1000 employees)',
+  'Large (1001-5000 employees)',
+  'Enterprise (5000+ employees)'
+]; 

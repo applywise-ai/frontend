@@ -1,14 +1,23 @@
 'use client';
 
 import { useEffect } from 'react';
-import { UserProfile, FieldName, noticePeriodOptions, sourceOptions, jobTypeOptions, locationOptions } from '@/app/types';
+import { 
+  UserProfile, 
+  FieldName, 
+  noticePeriodOptions, 
+  sourceOptions, 
+  jobTypeOptions, 
+  locationOptions,
+  roleLevelOptions,
+  industrySpecializationOptions,
+  companySizeOptions
+} from '@/app/types';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Checkbox } from '@/app/components/ui/checkbox';
-import { InfoIcon, Briefcase, DollarSign, Clock, MapPin, HelpCircle } from 'lucide-react';
+import { InfoIcon, Briefcase, DollarSign, Clock, MapPin, HelpCircle, Building, Layers, Users } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
-import { Separator } from '@/app/components/ui/separator';
 
 interface JobPreferencesFormProps {
   profile: UserProfile;
@@ -19,6 +28,8 @@ export default function JobPreferencesForm({ profile, updateProfile }: JobPrefer
   // Ensure arrays exist
   const jobTypes = profile[FieldName.JOB_TYPES] as string[] || [];
   const locationPreferences = profile[FieldName.LOCATION_PREFERENCES] as string[] || [];
+  const industrySpecializations = profile[FieldName.INDUSTRY_SPECIALIZATIONS] as string[] || [];
+  const companySizes = profile[FieldName.COMPANY_SIZE] as string[] || [];
   
   useEffect(() => {
     // Initialize with defaults if empty
@@ -27,6 +38,9 @@ export default function JobPreferencesForm({ profile, updateProfile }: JobPrefer
     }
     if (locationPreferences.length === 0) {
       updateProfile({ [FieldName.LOCATION_PREFERENCES]: ['Remote'] });
+    }
+    if (!profile[FieldName.ROLE_LEVEL]) {
+      updateProfile({ [FieldName.ROLE_LEVEL]: 'Entry Level & New Grad' });
     }
   }, []);
   
@@ -60,6 +74,107 @@ export default function JobPreferencesForm({ profile, updateProfile }: JobPrefer
           Specify your job preferences to get more relevant job recommendations.
         </p>
       </div>
+
+      {/* Role Level Selection */}
+      <Card className="border-gray-200 shadow-sm hover:shadow transition-shadow">
+        <CardContent className="pt-6">
+          <div className="flex items-start space-x-3">
+            <Layers className="h-5 w-5 text-teal-500 mt-0.5" />
+            <div className="w-full">
+              <h3 className="text-md font-medium text-gray-900 mb-4">Role Level</h3>
+              <div>
+                <Select
+                  value={profile[FieldName.ROLE_LEVEL] || 'none'}
+                  onValueChange={(value) => handleSelectChange(FieldName.ROLE_LEVEL, value)}
+                >
+                  <SelectTrigger id="role-level" className="shadow-sm focus:ring-teal-500 focus:border-teal-500">
+                    <SelectValue placeholder="Select role level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Select role level</SelectItem>
+                    {roleLevelOptions.map(option => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Choose the career level that best matches your experience
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Industry & Specialization */}
+      <Card className="border-gray-200 shadow-sm hover:shadow transition-shadow">
+        <CardContent className="pt-6">
+          <div className="flex items-start space-x-3">
+            <Building className="h-5 w-5 text-teal-500 mt-0.5" />
+            <div className="w-full">
+              <h3 className="text-md font-medium text-gray-900 mb-4">Industry & Specialization</h3>
+              <p className="text-sm text-gray-500 mb-3">Select the areas you specialize in or are interested in</p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                {industrySpecializationOptions.map(option => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`specialization-${option}`}
+                      checked={industrySpecializations.includes(option)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleMultiSelectChange(FieldName.INDUSTRY_SPECIALIZATIONS, option);
+                        } else {
+                          handleMultiSelectChange(FieldName.INDUSTRY_SPECIALIZATIONS, option);
+                        }
+                      }}
+                      className="border-gray-300 text-teal-600"
+                    />
+                    <Label htmlFor={`specialization-${option}`} className="text-sm text-gray-700">
+                      {option}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Company Size */}
+      <Card className="border-gray-200 shadow-sm hover:shadow transition-shadow">
+        <CardContent className="pt-6">
+          <div className="flex items-start space-x-3">
+            <Users className="h-5 w-5 text-teal-500 mt-0.5" />
+            <div className="w-full">
+              <h3 className="text-md font-medium text-gray-900 mb-4">Ideal Company Size</h3>
+              <p className="text-sm text-gray-500 mb-3">Select all company sizes you&apos;re interested in</p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                {companySizeOptions.map(option => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`companySize-${option}`}
+                      checked={companySizes.includes(option)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleMultiSelectChange(FieldName.COMPANY_SIZE, option);
+                        } else {
+                          handleMultiSelectChange(FieldName.COMPANY_SIZE, option);
+                        }
+                      }}
+                      className="border-gray-300 text-teal-600"
+                    />
+                    <Label htmlFor={`companySize-${option}`} className="text-sm text-gray-700">
+                      {option}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Salary and Notice Period */}
       <Card className="border-gray-200 shadow-sm hover:shadow transition-shadow">
@@ -139,7 +254,7 @@ export default function JobPreferencesForm({ profile, updateProfile }: JobPrefer
             <Briefcase className="h-5 w-5 text-teal-500 mt-0.5" />
             <div className="w-full">
               <h3 className="text-md font-medium text-gray-900 mb-4">Job Types</h3>
-              <p className="text-sm text-gray-500 mb-3">Select all types of employment you're interested in</p>
+              <p className="text-sm text-gray-500 mb-3">Select all types of employment you&apos;re interested in</p>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 {jobTypeOptions.map(option => (
                   <div key={option} className="flex items-center space-x-2">

@@ -6,7 +6,12 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   UserCredential,
-  User
+  User,
+  updateEmail,
+  updatePassword,
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { auth } from './config';
@@ -175,6 +180,90 @@ class FirebaseAuthService {
    */
   onAuthStateChanged(callback: (user: User | null) => void) {
     return onAuthStateChanged(auth, callback);
+  }
+
+  /**
+   * Reauthenticate the user with their credentials
+   * @param password - Current password
+   * @returns Promise with UserCredential or AuthErrorResponse
+   */
+  async reauthenticate(password: string): Promise<UserCredential | AuthErrorResponse> {
+    try {
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        return {
+          error: true,
+          message: 'No authenticated user found'
+        };
+      }
+
+      const credential = EmailAuthProvider.credential(user.email, password);
+      return await reauthenticateWithCredential(user, credential);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Update the current user's email
+   * @param newEmail - New email address
+   * @returns Promise with void or AuthErrorResponse
+   */
+  async updateEmail(newEmail: string): Promise<void | AuthErrorResponse> {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        return {
+          error: true,
+          message: 'No authenticated user found'
+        };
+      }
+
+      await updateEmail(user, newEmail);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Update the current user's password
+   * @param newPassword - New password
+   * @returns Promise with void or AuthErrorResponse
+   */
+  async updatePassword(newPassword: string): Promise<void | AuthErrorResponse> {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        return {
+          error: true,
+          message: 'No authenticated user found'
+        };
+      }
+
+      await updatePassword(user, newPassword);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Delete the current user's account
+   * @returns Promise with void or AuthErrorResponse
+   */
+  async deleteAccount(): Promise<void | AuthErrorResponse> {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        return {
+          error: true,
+          message: 'No authenticated user found'
+        };
+      }
+
+      await deleteUser(user);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
   }
 }
 

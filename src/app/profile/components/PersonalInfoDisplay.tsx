@@ -5,7 +5,7 @@ import {
   User, 
   Mail, 
   Phone, 
-  Home
+  MapPin
 } from 'lucide-react';
 
 interface PersonalInfoDisplayProps {
@@ -45,15 +45,12 @@ export default function PersonalInfoDisplay({ profile }: PersonalInfoDisplayProp
         </div>
       )}
 
-      {profile[FieldName.ADDRESS_LINE1] && (
-        <div className="flex items-start md:col-span-2 lg:col-span-1">
-          <Home className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-          <div className="max-w-xs lg:max-w-md">
-            <p className="text-sm font-medium text-gray-900">Address</p>
-            <p className="text-sm text-gray-500">
-              {profile[FieldName.ADDRESS_LINE1]}, {profile[FieldName.CITY]}<br />
-              {profile[FieldName.PROVINCE]}, {profile[FieldName.COUNTRY]} {profile[FieldName.POSTAL_CODE]}
-            </p>
+      {profile[FieldName.CURRENT_LOCATION] && (
+        <div className="flex items-start">
+          <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <div>
+            <p className="text-sm font-medium text-gray-900">Current Location</p>
+            <p className="text-sm text-gray-500">{profile[FieldName.CURRENT_LOCATION]}</p>
           </div>
         </div>
       )}

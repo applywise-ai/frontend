@@ -50,11 +50,6 @@ export default function ProfilePage() {
     [FieldName.FULL_NAME]: '',
     [FieldName.EMAIL]: '',
     [FieldName.PHONE_NUMBER]: '',
-    [FieldName.CITY]: '',
-    [FieldName.PROVINCE]: '',
-    [FieldName.COUNTRY]: '',
-    [FieldName.POSTAL_CODE]: '',
-    [FieldName.ADDRESS_LINE1]: '',
     [FieldName.EDUCATION]: [],
     [FieldName.SKILLS]: [],
   });
@@ -231,9 +226,7 @@ export default function ProfilePage() {
             [FieldName.FULL_NAME]: 'Kaiz Nanji',
             [FieldName.EMAIL]: 'k4nanji@uwaterloo.ca',
             [FieldName.PHONE_NUMBER]: '4168784499',
-            [FieldName.CITY]: 'Mississauga',
-            [FieldName.PROVINCE]: 'Ontario',
-            [FieldName.COUNTRY]: 'Canada',
+            [FieldName.CURRENT_LOCATION]: 'Toronto, ON',
             [FieldName.LINKEDIN]: 'https://www.linkedin.com/in/john-doe',
             [FieldName.TWITTER]: '@johndoe',
             [FieldName.GITHUB]: 'https://github.com/johndoe',
@@ -267,8 +260,6 @@ export default function ProfilePage() {
             [FieldName.SKILLS]: ['Python', 'Java', 'JavaScript'],
             [FieldName.WORKDAY_EMAIL]: 'mathstutors0@gmail.com',
             [FieldName.WORKDAY_PASSWORD]: 'Password123!',
-            [FieldName.POSTAL_CODE]: 'L5W 1P2',
-            [FieldName.ADDRESS_LINE1]: '6738 Golden Hills Way'
           };
           
           setProfile(mockProfile);

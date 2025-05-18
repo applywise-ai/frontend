@@ -15,8 +15,8 @@ export default function Home() {
       try {
         const user = await authService.isLoggedIn();
         if (user) {
-          // Redirect to dashboard if already authenticated
-          router.push('/dashboard');
+          // Redirect to jobs page if already authenticated
+          router.push('/jobs');
         } else {
           setIsLoading(false);
         }

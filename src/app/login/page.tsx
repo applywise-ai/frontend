@@ -24,8 +24,8 @@ export default function Login() {
     const checkAuth = async () => {
       const user = await authService.isLoggedIn();
       if (user) {
-        // Redirect to dashboard if already authenticated
-        router.push('/dashboard');
+        // Redirect to jobs page if already authenticated
+        router.push('/jobs');
       }
     };
 
@@ -52,7 +52,7 @@ export default function Login() {
       setLoading(false);
     } else {
       // Successful login
-      router.push('/dashboard');
+      router.push('/jobs');
     }
   };
 
@@ -68,7 +68,7 @@ export default function Login() {
       setLoading(false);
     } else {
       // Successful login
-      router.push('/dashboard');
+      router.push('/jobs');
     }
   };
 

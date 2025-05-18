@@ -6,11 +6,9 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
-import { Building, Calendar, PlusCircle, Trash2, CalendarIcon, Briefcase, MapPin, FileText } from 'lucide-react';
+import { Building, PlusCircle, CalendarIcon, Briefcase, MapPin, FileText, X, CheckIcon } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
-import { Separator } from '@/app/components/ui/separator';
-import { Badge } from '@/app/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
+import EmploymentDisplay from './EmploymentDisplay';
 
 interface EmploymentFormProps {
   profile: UserProfile;
@@ -22,13 +20,18 @@ export default function EmploymentForm({ profile, updateProfile }: EmploymentFor
     profile[FieldName.EMPLOYMENT] as Employment[] || []
   );
   
-  const [newEmployment, setNewEmployment] = useState<Employment>({
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  
+  const emptyEmployment: Employment = {
     [FieldName.COMPANY]: '',
     [FieldName.POSITION]: '',
     [FieldName.EMPLOYMENT_FROM]: '',
     [FieldName.EMPLOYMENT_TO]: '',
     [FieldName.EMPLOYMENT_DESCRIPTION]: '',
-  });
+    [FieldName.EMPLOYMENT_LOCATION]: '',
+  };
+  
+  const [newEmployment, setNewEmployment] = useState<Employment>({...emptyEmployment});
 
   const handleAddEmployment = () => {
     if (!newEmployment[FieldName.COMPANY] || !newEmployment[FieldName.POSITION]) {
@@ -40,19 +43,21 @@ export default function EmploymentForm({ profile, updateProfile }: EmploymentFor
     updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployment });
     
     // Reset the form
-    setNewEmployment({
-      [FieldName.COMPANY]: '',
-      [FieldName.POSITION]: '',
-      [FieldName.EMPLOYMENT_FROM]: '',
-      [FieldName.EMPLOYMENT_TO]: '',
-      [FieldName.EMPLOYMENT_DESCRIPTION]: '',
-    });
+    setNewEmployment({...emptyEmployment});
   };
 
   const handleRemoveEmployment = (index: number) => {
     const updatedEmployment = employment.filter((_, i) => i !== index);
     setEmployment(updatedEmployment);
     updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployment });
+    
+    // If removing the entry we're currently editing, exit edit mode
+    if (editingIndex === index) {
+      setEditingIndex(null);
+    } else if (editingIndex !== null && index < editingIndex) {
+      // If removing an entry before the one we're editing, adjust the editing index
+      setEditingIndex(editingIndex - 1);
+    }
   };
 
   const handleNewEmploymentChange = (field: keyof Employment, value: string) => {
@@ -60,6 +65,30 @@ export default function EmploymentForm({ profile, updateProfile }: EmploymentFor
       ...prev,
       [field]: value
     }));
+  };
+  
+  const handleEditEmployment = (job: Employment, index: number) => {
+    setEditingIndex(index);
+    setNewEmployment({...job});
+  };
+  
+  const handleUpdateEmployment = () => {
+    if (editingIndex === null) return;
+    
+    const updatedEmployment = [...employment];
+    updatedEmployment[editingIndex] = {...newEmployment};
+    
+    setEmployment(updatedEmployment);
+    updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployment });
+    
+    // Exit edit mode and reset form
+    setEditingIndex(null);
+    setNewEmployment({...emptyEmployment});
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setNewEmployment({...emptyEmployment});
   };
 
   return (
@@ -79,65 +108,23 @@ export default function EmploymentForm({ profile, updateProfile }: EmploymentFor
             Your Work Experience
           </h3>
           
-          {employment.map((job, index) => (
-            <Card key={index} className="relative border-gray-200 shadow-sm hover:shadow transition-shadow">
-              <Button
-                type="button"
-                onClick={() => handleRemoveEmployment(index)}
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                aria-label="Remove employment"
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-              
-              <CardContent className="p-5 grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-4">
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <Building className="h-3.5 w-3.5 text-gray-400 mr-1" /> Company
-                  </p>
-                  <p className="font-medium text-gray-900">{job[FieldName.COMPANY]}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <Briefcase className="h-3.5 w-3.5 text-gray-400 mr-1" /> Position
-                  </p>
-                  <p className="font-medium text-gray-900">{job[FieldName.POSITION]}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 flex items-center">
-                    <Calendar className="h-3.5 w-3.5 text-gray-400 mr-1" /> Dates
-                  </p>
-                  <p className="font-medium text-gray-900">
-                    {job[FieldName.EMPLOYMENT_FROM]} 
-                    {job[FieldName.EMPLOYMENT_TO] ? 
-                      ` - ${job[FieldName.EMPLOYMENT_TO]}` : 
-                      <Badge className="ml-2 bg-teal-100 text-teal-800 hover:bg-teal-200 border-teal-200">Present</Badge>
-                    }
-                  </p>
-                </div>
-                {job[FieldName.EMPLOYMENT_DESCRIPTION] && (
-                  <div className="sm:col-span-2">
-                    <p className="text-xs text-gray-500 flex items-center">
-                      <FileText className="h-3.5 w-3.5 text-gray-400 mr-1" /> Description
-                    </p>
-                    <p className="text-sm text-gray-700">{job[FieldName.EMPLOYMENT_DESCRIPTION]}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          <EmploymentDisplay 
+            profile={profile} 
+            onEdit={handleEditEmployment} 
+            onDelete={handleRemoveEmployment}
+          />
         </div>
       )}
       
-      {/* Add New Employment Form */}
+      {/* Edit or Add New Employment Form */}
       <Card className="border-gray-200 shadow-sm hover:shadow transition-shadow">
         <CardContent className="pt-6">
           <div className="flex items-start space-x-3">
             <Building className="h-5 w-5 text-teal-500 mt-0.5" />
             <div className="w-full">
-              <h3 className="text-md font-medium text-gray-900 mb-4">Add Employment</h3>
+              <h3 className="text-md font-medium text-gray-900 mb-4">
+                {editingIndex !== null ? 'Edit Employment' : 'Add Employment'}
+              </h3>
               
               <div className="grid grid-cols-1 gap-y-5 gap-x-4 sm:grid-cols-6">
                 {/* Company */}
@@ -212,6 +199,24 @@ export default function EmploymentForm({ profile, updateProfile }: EmploymentFor
                   </div>
                 </div>
                 
+                {/* Location */}
+                <div className="sm:col-span-6">
+                  <Label htmlFor="location" className="text-sm font-medium text-gray-700 flex items-center">
+                    <MapPin className="h-4 w-4 text-gray-400 mr-1.5" />
+                    Location
+                  </Label>
+                  <div className="mt-1">
+                    <Input
+                      id="location"
+                      type="text"
+                      placeholder="City, Country or Remote"
+                      value={newEmployment[FieldName.EMPLOYMENT_LOCATION]}
+                      onChange={(e) => handleNewEmploymentChange(FieldName.EMPLOYMENT_LOCATION, e.target.value)}
+                      className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                    />
+                  </div>
+                </div>
+                
                 {/* Description */}
                 <div className="sm:col-span-6">
                   <Label htmlFor="description" className="text-sm font-medium text-gray-700 flex items-center">
@@ -231,15 +236,37 @@ export default function EmploymentForm({ profile, updateProfile }: EmploymentFor
                 </div>
               </div>
               
-              <div className="mt-6">
-                <Button
-                  type="button"
-                  onClick={handleAddEmployment}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Work Experience
-                </Button>
+              <div className="mt-6 flex gap-3">
+                {editingIndex !== null ? (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={handleUpdateEmployment}
+                      className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                    >
+                      <CheckIcon className="h-4 w-4 mr-2" />
+                      Update
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleAddEmployment}
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Work Experience
+                  </Button>
+                )}
               </div>
             </div>
           </div>

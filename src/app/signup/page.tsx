@@ -26,8 +26,8 @@ export default function SignUp() {
     const checkAuth = async () => {
       const user = await authService.isLoggedIn();
       if (user) {
-        // Redirect to dashboard if already authenticated
-        router.push('/dashboard');
+        // Redirect to jobs page if already authenticated
+        router.push('/jobs');
       }
     };
 
@@ -57,7 +57,7 @@ export default function SignUp() {
       // For example, using Firestore or another database
       
       // Successful registration
-      router.push('/dashboard');
+      router.push('/jobs');
     }
   };
 
@@ -73,7 +73,7 @@ export default function SignUp() {
       setLoading(false);
     } else {
       // Successful registration
-      router.push('/dashboard');
+      router.push('/jobs');
     }
   };
 

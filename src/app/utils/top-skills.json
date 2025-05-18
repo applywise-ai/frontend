@@ -1,0 +1,736 @@
+{
+  "skills": [
+    {
+      "name": "JavaScript",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Python",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Java",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "TypeScript",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "C++",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "C#",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Go",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Ruby",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "PHP",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Swift",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Kotlin",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Rust",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "Scala",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "R",
+      "category": "Programming Languages"
+    },
+    {
+      "name": "SQL",
+      "category": "Databases"
+    },
+    {
+      "name": "React",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Angular",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Vue.js",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Next.js",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Node.js",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Express",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Django",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Flask",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Spring",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "ASP.NET",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Laravel",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "TensorFlow",
+      "category": "Data & AI"
+    },
+    {
+      "name": "PyTorch",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Pandas",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Machine Learning",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Deep Learning",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Natural Language Processing",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Computer Vision",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Data Science",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Data Analytics",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Big Data",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Artificial Intelligence",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Data Visualization",
+      "category": "Data & AI"
+    },
+    {
+      "name": "AWS",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Azure",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Google Cloud",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Docker",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Kubernetes",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "CI/CD",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "DevOps",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Jenkins",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Terraform",
+      "category": "Cloud & DevOps"
+    },
+    {
+      "name": "Git",
+      "category": "Tools"
+    },
+    {
+      "name": "GitHub",
+      "category": "Tools"
+    },
+    {
+      "name": "GitLab",
+      "category": "Tools"
+    },
+    {
+      "name": "Jira",
+      "category": "Tools"
+    },
+    {
+      "name": "Confluence",
+      "category": "Tools"
+    },
+    {
+      "name": "Bitbucket",
+      "category": "Tools"
+    },
+    {
+      "name": "Bash",
+      "category": "Tools"
+    },
+    {
+      "name": "PowerShell",
+      "category": "Tools"
+    },
+    {
+      "name": "Linux",
+      "category": "Tools"
+    },
+    {
+      "name": "Unix",
+      "category": "Tools"
+    },
+    {
+      "name": "Windows",
+      "category": "Tools"
+    },
+    {
+      "name": "MacOS",
+      "category": "Tools"
+    },
+    {
+      "name": "MongoDB",
+      "category": "Databases"
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "Databases"
+    },
+    {
+      "name": "MySQL",
+      "category": "Databases"
+    },
+    {
+      "name": "Oracle",
+      "category": "Databases"
+    },
+    {
+      "name": "SQLite",
+      "category": "Databases"
+    },
+    {
+      "name": "Redis",
+      "category": "Databases"
+    },
+    {
+      "name": "Cassandra",
+      "category": "Databases"
+    },
+    {
+      "name": "DynamoDB",
+      "category": "Databases"
+    },
+    {
+      "name": "Firebase",
+      "category": "Databases"
+    },
+    {
+      "name": "MariaDB",
+      "category": "Databases"
+    },
+    {
+      "name": "Elasticsearch",
+      "category": "Databases"
+    },
+    {
+      "name": "REST API",
+      "category": "Web Development"
+    },
+    {
+      "name": "GraphQL",
+      "category": "Web Development"
+    },
+    {
+      "name": "HTML",
+      "category": "Web Development"
+    },
+    {
+      "name": "CSS",
+      "category": "Web Development"
+    },
+    {
+      "name": "SASS/SCSS",
+      "category": "Web Development"
+    },
+    {
+      "name": "Webpack",
+      "category": "Web Development"
+    },
+    {
+      "name": "Babel",
+      "category": "Web Development"
+    },
+    {
+      "name": "JSON",
+      "category": "Web Development"
+    },
+    {
+      "name": "XML",
+      "category": "Web Development"
+    },
+    {
+      "name": "HTTP/HTTPS",
+      "category": "Web Development"
+    },
+    {
+      "name": "WebSockets",
+      "category": "Web Development"
+    },
+    {
+      "name": "OAuth",
+      "category": "Web Development"
+    },
+    {
+      "name": "JWT",
+      "category": "Web Development"
+    },
+    {
+      "name": "Redux",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "MobX",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "RxJS",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "jQuery",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Bootstrap",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Tailwind CSS",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Material UI",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Chakra UI",
+      "category": "Frameworks & Libraries"
+    },
+    {
+      "name": "Figma",
+      "category": "Design"
+    },
+    {
+      "name": "Adobe XD",
+      "category": "Design"
+    },
+    {
+      "name": "Sketch",
+      "category": "Design"
+    },
+    {
+      "name": "InVision",
+      "category": "Design"
+    },
+    {
+      "name": "Photoshop",
+      "category": "Design"
+    },
+    {
+      "name": "Illustrator",
+      "category": "Design"
+    },
+    {
+      "name": "UI Design",
+      "category": "Design"
+    },
+    {
+      "name": "UX Design",
+      "category": "Design"
+    },
+    {
+      "name": "Wireframing",
+      "category": "Design"
+    },
+    {
+      "name": "Prototyping",
+      "category": "Design"
+    },
+    {
+      "name": "Responsive Design",
+      "category": "Design"
+    },
+    {
+      "name": "Unit Testing",
+      "category": "Testing"
+    },
+    {
+      "name": "Integration Testing",
+      "category": "Testing"
+    },
+    {
+      "name": "Functional Testing",
+      "category": "Testing"
+    },
+    {
+      "name": "Automated Testing",
+      "category": "Testing"
+    },
+    {
+      "name": "Manual Testing",
+      "category": "Testing"
+    },
+    {
+      "name": "Test-Driven Development",
+      "category": "Testing"
+    },
+    {
+      "name": "Jest",
+      "category": "Testing"
+    },
+    {
+      "name": "Mocha",
+      "category": "Testing"
+    },
+    {
+      "name": "Chai",
+      "category": "Testing"
+    },
+    {
+      "name": "Selenium",
+      "category": "Testing"
+    },
+    {
+      "name": "Cypress",
+      "category": "Testing"
+    },
+    {
+      "name": "JUnit",
+      "category": "Testing"
+    },
+    {
+      "name": "PyTest",
+      "category": "Testing"
+    },
+    {
+      "name": "Project Management",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Agile",
+      "category": "Methodologies"
+    },
+    {
+      "name": "Scrum",
+      "category": "Methodologies"
+    },
+    {
+      "name": "Kanban",
+      "category": "Methodologies"
+    },
+    {
+      "name": "Waterfall",
+      "category": "Methodologies"
+    },
+    {
+      "name": "SDLC",
+      "category": "Methodologies"
+    },
+    {
+      "name": "Leadership",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Communication",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Teamwork",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Problem Solving",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Critical Thinking",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Time Management",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Collaboration",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Adaptability",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Creativity",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Conflict Resolution",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Decision Making",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Networking",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Negotiation",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Presentation Skills",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Public Speaking",
+      "category": "Soft Skills"
+    },
+    {
+      "name": "Technical Writing",
+      "category": "Communication"
+    },
+    {
+      "name": "Documentation",
+      "category": "Communication"
+    },
+    {
+      "name": "Business Analysis",
+      "category": "Business"
+    },
+    {
+      "name": "Product Management",
+      "category": "Business"
+    },
+    {
+      "name": "Market Research",
+      "category": "Business"
+    },
+    {
+      "name": "SEO",
+      "category": "Marketing"
+    },
+    {
+      "name": "Digital Marketing",
+      "category": "Marketing"
+    },
+    {
+      "name": "Content Marketing",
+      "category": "Marketing"
+    },
+    {
+      "name": "Social Media Marketing",
+      "category": "Marketing"
+    },
+    {
+      "name": "Email Marketing",
+      "category": "Marketing"
+    },
+    {
+      "name": "CRM",
+      "category": "Business"
+    },
+    {
+      "name": "Excel",
+      "category": "Tools"
+    },
+    {
+      "name": "Google Sheets",
+      "category": "Tools"
+    },
+    {
+      "name": "Power BI",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Tableau",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Google Analytics",
+      "category": "Marketing"
+    },
+    {
+      "name": "Financial Analysis",
+      "category": "Business"
+    },
+    {
+      "name": "Budgeting",
+      "category": "Business"
+    },
+    {
+      "name": "Forecasting",
+      "category": "Business"
+    },
+    {
+      "name": "Data Mining",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Statistical Analysis",
+      "category": "Data & AI"
+    },
+    {
+      "name": "Cybersecurity",
+      "category": "Security"
+    },
+    {
+      "name": "Penetration Testing",
+      "category": "Security"
+    },
+    {
+      "name": "Network Security",
+      "category": "Security"
+    },
+    {
+      "name": "Ethical Hacking",
+      "category": "Security"
+    },
+    {
+      "name": "Cryptography",
+      "category": "Security"
+    },
+    {
+      "name": "Firewall",
+      "category": "Security"
+    },
+    {
+      "name": "VPN",
+      "category": "Security"
+    },
+    {
+      "name": "Blockchain",
+      "category": "Emerging Technologies"
+    },
+    {
+      "name": "AR/VR",
+      "category": "Emerging Technologies"
+    },
+    {
+      "name": "IoT",
+      "category": "Emerging Technologies"
+    },
+    {
+      "name": "Robotics",
+      "category": "Emerging Technologies"
+    },
+    {
+      "name": "3D Printing",
+      "category": "Emerging Technologies"
+    },
+    {
+      "name": "Microservices",
+      "category": "Architecture"
+    },
+    {
+      "name": "Serverless",
+      "category": "Architecture"
+    },
+    {
+      "name": "API Design",
+      "category": "Architecture"
+    },
+    {
+      "name": "System Design",
+      "category": "Architecture"
+    },
+    {
+      "name": "Database Design",
+      "category": "Architecture"
+    },
+    {
+      "name": "Mobile Development",
+      "category": "Mobile"
+    },
+    {
+      "name": "iOS Development",
+      "category": "Mobile"
+    },
+    {
+      "name": "Android Development",
+      "category": "Mobile"
+    },
+    {
+      "name": "React Native",
+      "category": "Mobile"
+    },
+    {
+      "name": "Flutter",
+      "category": "Mobile"
+    },
+    {
+      "name": "Xamarin",
+      "category": "Mobile"
+    },
+    {
+      "name": "Game Development",
+      "category": "Other"
+    },
+    {
+      "name": "Unity",
+      "category": "Other"
+    },
+    {
+      "name": "Unreal Engine",
+      "category": "Other"
+    }
+  ]
+} 
