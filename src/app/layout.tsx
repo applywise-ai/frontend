@@ -51,9 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased ${
-          isDashboard ? '' : 'bg-gray-900 text-white'
-        } min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-50 min-h-screen flex flex-col`}
       >
         <Navbar isLoading={layoutLoading} />
         <main className={`${isAuthPage ? '' : 'pt-16'} flex-grow`}>

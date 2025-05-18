@@ -5,7 +5,8 @@ export const DASHBOARD_PAGES = [
   '/jobs',
   '/saved-jobs',
   '/profile',
-  '/settings'
+  '/settings',
+  '/for-you'
 ];
 
 /**

@@ -19,6 +19,10 @@ export interface Job {
   responsibilities?: string[];
   requirements?: string[];
   jobUrl?: string;
+  matchPercentage?: number; // For personalized recommendations
+  tags?: string[]; // Tags for job categorization
+  shortResponsibilities?: string; // Concise summary of responsibilities
+  shortQualifications?: string; // Concise summary of qualifications
 }
 
 /**
