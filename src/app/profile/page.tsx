@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { UserProfile, FieldName } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
@@ -82,7 +82,7 @@ export default function ProfilePage() {
   };
   
   // Map of section IDs to refs
-  const sectionRefs = {
+  const sectionRefs = useMemo(() => ({
     personal: personalRef,
     social: socialRef,
     education: educationRef,
@@ -93,7 +93,7 @@ export default function ProfilePage() {
     demographics: demographicsRef,
     account: accountRef,
     resume: resumeRef,
-  };
+  }), []);
   
   // Function to scroll to a section
   const scrollToSection = (sectionId: string) => {

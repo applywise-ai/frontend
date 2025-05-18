@@ -361,6 +361,7 @@ export default function Dashboard() {
                     isSelected={selectedJob?.id === job.id}
                     isAnySelected={!!selectedJob}
                     onViewDetails={() => handleViewDetails(job)}
+                    id={job.id}
                   />
                 ))
               ) : (

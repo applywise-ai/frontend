@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, Award, BadgeCheck, Globe, Zap, Eye } from 'lucide-react';
 import JobCardSkeleton from './loading/JobCardSkeleton';
+import { useRouter } from 'next/navigation';
 
 interface JobCardProps {
   title: string;
@@ -23,6 +24,7 @@ interface JobCardProps {
   isSaved?: boolean;
   onUnsave?: () => void;
   isLoading?: boolean;
+  id?: number | string;
 }
 
 export default function JobCard({
@@ -43,14 +45,33 @@ export default function JobCard({
   isAnySelected = false,
   isSaved = false,
   onUnsave,
-  isLoading = false
+  isLoading = false,
+  id
 }: JobCardProps) {
   const [isLocalSaved, setIsLocalSaved] = useState(isSaved);
+  const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
   
   // Update local state when prop changes
   useEffect(() => {
     setIsLocalSaved(isSaved);
   }, [isSaved]);
+  
+  // Check if the viewport is mobile
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint in Tailwind is 1024px
+    };
+    
+    // Initial check
+    checkIsMobile();
+    
+    // Add event listener for resize
+    window.addEventListener('resize', checkIsMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
   
   // If loading, return skeleton
   if (isLoading) {
@@ -72,10 +93,20 @@ export default function JobCard({
     }
   };
 
+  const handleCardClick = () => {
+    if (isMobile && id) {
+      // On mobile, navigate to the job details page
+      router.push(`/jobs/${id}`);
+    } else if (onViewDetails) {
+      // On desktop, open the details panel
+      onViewDetails();
+    }
+  };
+
   return (
     <div 
       className={`bg-white rounded-lg border ${isSelected ? 'border-teal-500 ring-2 ring-teal-200' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow ${showMinimal ? 'p-4' : 'p-6'} cursor-pointer`}
-      onClick={onViewDetails}
+      onClick={handleCardClick}
     >
       <div className="flex items-start space-x-4">
         {/* Company Logo */}
@@ -203,7 +234,11 @@ export default function JobCard({
             <button 
               onClick={(e) => {
                 e.stopPropagation(); // Prevent duplicate click events
-                if (onViewDetails) onViewDetails();
+                if (isMobile && id) {
+                  router.push(`/jobs/${id}`);
+                } else if (onViewDetails) {
+                  onViewDetails();
+                }
               }}
               className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
             >

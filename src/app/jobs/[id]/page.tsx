@@ -180,7 +180,7 @@ export default function JobDetailsPage() {
         {/* Back button */}
         <Link 
           href={referrer}
-          className="flex items-center mb-5 h-10 w-40 text-teal-600 hover:text-teal-800 hover:bg-teal-50 rounded-md transition-colors cursor-pointer"
+          className="flex items-center mb-5 h-10 w-40 text-teal-600 hover:text-teal-800 hover:bg-teal-50 rounded-md transition-colors cursor-pointer mt-4 sm:mt-0"
         >
           <span className="flex items-center">
             <ArrowLeft className="mr-2 h-5 w-5" />
