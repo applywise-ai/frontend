@@ -5,7 +5,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import DashboardFooter from "./components/DashboardFooter";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { isDashboardPage, shouldHideNavbar } from "./utils/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,21 +34,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isAuthPage = ['/login', '/signup'].includes(pathname);
-  const isDashboardPage = pathname === '/dashboard' || pathname?.startsWith('/dashboard/');
+  const isAuthPage = shouldHideNavbar(pathname);
+  const isDashboard = isDashboardPage(pathname);
+  const [layoutLoading, setLayoutLoading] = useState(true);
+
+  // Simulate layout loading
+  useEffect(() => {
+    // Short timeout to simulate initial layout loading
+    const timer = setTimeout(() => {
+      setLayoutLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased ${
-          isDashboardPage ? '' : 'bg-gray-900 text-white'
+          isDashboard ? '' : 'bg-gray-900 text-white'
         } min-h-screen flex flex-col`}
       >
-        <Navbar />
+        <Navbar isLoading={layoutLoading} />
         <main className={`${isAuthPage ? '' : 'pt-16'} flex-grow`}>
           {children}
         </main>
-        <Footer />
+        {isAuthPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
       </body>
     </html>
   );

@@ -4,12 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, DollarSign, MapPin, Briefcase, FilterIcon, X, Globe } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { useRouter, useSearchParams } from 'next/navigation';
+import JobSearchBarSkeleton from './loading/JobSearchBarSkeleton';
 
 interface JobSearchBarProps {
   detailsOpen?: boolean;
+  isLoading?: boolean;
 }
 
-export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps) {
+export default function JobSearchBar({ detailsOpen = false, isLoading = false }: JobSearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -105,7 +107,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
       const params = new URLSearchParams(searchParams.toString());
       if (value !== 'any') params.set('salary', value);
       else params.delete('salary');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     }, 0);
   };
   
@@ -115,7 +117,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
       const params = new URLSearchParams(searchParams.toString());
       if (value !== 'any') params.set('location', value);
       else params.delete('location');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     }, 0);
   };
   
@@ -125,7 +127,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
       const params = new URLSearchParams(searchParams.toString());
       if (value !== 'any') params.set('experience', value);
       else params.delete('experience');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     }, 0);
   };
   
@@ -138,7 +140,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
       const params = new URLSearchParams(searchParams.toString());
       if (newValue !== 'any') params.set('sponsorship', newValue);
       else params.delete('sponsorship');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     }, 0);
   };
   
@@ -150,7 +152,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
     if (searchQuery) params.set('query', searchQuery);
     else params.delete('query');
     
-    router.push(`/dashboard?${params.toString()}`);
+    router.push(`/jobs?${params.toString()}`);
   };
   
   // Handle text input changes with debounce
@@ -168,7 +170,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
       const params = new URLSearchParams(searchParams.toString());
       if (value) params.set('query', value);
       else params.delete('query');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     }, 500); // 500ms debounce time
   };
   
@@ -180,7 +182,7 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
     setExperience('any');
     setSponsorship('any');
     setActiveFilters([]);
-    router.push('/dashboard');
+    router.push('/jobs');
   };
   
   // Remove a specific filter
@@ -189,24 +191,29 @@ export default function JobSearchBar({ detailsOpen = false }: JobSearchBarProps)
       setMinSalary('any');
       const params = new URLSearchParams(searchParams.toString());
       params.delete('salary');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     } else if (locationOptions.some(r => r.label === filter)) {
       setLocation('any');
       const params = new URLSearchParams(searchParams.toString());
       params.delete('location');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     } else if (experienceLevels.some(r => r.label === filter)) {
       setExperience('any');
       const params = new URLSearchParams(searchParams.toString());
       params.delete('experience');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     } else if (filter === 'Provides Visa Sponsorship') {
       setSponsorship('any');
       const params = new URLSearchParams(searchParams.toString());
       params.delete('sponsorship');
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/jobs?${params.toString()}`);
     }
   };
+  
+  // If loading, show skeleton
+  if (isLoading) {
+    return <JobSearchBarSkeleton detailsOpen={detailsOpen} />;
+  }
 
   return (
     <div className="w-full">

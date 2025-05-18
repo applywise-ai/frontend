@@ -38,6 +38,16 @@
   body {
     @apply bg-background text-foreground font-inter;
   }
+  
+  /* Minimize space between content and footer */
+  .min-h-screen {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  footer {
+    margin-top: auto;
+  }
 }
 
 @theme inline {

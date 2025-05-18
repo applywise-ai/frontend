@@ -1,42 +1,25 @@
 'use client';
 
-import { X, DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, BadgeCheck, Globe, Zap, Link, GraduationCap } from 'lucide-react';
+import { X, DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, BadgeCheck, Globe, Zap, Link as LinkIcon, GraduationCap, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
-
-interface Job {
-  id: number;
-  title: string;
-  company: string;
-  logo: string;
-  location: string;
-  salary: string;
-  salaryValue: number;
-  jobType: string;
-  postedDate: string;
-  description: string;
-  isVerified?: boolean;
-  isSponsored?: boolean;
-  providesSponsorship?: boolean;
-  experienceLevel: string;
-}
+import JobDetailsPanelSkeleton from './loading/JobDetailsPanelSkeleton';
+import { Job, experienceLevelMap } from '@/app/types';
 
 interface JobDetailsPanelProps {
   job: Job | null;
   onClose: () => void;
+  isLoading?: boolean;
 }
 
-export default function JobDetailsPanel({ job, onClose }: JobDetailsPanelProps) {
+export default function JobDetailsPanel({ job, onClose, isLoading = false }: JobDetailsPanelProps) {
   const [isSaved, setIsSaved] = useState(false);
+  
+  if (isLoading) {
+    return <JobDetailsPanelSkeleton />;
+  }
   
   if (!job) return null;
   
-  const experienceLevelMap: Record<string, string> = {
-    'entry': 'Entry Level',
-    'mid': 'Mid Level',
-    'senior': 'Senior Level',
-    'executive': 'Executive'
-  };
-
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden h-full flex flex-col">
       {/* Header with close button */}
@@ -71,8 +54,20 @@ export default function JobDetailsPanel({ job, onClose }: JobDetailsPanelProps) 
         <div className="flex space-x-3">
           <button className="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
             <Zap className="mr-2 h-5 w-5" />
-            Apply Now
+            Quick Apply
           </button>
+          
+          <a 
+            href={job.jobUrl || "#"} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            title="View original job posting"
+          >
+            <ExternalLink className="h-5 w-5" />
+            <span className="sr-only">View original job posting</span>
+          </a>
+          
           <button
             onClick={() => setIsSaved(!isSaved)}
             className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
@@ -157,7 +152,7 @@ export default function JobDetailsPanel({ job, onClose }: JobDetailsPanelProps) 
             <div>
               <h4 className="font-medium text-lg">{job.company}</h4>
               <div className="flex items-center space-x-2">
-                <Link className="h-4 w-4 text-teal-600" />
+                <LinkIcon className="h-4 w-4 text-teal-600" />
                 <a href="#" className="text-teal-600 hover:underline text-sm">Company Website</a>
               </div>
             </div>
@@ -172,22 +167,28 @@ export default function JobDetailsPanel({ job, onClose }: JobDetailsPanelProps) 
           <h3 className="font-medium text-gray-900 mb-3">Job Description</h3>
           <div className="prose max-w-none text-gray-600">
             <p>{job.description}</p>
-            <h4>Responsibilities:</h4>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Design and implement new features and functionality</li>
-              <li>Build reusable code and libraries for future use</li>
-              <li>Ensure the technical feasibility of UI/UX designs</li>
-              <li>Optimize applications for maximum speed and scalability</li>
-              <li>Collaborate with other team members and stakeholders</li>
-            </ul>
-            <h4>Requirements:</h4>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Proficient with JavaScript and modern frameworks</li>
-              <li>Experience with responsive design and cross-browser compatibility</li>
-              <li>Strong problem-solving skills and attention to detail</li>
-              <li>Excellent communication and teamwork abilities</li>
-              <li>Bachelor's degree in Computer Science or related field (or equivalent experience)</li>
-            </ul>
+            
+            <div className="mt-8">
+              <h4 className="text-md font-semibold text-gray-900 mb-3">Responsibilities:</h4>
+              <ul className="list-disc pl-5 space-y-2 mt-3">
+                {job.responsibilities && job.responsibilities.length > 0 && (
+                  job.responsibilities.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))
+                )}
+              </ul>
+            </div>
+            
+            <div className="mt-8">
+              <h4 className="text-md font-semibold text-gray-900 mb-3">Requirements:</h4>
+              <ul className="list-disc pl-5 space-y-2 mt-3">
+                {job.requirements && job.requirements.length > 0 && (
+                  job.requirements.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))
+                )}
+              </ul>
+            </div>
           </div>
         </div>
       </div>

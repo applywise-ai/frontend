@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, Award, BadgeCheck, Globe, Zap, Eye } from 'lucide-react';
+import JobCardSkeleton from './loading/JobCardSkeleton';
 
 interface JobCardProps {
   title: string;
@@ -19,6 +20,9 @@ interface JobCardProps {
   onViewDetails?: () => void;
   isSelected?: boolean;
   isAnySelected?: boolean;
+  isSaved?: boolean;
+  onUnsave?: () => void;
+  isLoading?: boolean;
 }
 
 export default function JobCard({
@@ -36,12 +40,37 @@ export default function JobCard({
   compact = false,
   onViewDetails,
   isSelected = false,
-  isAnySelected = false
+  isAnySelected = false,
+  isSaved = false,
+  onUnsave,
+  isLoading = false
 }: JobCardProps) {
-  const [isSaved, setIsSaved] = useState(false);
+  const [isLocalSaved, setIsLocalSaved] = useState(isSaved);
+  
+  // Update local state when prop changes
+  useEffect(() => {
+    setIsLocalSaved(isSaved);
+  }, [isSaved]);
+  
+  // If loading, return skeleton
+  if (isLoading) {
+    return <JobCardSkeleton compact={compact} />;
+  }
   
   // Show minimal data when any job is selected
   const showMinimal = isAnySelected;
+
+  const handleSaveToggle = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    
+    if (isSaved && onUnsave) {
+      // If this is a saved job with an unsave handler, use that
+      onUnsave();
+    } else {
+      // Otherwise, just toggle the local state
+      setIsLocalSaved(!isLocalSaved);
+    }
+  };
 
   return (
     <div 
@@ -78,14 +107,11 @@ export default function JobCard({
             {/* Save Job Button - Only show when not in minimal mode */}
             {!showMinimal && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click event
-                  setIsSaved(!isSaved);
-                }}
-                className="flex-shrink-0 text-gray-400 hover:text-teal-600 transition-colors"
-                aria-label={isSaved ? "Unsave job" : "Save job"}
+                onClick={handleSaveToggle}
+                className="flex-shrink-0 text-gray-400 hover:text-teal-600 transition-colors hidden sm:block"
+                aria-label={isLocalSaved ? "Unsave job" : "Save job"}
               >
-                <Bookmark className={`h-6 w-6 ${isSaved ? 'fill-teal-600 text-teal-600' : 'fill-transparent'}`} />
+                <Bookmark className={`h-6 w-6 ${isLocalSaved ? 'fill-teal-600 text-teal-600' : 'fill-transparent'}`} />
               </button>
             )}
           </div>
