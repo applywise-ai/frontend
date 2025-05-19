@@ -7,19 +7,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { authService } from '@/app/utils/firebase';
 import NavbarSkeleton from './loading/NavbarSkeleton';
 import { isDashboardPage, shouldHideNavbar } from '@/app/utils/navigation';
-import { Dialog, DialogContentWithoutCloseButton, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
-import { Input } from '@/app/components/ui/input';
-import { Textarea } from '@/app/components/ui/textarea';
-import { 
-  Bug, 
-  HelpCircle, 
-  Lightbulb,
-  BookOpen,
-  X,
-  Send,
-  ArrowLeft
-} from 'lucide-react';
+import { HelpCircle, X } from 'lucide-react';
 
 interface NavbarProps {
   isLoading?: boolean;
@@ -30,10 +19,6 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [helpModalOpen, setHelpModalOpen] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [bugReport, setBugReport] = useState({ title: '', description: '' });
-  const [featureSuggestion, setFeatureSuggestion] = useState({ title: '', description: '' });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -119,36 +104,6 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
   const handleLogout = async () => {
     await authService.logout();
     window.location.href = '/';
-  };
-
-  const handleBugReportChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setBugReport(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFeatureSuggestionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFeatureSuggestion(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleBugReportSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Add API call to submit bug report
-    console.log('Bug report submitted:', bugReport);
-    // Reset form and close modal
-    setBugReport({ title: '', description: '' });
-    setActiveSectionId(null);
-    setHelpModalOpen(false);
-  };
-
-  const handleFeatureSuggestionSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Add API call to submit feature suggestion
-    console.log('Feature suggestion submitted:', featureSuggestion);
-    // Reset form and close modal
-    setFeatureSuggestion({ title: '', description: '' });
-    setActiveSectionId(null);
-    setHelpModalOpen(false);
   };
 
   return (
@@ -243,218 +198,11 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                   size="icon" 
                   className="text-gray-700 hover:text-teal-600 transition-colors"
                   onClick={() => {
-                    setHelpModalOpen(true);
-                    setActiveSectionId(null);
+                    router.push('/help');
                   }}
                 >
-                      <HelpCircle className="h-6 w-6" />
-                    </Button>
-
-                <Dialog open={helpModalOpen} onOpenChange={setHelpModalOpen}>
-                  <DialogContentWithoutCloseButton className="w-[95%] max-w-4xl bg-white p-0 rounded-lg max-h-[90vh] overflow-auto">
-                    <div className="border-b border-gray-200 px-6 py-4 flex items-center">
-                      {activeSectionId === null ? (
-                        <>
-                          <div className="w-8"></div> {/* Empty space for alignment */}
-                          <DialogTitle className="text-lg font-medium text-center flex-grow">Help & Support</DialogTitle>
-                        </>
-                      ) : (
-                        <>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-gray-600" 
-                            onClick={() => setActiveSectionId(null)}
-                          >
-                            <ArrowLeft className="h-4 w-4 mr-1" />
-                            Back
-                          </Button>
-                          <DialogTitle className="text-lg font-medium absolute left-1/2 transform -translate-x-1/2">
-                            {activeSectionId === 'bug-report' ? 'Report a Bug' : 'Suggest a Feature'}
-                          </DialogTitle>
-                        </>
-                      )}
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                        className="rounded-full h-8 w-8 p-0 flex items-center justify-center text-gray-500 ml-auto"
-                        onClick={() => setHelpModalOpen(false)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    {activeSectionId === null && (
-                      <div className="px-6 pb-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          {/* Report Bug Card */}
-                          <div 
-                            className="h-[220px] bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group relative flex flex-col"
-                            onClick={() => setActiveSectionId('bug-report')}
-                          >
-                            <div className="p-5 flex flex-col h-full">
-                              <div className="flex items-center mb-3">
-                                <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center mr-3">
-                                  <Bug className="h-6 w-6 text-red-500" />
-                                </div>
-                                <h3 className="text-lg font-medium whitespace-nowrap">Report a Bug</h3>
-                              </div>
-                              <p className="text-sm text-gray-600 flex-grow">
-                                Found something not working? Let us know.
-                              </p>
-                              <div className="mt-auto pt-4 flex justify-end">
-                                <span className="text-sm text-teal-600 group-hover:text-teal-700 group-hover:underline transition-colors flex items-center">
-                                  Report
-                                  <ArrowLeft className="h-4 w-4 ml-1 rotate-180" />
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Help with Features Card */}
-                          <div 
-                            className="h-[220px] bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group relative flex flex-col"
-                            onClick={() => router.push('/help/faq')}
-                          >
-                            <div className="p-5 flex flex-col h-full">
-                              <div className="flex items-center mb-3">
-                                <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mr-3">
-                                  <BookOpen className="h-6 w-6 text-blue-500" />
-                                </div>
-                                <h3 className="text-lg font-medium">Help</h3>
-                              </div>
-                              <p className="text-sm text-gray-600 flex-grow">
-                                Learn how to use all features of ApplyWise.
-                              </p>
-                              <div className="mt-auto pt-4 flex justify-end">
-                                <span className="text-sm text-teal-600 group-hover:text-teal-700 group-hover:underline transition-colors flex items-center">
-                            View FAQ
-                                  <ArrowLeft className="h-4 w-4 ml-1 rotate-180" />
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                      {/* Suggest Feature Card */}
-                          <div 
-                            className="h-[220px] bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group relative flex flex-col"
-                            onClick={() => setActiveSectionId('feature-suggestion')}
-                          >
-                            <div className="p-5 flex flex-col h-full">
-                              <div className="flex items-center mb-3">
-                                <div className="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center mr-3">
-                                  <Lightbulb className="h-6 w-6 text-amber-500" />
-                                </div>
-                                <h3 className="text-lg font-medium">Suggest</h3>
-                              </div>
-                              <p className="text-sm text-gray-600 flex-grow">
-                                Have an idea to make ApplyWise better?
-                              </p>
-                              <div className="mt-auto pt-4 flex justify-end">
-                                <span className="text-sm text-teal-600 group-hover:text-teal-700 group-hover:underline transition-colors flex items-center">
-                            Suggest
-                                  <ArrowLeft className="h-4 w-4 ml-1 rotate-180" />
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSectionId === 'bug-report' && (
-                      <div className="px-6 pb-6">
-                        <form onSubmit={handleBugReportSubmit}>
-                          <div className="space-y-6">
-                            <div>
-                              <label htmlFor="bug-title" className="block text-base font-medium text-gray-700 mb-2">
-                                What&apos;s the issue?
-                              </label>
-                              <Input
-                                id="bug-title"
-                                name="title"
-                                value={bugReport.title}
-                                onChange={handleBugReportChange}
-                                placeholder="Brief description of the problem"
-                                className="text-base shadow-sm"
-                                required
-                              />
-                            </div>
-                            
-                            <div>
-                              <label htmlFor="bug-description" className="block text-base font-medium text-gray-700 mb-2">
-                                Details
-                              </label>
-                              <Textarea
-                                id="bug-description"
-                                name="description"
-                                value={bugReport.description}
-                                onChange={handleBugReportChange}
-                                placeholder="Please provide details about what happened and how to reproduce the issue"
-                                className="text-base shadow-sm"
-                                rows={5}
-                                required
-                              />
-                            </div>
-                            
-                            <div className="flex justify-end pt-2">
-                              <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 text-base rounded-md">
-                                <Send className="h-5 w-5 mr-2" />
-                                Submit Report
-                              </Button>
-                            </div>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-
-                    {activeSectionId === 'feature-suggestion' && (
-                      <div className="px-6 pb-6">
-                        <form onSubmit={handleFeatureSuggestionSubmit}>
-                          <div className="space-y-6">
-                            <div>
-                              <label htmlFor="feature-title" className="block text-base font-medium text-gray-700 mb-2">
-                                Feature Idea
-                              </label>
-                              <Input
-                                id="feature-title"
-                                name="title"
-                                value={featureSuggestion.title}
-                                onChange={handleFeatureSuggestionChange}
-                                placeholder="Brief description of your idea"
-                                className="text-base shadow-sm"
-                                required
-                              />
-                            </div>
-                            
-                            <div>
-                              <label htmlFor="feature-description" className="block text-base font-medium text-gray-700 mb-2">
-                                Details
-                              </label>
-                              <Textarea
-                                id="feature-description"
-                                name="description"
-                                value={featureSuggestion.description}
-                                onChange={handleFeatureSuggestionChange}
-                                placeholder="Please provide more details about this feature and how it would help you"
-                                className="text-base shadow-sm"
-                                rows={5}
-                                required
-                              />
-                            </div>
-                            
-                            <div className="flex justify-end pt-2">
-                              <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 text-base rounded-md">
-                                <Send className="h-5 w-5 mr-2" />
-                                Submit Suggestion
-                          </Button>
-                            </div>
-                          </div>
-                        </form>
-                    </div>
-                    )}
-                  </DialogContentWithoutCloseButton>
-                </Dialog>
+                  <HelpCircle className="h-6 w-6" />
+                </Button>
                 
                 <div className="relative" ref={dropdownRef}>
                   <button 

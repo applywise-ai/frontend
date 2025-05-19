@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, Award, BadgeCheck, Globe, Zap, Eye } from 'lucide-react';
+import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, Award, BadgeCheck, Globe, Eye } from 'lucide-react';
 import JobCardSkeleton from './loading/JobCardSkeleton';
 import { useRouter } from 'next/navigation';
+import AnimatedApplyButton from './AnimatedApplyButton';
 
 interface JobCardProps {
   title: string;
@@ -220,16 +221,15 @@ export default function JobCard({
         {!isAnySelected && (
           <div className="flex-shrink-0 ml-2 flex flex-col space-y-2">
             {/* Apply Button */}
-            <button 
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent card click event
-              }}
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-            >
-              <Zap className="mr-1.5 h-4 w-4" />
-              Apply
-            </button>
-            
+            <div onClick={(e) => e.stopPropagation()}>
+              <AnimatedApplyButton 
+                onClick={() => {
+                  // Handle apply click
+                }}
+                size="sm"
+                className="w-40"
+              />
+            </div>
             {/* View Details Button */}
             <button 
               onClick={(e) => {
@@ -240,7 +240,7 @@ export default function JobCard({
                   onViewDetails();
                 }
               }}
-              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 w-40"
             >
               <Eye className="mr-1.5 h-4 w-4" />
               View

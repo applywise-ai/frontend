@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, BadgeCheck, Globe, Zap, Link as LinkIcon, GraduationCap, ExternalLink, ArrowLeft } from 'lucide-react';
+import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, BadgeCheck, Globe, Link as LinkIcon, GraduationCap, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Job, experienceLevelMap } from '@/app/types';
 import Link from 'next/link';
+import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 
 export default function JobDetailsPage() {
   const params = useParams();
@@ -228,12 +229,13 @@ export default function JobDetailsPage() {
                 </div>
               </div>
               
-              {/* Action Buttons for large screens */}
+              {/* Desktop Apply and Save Buttons */}
               <div className="hidden lg:flex lg:items-center lg:space-x-3 lg:mt-0 lg:ml-4">
-                <button className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                  <Zap className="mr-2 h-4 w-4" />
-                  Quick Apply
-                </button>
+                <AnimatedApplyButton 
+                  onClick={() => {
+                    // Handle quick apply
+                  }}
+                />
                 
                 <a 
                   href={job.jobUrl || "#"} 
@@ -259,13 +261,15 @@ export default function JobDetailsPage() {
           
           {/* Content */}
           <div className="p-6">
-            {/* Apply and Save Buttons - Mobile only */}
+            {/* Mobile Apply and Save Buttons */}
             <div className="block lg:hidden mb-8">
               <div className="flex space-x-3">
-                <button className="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                  <Zap className="mr-2 h-5 w-5" />
-                  Quick Apply
-                </button>
+                <AnimatedApplyButton 
+                  onClick={() => {
+                    // Handle quick apply
+                  }}
+                  className="flex-1"
+                />
                 
                 <a 
                   href={job.jobUrl || "#"} 

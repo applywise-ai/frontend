@@ -38,8 +38,6 @@ export default function SettingsPage() {
   // Notification preferences
   const [newJobMatches, setNewJobMatches] = useState(true);
   const [autoApplyWithoutReview, setAutoApplyWithoutReview] = useState(false);
-  const [autoApplyOffline, setAutoApplyOffline] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
   
   // Dialog states
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
@@ -61,7 +59,7 @@ export default function SettingsPage() {
         
         // Here you would also fetch user preferences from your database
         // For now we'll use mock data
-        setIsSubscribed(false); // Mock data - replace with actual subscription status
+        // setIsSubscribed(false); // Mock data - replace with actual subscription status
         
         setLoading(false);
       } catch (error) {
@@ -263,6 +261,7 @@ export default function SettingsPage() {
               />
             </div>
             
+            {/* Auto apply offline section commented out
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center">
@@ -292,6 +291,7 @@ export default function SettingsPage() {
                 </AlertDescription>
               </Alert>
             )}
+            */}
           </CardContent>
         </Card>
         

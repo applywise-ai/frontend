@@ -1,9 +1,10 @@
 'use client';
 
-import { X, DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, BadgeCheck, Globe, Zap, Link as LinkIcon, GraduationCap, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { Building, BadgeCheck, X, ExternalLink, Bookmark, DollarSign, MapPin, Briefcase, Clock, Globe, GraduationCap, Link as LinkIcon } from 'lucide-react';
 import JobDetailsPanelSkeleton from './loading/JobDetailsPanelSkeleton';
 import { Job, experienceLevelMap } from '@/app/types';
+import AnimatedApplyButton from './AnimatedApplyButton';
 
 interface JobDetailsPanelProps {
   job: Job | null;
@@ -52,10 +53,12 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false }: Job
       <div className="p-6 space-y-6 overflow-y-auto flex-grow">
         {/* Apply and Save Buttons */}
         <div className="flex space-x-3">
-          <button className="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-            <Zap className="mr-2 h-5 w-5" />
-            Quick Apply
-          </button>
+          <AnimatedApplyButton 
+            onClick={() => {
+              // Handle quick apply
+            }}
+            className="flex-1"
+          />
           
           <a 
             href={job.jobUrl || "#"} 

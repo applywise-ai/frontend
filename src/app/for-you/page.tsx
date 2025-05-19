@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Buildi
 import { motion, AnimatePresence } from 'framer-motion';
 import { Job } from '@/app/types';
 import { useRouter } from 'next/navigation';
+import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 
 export default function ForYou() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -387,14 +388,12 @@ export default function ForYou() {
                                 >
                                   View Full Details
                                 </button>
-                                <a
-                                  href={job.jobUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 px-4 rounded-lg font-medium transition-colors text-center"
-                                >
-                                  Apply Now
-                                </a>
+                                <AnimatedApplyButton 
+                                  onClick={() => {
+                                    // Handle apply click
+                                  }}
+                                  className="flex-1"
+                                />
                               </div>
                             </div>
                           </motion.div>
