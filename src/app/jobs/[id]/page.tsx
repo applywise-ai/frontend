@@ -176,12 +176,12 @@ export default function JobDetailsPage() {
   }
   
   return (
-    <div className="bg-gray-50 min-h-screen pb-16">
+    <div className="bg-gray-50 min-h-screen pb-8">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back button */}
         <Link 
           href={referrer}
-          className="flex items-center mb-5 h-10 w-40 text-teal-600 hover:text-teal-800 hover:bg-teal-50 rounded-md transition-colors cursor-pointer mt-4 sm:mt-0"
+          className="flex items-center mb-5 h-10 w-40 text-teal-600 hover:text-teal-800 hover:bg-teal-50 rounded-md transition-colors cursor-pointer mt-0"
         >
           <span className="flex items-center">
             <ArrowLeft className="mr-2 h-5 w-5" />
@@ -203,9 +203,9 @@ export default function JobDetailsPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+                  <h1 className="text-lg sm:text-2xl font-bold text-gray-900">{job.title}</h1>
                   <div className="flex items-center mt-1">
-                    <span className="text-lg text-gray-600">{job.company}</span>
+                    <span className="text-base sm:text-lg text-gray-600">{job.company}</span>
                     {job.isVerified && <BadgeCheck className="ml-1 h-5 w-5 text-teal-500" />}
                   </div>
                   <div className="mt-2 flex flex-wrap gap-y-2 gap-x-4">
@@ -231,7 +231,7 @@ export default function JobDetailsPage() {
               
               {/* Desktop Apply and Save Buttons */}
               <div className="hidden lg:flex lg:items-center lg:space-x-3 lg:mt-0 lg:ml-4">
-                <AnimatedApplyButton 
+                <AnimatedApplyButton
                   onClick={() => {
                     // Handle quick apply
                   }}
@@ -241,19 +241,19 @@ export default function JobDetailsPage() {
                   href={job.jobUrl || "#"} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-3 py-2.5 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  className="inline-flex items-center justify-center px-4 py-3.5 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                   title="View original job posting"
                 >
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-5 w-5" />
                   <span className="sr-only">View original job posting</span>
                 </a>
                 
                 <button
                   onClick={handleSaveToggle}
-                  className="inline-flex items-center justify-center px-3 py-2.5 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  className="inline-flex items-center justify-center px-4 py-3.5 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                   aria-label={isSaved ? "Unsave job" : "Save job"}
                 >
-                  <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
+                  <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
                 </button>
               </div>
             </div>
@@ -355,7 +355,7 @@ export default function JobDetailsPage() {
             
             {/* Company Section */}
             <div className="mb-8">
-              <h3 className="font-medium text-gray-900 text-lg mb-4">Company Information</h3>
+              <h3 className="font-medium text-gray-900 text-base sm:text-lg mb-4">Company Information</h3>
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-200">
                   {job.logo ? (
@@ -365,10 +365,10 @@ export default function JobDetailsPage() {
                   )}
                 </div>
                 <div>
-                  <h4 className="font-medium text-lg">{job.company}</h4>
+                  <h4 className="font-medium text-base sm:text-lg">{job.company}</h4>
                   <div className="flex items-center space-x-2">
                     <LinkIcon className="h-4 w-4 text-teal-600" />
-                    <a href="#" className="text-teal-600 hover:underline text-sm">Company Website</a>
+                    <a href="#" className="text-teal-600 hover:underline text-xs sm:text-sm">Company Website</a>
                   </div>
                 </div>
               </div>
@@ -379,12 +379,12 @@ export default function JobDetailsPage() {
             
             {/* Description */}
             <div className="mb-0">
-              <h3 className="font-medium text-gray-900 text-lg mb-4">Job Description</h3>
+              <h3 className="font-medium text-gray-900 text-base sm:text-lg mb-4">Job Description</h3>
               <div className="prose max-w-none text-gray-600">
                 <p>{job.description}</p>
                 
                 <div className="mt-8">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">Responsibilities:</h4>
+                  <h4 className="text-sm sm:text-md font-semibold text-gray-900 mb-3">Responsibilities:</h4>
                   <ul className="list-disc pl-5 space-y-2 mt-3">
                     {job.responsibilities && job.responsibilities.length > 0 && (
                       job.responsibilities.map((item, index) => (
@@ -395,7 +395,7 @@ export default function JobDetailsPage() {
                 </div>
                 
                 <div className="mt-8">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">Requirements:</h4>
+                  <h4 className="text-sm sm:text-md font-semibold text-gray-900 mb-3">Requirements:</h4>
                   <ul className="list-disc pl-5 space-y-2 mt-3">
                     {job.requirements && job.requirements.length > 0 && (
                       job.requirements.map((item, index) => (

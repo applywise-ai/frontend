@@ -74,7 +74,7 @@ export default function Footer() {
 
           {/* For Employers */}
           <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4">For Employers</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-4">For Employers</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">

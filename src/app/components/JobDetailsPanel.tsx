@@ -143,7 +143,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false }: Job
         
         {/* Company Section */}
         <div>
-          <h3 className="font-medium text-gray-900 mb-3">Company Information</h3>
+          <h3 className="font-medium text-gray-900 mb-3 text-base sm:text-lg">Company Information</h3>
           <div className="flex items-center space-x-4 mb-4">
             <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-200">
               {job.logo ? (
@@ -153,7 +153,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false }: Job
               )}
             </div>
             <div>
-              <h4 className="font-medium text-lg">{job.company}</h4>
+              <h4 className="font-medium text-base sm:text-lg">{job.company}</h4>
               <div className="flex items-center space-x-2">
                 <LinkIcon className="h-4 w-4 text-teal-600" />
                 <a href="#" className="text-teal-600 hover:underline text-sm">Company Website</a>

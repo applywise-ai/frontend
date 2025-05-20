@@ -12,7 +12,6 @@ import {
   Briefcase, 
   Globe, 
   Users, 
-  Key,
   FileText,
   Building
 } from 'lucide-react';
@@ -34,8 +33,6 @@ import SkillsForm from './components/SkillsForm';
 import SkillsDisplay from './components/SkillsDisplay';
 import JobPreferencesForm from './components/JobPreferencesForm';
 import JobPreferencesDisplay from './components/JobPreferencesDisplay';
-import AccountForm from './components/AccountForm';
-import AccountDisplay from './components/AccountDisplay';
 import ProfileSectionResume from './components/ProfileSectionResume';
 
 // Add type declaration to avoid TypeScript errors
@@ -66,7 +63,6 @@ export default function ProfilePage() {
   const preferencesRef = useRef<HTMLDivElement>(null);
   const eligibilityRef = useRef<HTMLDivElement>(null);
   const demographicsRef = useRef<HTMLDivElement>(null);
-  const accountRef = useRef<HTMLDivElement>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
   
   // Ref to track user scrolling state
@@ -91,7 +87,6 @@ export default function ProfilePage() {
     preferences: preferencesRef,
     eligibility: eligibilityRef,
     demographics: demographicsRef,
-    account: accountRef,
     resume: resumeRef,
   }), []);
   
@@ -408,18 +403,6 @@ export default function ProfilePage() {
                     <Users className="mr-2 h-4 w-4" />
                     Demographics
                   </Button>
-                  <Button
-                    variant={activeSection === 'account' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'account' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('account')}
-                  >
-                    <Key className="mr-2 h-4 w-4" />
-                    Account
-                  </Button>
                 </nav>
               </CardContent>
             </Card>
@@ -524,18 +507,6 @@ export default function ProfilePage() {
                   icon={<Users size={24} />}
                   displayContent={<DemographicsDisplay profile={profile} />}
                   editContent={<DemographicsForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
-                />
-              </div>
-
-              <div ref={accountRef} id="account">
-                <ProfileSection
-                  id="account"
-                  title="Account"
-                  icon={<Key size={24} />}
-                  displayContent={<AccountDisplay profile={profile} />}
-                  editContent={<AccountForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />

@@ -73,8 +73,8 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 md:p-8">
-      <div className="w-full max-w-md space-y-6">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 bg-gray-900">
+      <div className="w-full max-w-2xl space-y-8">
         <div className="flex flex-col items-center justify-center space-y-2">
           <Link href="/">
             <Image 
@@ -85,10 +85,10 @@ export default function Login() {
               className="mb-2 hover:opacity-80 transition-opacity"
             />
           </Link>
-          <h1 className="text-center text-3xl font-bold">Log in to your account</h1>
-          <p className="text-center text-sm text-gray-400">
+          <h1 className="text-center text-3xl font-bold text-white">Log in to your account</h1>
+          <p className="text-center text-sm text-white/70">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-blue-500 hover:underline">
+            <Link href="/signup" className="text-white underline hover:text-blue-300">
               Sign up
             </Link>
           </p>
@@ -102,7 +102,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-white">Email</Label>
             <Input
               id="email"
               name="email"
@@ -110,15 +110,15 @@ export default function Login() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="bg-white border-gray-300 text-gray-900"
+              className="bg-white border-gray-300 text-[#0a2540] placeholder-gray-500"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="text-xs text-blue-500 hover:underline">
+              <Label htmlFor="password" className="text-white">Password</Label>
+              <Link href="/forgot-password" className="text-xs text-white underline hover:text-blue-300">
                 Forgot password?
               </Link>
             </div>
@@ -129,28 +129,28 @@ export default function Login() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="bg-white border-gray-300 text-gray-900"
+              className="bg-white border-gray-300 text-[#0a2540] placeholder-gray-500"
               disabled={loading}
             />
           </div>
 
           <Button 
             type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-white text-gray-900 hover:bg-blue-200 font-bold"
             disabled={loading}
           >
             {loading ? 'Logging in...' : 'Log in'}
           </Button>
 
           <div className="relative flex items-center justify-center">
-            <Separator className="bg-gray-700" />
-            <span className="absolute bg-gray-900 px-2 text-sm text-gray-400">or</span>
+            <Separator className="bg-white/20" />
+            <span className="absolute bg-gray-900 px-2 text-sm text-white/70">or</span>
           </div>
 
           <Button 
             type="button" 
             variant="social" 
-            className="w-full"
+            className="w-full bg-white text-[#0a2540] border border-white hover:bg-blue-100"
             onClick={handleGoogleSignIn}
             disabled={loading}
           >

@@ -115,7 +115,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
       isCurrentDashboardPage ? 'border-b border-gray-200 shadow-sm' : 
       scrolled ? (isCurrentDashboardPage || isLoggedIn ? 'border-b border-gray-200 shadow-md' : 'border-b border-gray-700 shadow-lg') : ''
     }`}>
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto px-4 lg:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
@@ -123,9 +123,9 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                 <Image
                   src={isLoggedIn ? "/images/logo_dark_transparent.png" : "/images/logo_transparent.png"}
                   alt="Logo"
-                  width={180}
+                  width={160}
                   height={40}
-                  className="object-contain"
+                  className="object-contain pt-1"
                   priority
                 />
               </Link>
@@ -133,7 +133,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
             
             {/* Dashboard navigation links - only show when logged in */}
             {isLoggedIn && (
-              <div className="hidden md:flex items-center ml-4 space-x-6">
+              <div className="hidden md:flex items-center ml-4 space-x-2 lg:space-x-6">
                 {/* Jobs link */}
                 <Link 
                   href="/jobs" 
@@ -189,7 +189,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
             )}
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {isLoggedIn ? (
               <>
                 {/* Help/Report Modal */}
@@ -203,25 +203,57 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                 >
                   <HelpCircle className="h-6 w-6" />
                 </Button>
+
+                {/* Mobile menu trigger - moved next to help button */}
+                <div className="md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="text-gray-700 hover:text-teal-600 transition-colors"
+                  >
+                    {mobileMenuOpen ? (
+                      <X className="h-6 w-6" />
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                      </svg>
+                    )}
+                  </Button>
+                </div>
                 
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center h-16 px-2 hover:opacity-80 transition-colors focus:outline-none"
+                    className="hidden md:flex items-center h-16 px-2 focus:outline-none group"
                   >
-                    <div className="h-10 w-10 bg-white rounded flex items-center justify-center text-primary shadow-sm border border-gray-300">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-900">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                      </svg>
+                    {/* Modern initial avatar, smaller and dark blue */}
+                    <div className="h-8 w-8 rounded-full bg-[#1e293b] flex items-center justify-center border-2 border-white shadow mr-2 select-none">
+                      <span className="text-white font-bold text-base">K</span>
                     </div>
+                    {/* User name, smaller */}
+                    <span className="font-semibold text-gray-800 text-base mr-0.5">Kaiz</span>
+                    {/* Chevron arrow, smaller */}
+                    <svg
+                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
                   
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                  <div
+                    className={`absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl z-20 border border-gray-100 transition-all duration-200 origin-top-right transform ${dropdownOpen ? 'opacity-100 scale-100 pointer-events-auto translate-y-0' : 'opacity-0 scale-95 pointer-events-none -translate-y-2'}`}
+                    style={{ minWidth: '12rem' }}
+                  >
+                    <div className="py-2">
                       {/* Dashboard page links in dropdown */}
                       <Link 
                         href="/settings"
-                        className={`flex items-center px-4 py-2 text-sm hover:bg-gray-100 ${
+                        className={`flex items-center px-5 py-2 text-sm rounded-lg transition-colors duration-150 hover:bg-gray-50 active:bg-gray-100 focus:bg-gray-100 ${
                           pathname === '/settings' || pathname?.startsWith('/settings/') ? 'text-teal-700 font-bold' : 'text-gray-700'
                         }`}
                         onClick={() => setDropdownOpen(false)}
@@ -237,7 +269,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                           setDropdownOpen(false);
                           handleLogout();
                         }}
-                        className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center w-full text-left px-5 py-2 text-sm rounded-lg text-gray-700 transition-colors duration-150 hover:bg-gray-50 active:bg-gray-100 focus:bg-gray-100"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-3">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
@@ -245,7 +277,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                         Logout
                       </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </>
             ) : (
@@ -275,20 +307,6 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
       {/* Mobile menu (hidden on desktop) */}
       {isLoggedIn && (
         <div className="md:hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            )}
-          </Button>
-          
           {mobileMenuOpen && (
             <div ref={mobileMenuRef} className="absolute top-16 left-0 w-full bg-white shadow-md z-40 border-t border-gray-200">
               <div className="px-4 py-2">

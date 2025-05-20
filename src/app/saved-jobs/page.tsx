@@ -222,7 +222,7 @@ export default function SavedJobs() {
         <div className="flex flex-col">
           {/* Header */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <h1 className="text-2xl font-bold mb-2 text-gray-900">Saved Jobs</h1>
+            <h1 className="text-lg sm:text-2xl font-bold mb-2 text-gray-900">Saved Jobs</h1>
             <p className="text-gray-600">Jobs you&apos;ve saved for later</p>
           </div>
           
@@ -286,9 +286,9 @@ export default function SavedJobs() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">{job.title}</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{job.title}</h3>
                           <div className="flex items-center space-x-2">
-                            <p className="text-md font-medium text-gray-700">{job.company}</p>
+                            <p className="text-sm sm:text-md font-medium text-gray-700">{job.company}</p>
                             {job.isVerified && (
                               <span className="inline-flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-teal-500">
@@ -395,7 +395,7 @@ export default function SavedJobs() {
               ))
             ) : (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No saved jobs</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No saved jobs</h3>
                 <p className="text-gray-500 mb-6">You haven&apos;t saved any jobs yet. Browse jobs and click the bookmark icon to save them for later.</p>
                 <button 
                   onClick={() => router.push('/jobs')}

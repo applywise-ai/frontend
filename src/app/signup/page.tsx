@@ -78,8 +78,8 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 md:p-8">
-      <div className="w-full max-w-md space-y-6">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 bg-gray-900">
+      <div className="w-full max-w-2xl space-y-8">
         <div className="flex flex-col items-center justify-center space-y-2">
           <Link href="/">
             <Image 
@@ -90,10 +90,10 @@ export default function SignUp() {
               className="mb-2 hover:opacity-80 transition-opacity"
             />
           </Link>
-          <h1 className="text-center text-3xl font-bold">Create your account</h1>
-          <p className="text-center text-sm text-gray-400">
+          <h1 className="text-center text-3xl font-bold text-white">Create your account</h1>
+          <p className="text-center text-sm text-white/70">
             Already have an account?{' '}
-            <Link href="/login" className="text-blue-500 hover:underline">
+            <Link href="/login" className="text-white underline hover:text-blue-300">
               Log in
             </Link>
           </p>
@@ -106,9 +106,9 @@ export default function SignUp() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="firstName" className="text-white">First name</Label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -116,12 +116,12 @@ export default function SignUp() {
                 required
                 value={formData.firstName}
                 onChange={handleChange}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-white border-gray-300 text-[#0a2540] placeholder-gray-500"
                 disabled={loading}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="lastName" className="text-white">Last name</Label>
               <Input
                 id="lastName"
                 name="lastName"
@@ -129,14 +129,14 @@ export default function SignUp() {
                 required
                 value={formData.lastName}
                 onChange={handleChange}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-white border-gray-300 text-[#0a2540] placeholder-gray-500"
                 disabled={loading}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-white">Email</Label>
             <Input
               id="email"
               name="email"
@@ -144,13 +144,13 @@ export default function SignUp() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="bg-white border-gray-300 text-gray-900"
+              className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-white">Password</Label>
             <Input
               id="password"
               name="password"
@@ -158,28 +158,28 @@ export default function SignUp() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="bg-white border-gray-300 text-gray-900"
+              className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
               disabled={loading}
             />
           </div>
 
           <Button 
             type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-white text-gray-900 hover:bg-blue-200 font-bold"
             disabled={loading}
           >
             {loading ? 'Signing up...' : 'Sign up'}
           </Button>
 
           <div className="relative flex items-center justify-center">
-            <Separator className="bg-gray-700" />
-            <span className="absolute bg-gray-900 px-2 text-sm text-gray-400">or</span>
+            <Separator className="bg-white/20" />
+            <span className="absolute bg-gray-900 px-2 text-sm text-white/70">or</span>
           </div>
 
           <Button 
             type="button" 
             variant="social" 
-            className="w-full"
+            className="w-full bg-white text-[#0a2540] border border-white hover:bg-blue-100"
             onClick={handleGoogleSignUp}
             disabled={loading}
           >
@@ -205,13 +205,13 @@ export default function SignUp() {
           </Button>
         </form>
 
-        <p className="text-center text-xs text-gray-400">
+        <p className="text-center text-xs text-white/70">
           By signing up, you agree to our{' '}
-          <Link href="/terms" className="text-blue-500 hover:underline">
+          <Link href="/terms" className="text-white underline hover:text-blue-300">
             Terms of Service
           </Link>{' '}
           and{' '}
-          <Link href="/privacy" className="text-blue-500 hover:underline">
+          <Link href="/privacy" className="text-white underline hover:text-blue-300">
             Privacy Policy
           </Link>
         </p>

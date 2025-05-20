@@ -26,12 +26,14 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [accountError, setAccountError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   
   // Form states
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
+  const [accountCurrentPassword, setAccountCurrentPassword] = useState('');
+  const [passwordCurrentPassword, setPasswordCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -75,30 +77,30 @@ export default function SettingsPage() {
     if (!user) return;
     
     try {
-      setError('');
+      setAccountError('');
       setSuccess('');
       
       if (!email) {
-        setError('Email cannot be empty');
+        setAccountError('Email cannot be empty');
         return;
       }
       
-      if (!currentPassword) {
-        setError('Please enter your current password to confirm this change');
+      if (!accountCurrentPassword) {
+        setAccountError('Please enter your current password to confirm this change');
         return;
       }
       
       // Re-authenticate user first
-      const reAuthResult = await authService.reauthenticate(currentPassword);
+      const reAuthResult = await authService.reauthenticate(accountCurrentPassword);
       if ('error' in reAuthResult) {
-        setError(reAuthResult.message);
+        setAccountError(reAuthResult.message);
         return;
       }
       
       // Update email
       const updateResult = await authService.updateEmail(email);
       if (updateResult && 'error' in updateResult) {
-        setError(updateResult.message);
+        setAccountError(updateResult.message);
         return;
       }
       
@@ -106,9 +108,9 @@ export default function SettingsPage() {
       // For now, we're just handling the Firebase auth update
       
       setSuccess('Account information updated successfully');
-      setCurrentPassword('');
+      setAccountCurrentPassword('');
     } catch (err) {
-      setError('Failed to update account information. Please try again.');
+      setAccountError('Failed to update account information. Please try again.');
       console.error('Error updating account info:', err);
     }
   };
@@ -117,66 +119,66 @@ export default function SettingsPage() {
     if (!user) return;
     
     try {
-      setError('');
+      setPasswordError('');
       setSuccess('');
       
-      if (!currentPassword) {
-        setError('Current password is required');
+      if (!passwordCurrentPassword) {
+        setPasswordError('Current password is required');
         return;
       }
       
       if (!newPassword) {
-        setError('New password cannot be empty');
+        setPasswordError('New password cannot be empty');
         return;
       }
       
       if (newPassword !== confirmPassword) {
-        setError('New passwords do not match');
+        setPasswordError('New passwords do not match');
         return;
       }
       
       if (newPassword.length < 6) {
-        setError('New password must be at least 6 characters');
+        setPasswordError('New password must be at least 6 characters');
         return;
       }
       
       // Re-authenticate user first
-      const reAuthResult = await authService.reauthenticate(currentPassword);
+      const reAuthResult = await authService.reauthenticate(passwordCurrentPassword);
       if ('error' in reAuthResult) {
-        setError(reAuthResult.message);
+        setPasswordError(reAuthResult.message);
         return;
       }
       
       // Update password
       const updateResult = await authService.updatePassword(newPassword);
       if (updateResult && 'error' in updateResult) {
-        setError(updateResult.message);
+        setPasswordError(updateResult.message);
         return;
       }
       
       setSuccess('Password updated successfully');
-      setCurrentPassword('');
+      setPasswordCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError('Failed to update password. Please try again.');
+      setPasswordError('Failed to update password. Please try again.');
       console.error('Error updating password:', err);
     }
   };
   
   const handleDeleteAccount = async () => {
     try {
-      setError('');
+      setAccountError('');
       
       if (!deleteAccountPassword) {
-        setError('Please enter your password to confirm account deletion');
+        setAccountError('Please enter your password to confirm account deletion');
         return;
       }
       
       // Re-authenticate user first
       const reAuthResult = await authService.reauthenticate(deleteAccountPassword);
       if ('error' in reAuthResult) {
-        setError(reAuthResult.message);
+        setAccountError(reAuthResult.message);
         setConfirmDeleteDialogOpen(false);
         return;
       }
@@ -184,7 +186,7 @@ export default function SettingsPage() {
       // Delete account
       const deleteResult = await authService.deleteAccount();
       if (deleteResult && 'error' in deleteResult) {
-        setError(deleteResult.message);
+        setAccountError(deleteResult.message);
         setConfirmDeleteDialogOpen(false);
         return;
       }
@@ -192,7 +194,7 @@ export default function SettingsPage() {
       // If successful, redirect to home page
       router.push('/');
     } catch (err) {
-      setError('Failed to delete account. Please try again.');
+      setAccountError('Failed to delete account. Please try again.');
       console.error('Error deleting account:', err);
       setConfirmDeleteDialogOpen(false);
     }
@@ -208,19 +210,11 @@ export default function SettingsPage() {
   
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
       {success && (
         <Alert className="mb-6 border-green-500 bg-green-50">
           <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <AlertTitle className="text-green-500">Success</AlertTitle>
-          <AlertDescription>{success}</AlertDescription>
+          <AlertTitle className="text-base sm:text-green-500">Success</AlertTitle>
+          <AlertDescription className="text-xs sm:text-green-700">{success}</AlertDescription>
         </Alert>
       )}
       
@@ -228,7 +222,7 @@ export default function SettingsPage() {
         {/* Notification Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-base sm:text-2xl">
               <Bell className="mr-2 h-5 w-5" />
               Notification Preferences
             </CardTitle>
@@ -298,13 +292,19 @@ export default function SettingsPage() {
         {/* Account Information */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-base sm:text-2xl">
               <UserIcon className="mr-2 h-5 w-5" />
               Account Information
             </CardTitle>
             <CardDescription>
               Manage your account details
             </CardDescription>
+            {accountError && (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mt-2 text-sm">
+                <AlertCircle className="h-4 w-4 text-red-400" />
+                <span>{accountError}</span>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
@@ -325,8 +325,8 @@ export default function SettingsPage() {
               <Input 
                 id="account-password" 
                 type="password" 
-                value={currentPassword} 
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                value={accountCurrentPassword} 
+                onChange={(e) => setAccountCurrentPassword(e.target.value)}
                 placeholder="Enter current password to confirm changes" 
               />
             </div>
@@ -339,13 +339,19 @@ export default function SettingsPage() {
         {/* Password Security */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-base sm:text-2xl">
               <KeyRound className="mr-2 h-5 w-5" />
               Password
             </CardTitle>
             <CardDescription>
               Update your password
             </CardDescription>
+            {passwordError && (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mt-2 text-sm">
+                <AlertCircle className="h-4 w-4 text-red-400" />
+                <span>{passwordError}</span>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
@@ -353,8 +359,8 @@ export default function SettingsPage() {
               <Input 
                 id="current-password" 
                 type="password" 
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                value={passwordCurrentPassword}
+                onChange={(e) => setPasswordCurrentPassword(e.target.value)}
               />
             </div>
             <div className="space-y-1">
@@ -384,7 +390,7 @@ export default function SettingsPage() {
         {/* Delete Account - At the bottom */}
         <Card className="border-red-100">
           <CardHeader className="border-b border-red-100">
-            <CardTitle className="flex items-center text-red-600">
+            <CardTitle className="flex items-center text-base sm:text-lg text-red-600">
               <Trash2 className="mr-2 h-5 w-5" />
               Delete Account
             </CardTitle>

@@ -252,7 +252,7 @@ export default function ForYou() {
                     {jobs.map((job, index) => (
                       <div 
                         key={job.id} 
-                        className={`w-full flex-shrink-0 ${currentIndex === index ? 'block' : 'hidden'} sm:block`}
+                        className="w-full flex-shrink-0"
                       >
                         <AnimatePresence>
                           <motion.div
@@ -276,7 +276,7 @@ export default function ForYou() {
                             {/* Job Content */}
                             <div className="p-6">
                               {/* Header */}
-                              <div className="flex justify-between">
+                              <div className="flex justify-between items-start">
                                 <div className="flex items-start">
                                   <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 mr-4">
                                     {job.logo ? (
@@ -286,9 +286,9 @@ export default function ForYou() {
                                     )}
                                   </div>
                                   <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">{job.title}</h2>
+                                    <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{job.title}</h2>
                                     <div className="flex items-center">
-                                      <span className="text-lg text-gray-700">{job.company}</span>
+                                      <span className="text-base sm:text-lg text-gray-700">{job.company}</span>
                                       {job.isVerified && (
                                         <BadgeCheck className="ml-1 h-5 w-5 text-teal-500" />
                                       )}
@@ -326,7 +326,7 @@ export default function ForYou() {
                               
                               {/* Description */}
                               <div className="mt-4">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-1">Job Description</h3>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">Job Description</h3>
                                 <p className="text-gray-700">{job.description}</p>
                               </div>
                               
@@ -335,7 +335,7 @@ export default function ForYou() {
                                 {/* Tags */}
                                 {job.tags && job.tags.length > 0 && (
                                   <div>
-                                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Skills & Technologies</h4>
+                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">Skills & Technologies</h4>
                                     <div className="flex flex-wrap gap-2">
                                       {job.tags.map((tag, idx) => (
                                         <span 
@@ -353,7 +353,7 @@ export default function ForYou() {
                                 {/* Responsibilities */}
                                 {job.shortResponsibilities && (
                                   <div>
-                                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Key Responsibilities</h4>
+                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">Key Responsibilities</h4>
                                     <p className="text-sm text-gray-700">{job.shortResponsibilities}</p>
                                   </div>
                                 )}
@@ -361,7 +361,7 @@ export default function ForYou() {
                                 {/* Qualifications */}
                                 {job.shortQualifications && (
                                   <div>
-                                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Qualifications</h4>
+                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">Qualifications</h4>
                                     <p className="text-sm text-gray-700">{job.shortQualifications}</p>
                                   </div>
                                 )}
@@ -369,7 +369,7 @@ export default function ForYou() {
                               
                               {/* Why We Recommended */}
                               <div className="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <h3 className="text-md font-semibold text-gray-900 mb-1">
+                                <h3 className="text-sm sm:text-md font-semibold text-gray-900 mb-1">
                                   <Heart className="h-4 w-4 inline mr-2 text-rose-500" />
                                   Why we recommended this
                                 </h3>

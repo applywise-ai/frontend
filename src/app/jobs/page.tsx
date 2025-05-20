@@ -10,7 +10,7 @@ import { Job } from '@/app/types';
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
-  const [sortOption, setSortOption] = useState('relevance');
+  const [sortOption, setSortOption] = useState('none');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -243,13 +243,10 @@ export default function Dashboard() {
       
       // Apply sorting
       if (sortOption === 'recent') {
-        // Sort by most recent first (this is simplified as we don't have actual dates)
         filtered.sort((a, b) => a.postedDate.localeCompare(b.postedDate));
       } else if (sortOption === 'salary-high') {
-        // Sort by salary high to low
         filtered.sort((a, b) => b.salaryValue - a.salaryValue);
       } else if (sortOption === 'salary-low') {
-        // Sort by salary low to high
         filtered.sort((a, b) => a.salaryValue - b.salaryValue);
       }
       
@@ -288,7 +285,7 @@ export default function Dashboard() {
           <div className={`${selectedJob ? 'lg:w-2/5' : 'w-full'} flex-shrink-0`}>
             {/* Search and Filters */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-              <h1 className="text-2xl font-bold mb-6 text-gray-900">Find Your Next Opportunity</h1>
+              <h1 className="text-lg sm:text-2xl font-bold mb-6 text-gray-900">Find Your Next Opportunity</h1>
               <JobSearchBar detailsOpen={!!selectedJob} isLoading={isLoading} />
             </div>
             
@@ -311,10 +308,10 @@ export default function Dashboard() {
                     disabled={isLoading}
                   >
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Sort by" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="relevance">Relevance</SelectItem>
+                      <SelectItem value="none">Choose one</SelectItem>
                       <SelectItem value="recent">Most Recent</SelectItem>
                       <SelectItem value="salary-high">Salary: High to Low</SelectItem>
                       <SelectItem value="salary-low">Salary: Low to High</SelectItem>
