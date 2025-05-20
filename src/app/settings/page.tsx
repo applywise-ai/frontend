@@ -10,7 +10,6 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Switch } from '@/app/components/ui/switch';
 import { AlertCircle, CheckCircle2, KeyRound, Trash2, User as UserIcon, Bell } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/app/components/ui/alert';
 import { 
   Dialog, 
   DialogContent, 
@@ -25,9 +24,11 @@ export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState('');
   const [accountError, setAccountError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [accountSuccess, setAccountSuccess] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [deleteAccountError, setDeleteAccountError] = useState('');
   
   // Form states
   const [email, setEmail] = useState('');
@@ -78,7 +79,7 @@ export default function SettingsPage() {
     
     try {
       setAccountError('');
-      setSuccess('');
+      setAccountSuccess('');
       
       if (!email) {
         setAccountError('Email cannot be empty');
@@ -107,7 +108,7 @@ export default function SettingsPage() {
       // Here you would also update the display name in your database
       // For now, we're just handling the Firebase auth update
       
-      setSuccess('Account information updated successfully');
+      setAccountSuccess('Account information updated successfully');
       setAccountCurrentPassword('');
     } catch (err) {
       setAccountError('Failed to update account information. Please try again.');
@@ -120,7 +121,7 @@ export default function SettingsPage() {
     
     try {
       setPasswordError('');
-      setSuccess('');
+      setPasswordSuccess('');
       
       if (!passwordCurrentPassword) {
         setPasswordError('Current password is required');
@@ -156,7 +157,7 @@ export default function SettingsPage() {
         return;
       }
       
-      setSuccess('Password updated successfully');
+      setPasswordSuccess('Password updated successfully');
       setPasswordCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -168,35 +169,32 @@ export default function SettingsPage() {
   
   const handleDeleteAccount = async () => {
     try {
-      setAccountError('');
+      setDeleteAccountError('');
       
       if (!deleteAccountPassword) {
-        setAccountError('Please enter your password to confirm account deletion');
+        setDeleteAccountError('Please enter your password to confirm account deletion');
         return;
       }
       
       // Re-authenticate user first
       const reAuthResult = await authService.reauthenticate(deleteAccountPassword);
       if ('error' in reAuthResult) {
-        setAccountError(reAuthResult.message);
-        setConfirmDeleteDialogOpen(false);
+        setDeleteAccountError(reAuthResult.message);
         return;
       }
       
       // Delete account
       const deleteResult = await authService.deleteAccount();
       if (deleteResult && 'error' in deleteResult) {
-        setAccountError(deleteResult.message);
-        setConfirmDeleteDialogOpen(false);
+        setDeleteAccountError(deleteResult.message);
         return;
       }
       
       // If successful, redirect to home page
       router.push('/');
     } catch (err) {
-      setAccountError('Failed to delete account. Please try again.');
+      setDeleteAccountError('Failed to delete account. Please try again.');
       console.error('Error deleting account:', err);
-      setConfirmDeleteDialogOpen(false);
     }
   };
   
@@ -210,14 +208,6 @@ export default function SettingsPage() {
   
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
-      {success && (
-        <Alert className="mb-6 border-green-500 bg-green-50">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <AlertTitle className="text-base sm:text-green-500">Success</AlertTitle>
-          <AlertDescription className="text-xs sm:text-green-700">{success}</AlertDescription>
-        </Alert>
-      )}
-      
       <div className="space-y-4">
         {/* Notification Preferences */}
         <Card>
@@ -305,6 +295,12 @@ export default function SettingsPage() {
                 <span>{accountError}</span>
               </div>
             )}
+            {accountSuccess && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md mt-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-green-400" />
+                <span>{accountSuccess}</span>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
@@ -350,6 +346,12 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mt-2 text-sm">
                 <AlertCircle className="h-4 w-4 text-red-400" />
                 <span>{passwordError}</span>
+              </div>
+            )}
+            {passwordSuccess && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md mt-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-green-400" />
+                <span>{passwordSuccess}</span>
               </div>
             )}
           </CardHeader>
@@ -420,9 +422,19 @@ export default function SettingsPage() {
                     value={deleteAccountPassword}
                     onChange={(e) => setDeleteAccountPassword(e.target.value)}
                   />
+                  {deleteAccountError && (
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+                      <AlertCircle className="h-4 w-4 text-red-400" />
+                      <span>{deleteAccountError}</span>
+                    </div>
+                  )}
                 </div>
                 <DialogFooter className="flex justify-end space-x-2">
-                  <Button variant="outline" className="border-teal-600 text-teal-600 hover:bg-teal-50" onClick={() => setConfirmDeleteDialogOpen(false)}>Cancel</Button>
+                  <Button variant="outline" className="border-teal-600 text-teal-600 hover:bg-teal-50" onClick={() => {
+                    setConfirmDeleteDialogOpen(false);
+                    setDeleteAccountError('');
+                    setDeleteAccountPassword('');
+                  }}>Cancel</Button>
                   <Button variant="destructive" onClick={handleDeleteAccount}>
                     Delete Account
                   </Button>

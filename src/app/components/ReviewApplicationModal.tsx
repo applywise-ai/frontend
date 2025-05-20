@@ -26,7 +26,7 @@ export default function ReviewApplicationModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className={`max-w-2xl w-full h-[80vh] overflow-y-auto flex flex-col bg-white ${className}`}>
+      <DialogContent className={`max-w-2xl w-full h-[100vh] sm:h-[80vh] overflow-y-auto flex flex-col bg-white ${className}`}>
         <DialogHeader>
           <DialogTitle>Review Your Application</DialogTitle>
         </DialogHeader>

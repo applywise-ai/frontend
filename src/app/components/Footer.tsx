@@ -1,156 +1,115 @@
-'use client';
-
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Linkedin, Github } from 'lucide-react';
+import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-gray-50 text-gray-800 border-t border-gray-200">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-gray-900 border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
-          <div className="col-span-1">
-            <h3 className="text-xl font-bold mb-4">ApplyWise</h3>
-            <p className="text-gray-600 mb-4">
-              Making your job search smarter and more efficient with AI-powered tools and insights.
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-white">ApplyWise</h3>
+            <p className="text-gray-400 text-sm">
+              Your all-in-one platform for managing job applications and advancing your career.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-500 hover:text-teal-500 transition-colors">
-                <Facebook className="h-5 w-5" />
-                <span className="sr-only">Facebook</span>
-              </a>
-              <a href="#" className="text-gray-500 hover:text-teal-500 transition-colors">
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </a>
-              <a href="#" className="text-gray-500 hover:text-teal-500 transition-colors">
-                <Instagram className="h-5 w-5" />
-                <span className="sr-only">Instagram</span>
-              </a>
-              <a href="#" className="text-gray-500 hover:text-teal-500 transition-colors">
-                <Linkedin className="h-5 w-5" />
-                <span className="sr-only">LinkedIn</span>
-              </a>
-              <a href="#" className="text-gray-500 hover:text-teal-500 transition-colors">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Github className="h-5 w-5" />
-                <span className="sr-only">GitHub</span>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <Linkedin className="h-5 w-5" />
               </a>
             </div>
           </div>
 
-          {/* For Job Seekers */}
-          <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4">For Job Seekers</h3>
-            <ul className="space-y-2">
+          {/* Quick Links */}
+          <div>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Quick Links</h4>
+            <ul className="space-y-3">
               <li>
-                <Link href="/dashboard" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Browse Jobs
+                <Link href="/jobs" className="text-gray-400 hover:text-white transition-colors">
+                  Jobs
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Career Resources
+                <Link href="/profile" className="text-gray-400 hover:text-white transition-colors">
+                  Profile
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Resume Builder
+                <Link href="/resumes" className="text-gray-400 hover:text-white transition-colors">
+                  Resumes
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Salary Guide
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Interview Prep
+                <Link href="/interviews" className="text-gray-400 hover:text-white transition-colors">
+                  Interviews
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* For Employers */}
-          <div className="col-span-1">
-            <h3 className="text-base sm:text-lg font-semibold mb-4">For Employers</h3>
-            <ul className="space-y-2">
+          {/* Resources */}
+          <div>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Resources</h4>
+            <ul className="space-y-3">
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Post a Job
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Recruiting Solutions
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Candidate Screening
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Employer Resources
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
+                <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Contact Us
+                <Link href="/help" className="text-gray-400 hover:text-white transition-colors">
+                  Help Center
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Privacy Policy
+                <Link href="/guides" className="text-gray-400 hover:text-white transition-colors">
+                  Career Guides
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-500 transition-colors">
-                  Terms of Service
+                <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
+                  FAQ
                 </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Contact</h4>
+            <ul className="space-y-3">
+              <li>
+                <a href="mailto:support@applywise.com" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  support@applywise.com
+                </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-600 text-sm">
-            &copy; {currentYear} ApplyWise. All rights reserved.
-          </p>
-          <div className="mt-4 md:mt-0 flex space-x-6">
-            <Link href="#" className="text-gray-600 hover:text-teal-500 text-sm transition-colors">
-              Privacy
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-teal-500 text-sm transition-colors">
-              Terms
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-teal-500 text-sm transition-colors">
-              Cookies
-            </Link>
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} ApplyWise. All rights reserved.
+            </p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Terms of Service
+              </Link>
+              <Link href="/cookies" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Cookie Policy
+              </Link>
+            </div>
           </div>
         </div>
       </div>

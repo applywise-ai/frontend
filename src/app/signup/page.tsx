@@ -9,6 +9,7 @@ import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
 import { authService } from '@/app/utils/firebase';
 import { useRouter } from 'next/navigation';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -19,20 +20,31 @@ export default function SignUp() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
   // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
-      const user = await authService.isLoggedIn();
-      if (user) {
-        // Redirect to jobs page if already authenticated
-        router.push('/jobs');
+      try {
+        const user = await authService.isLoggedIn();
+        if (user) {
+          router.push('/jobs');
+          return;
+        }
+        setIsCheckingAuth(false);
+      } catch (error) {
+        console.error('Error checking authentication status:', error);
+        setIsCheckingAuth(false);
       }
     };
 
     checkAuth();
   }, [router]);
+
+  if (isCheckingAuth) {
+    return <LoadingScreen />;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -78,8 +90,10 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 bg-gray-900">
-      <div className="w-full max-w-2xl space-y-8">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 bg-gray-900 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 to-gray-900 z-0"></div>
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+      <div className="w-full max-w-xl space-y-8 relative z-10">
         <div className="flex flex-col items-center justify-center space-y-2">
           <Link href="/">
             <Image 
@@ -171,9 +185,10 @@ export default function SignUp() {
             {loading ? 'Signing up...' : 'Sign up'}
           </Button>
 
-          <div className="relative flex items-center justify-center">
-            <Separator className="bg-white/20" />
-            <span className="absolute bg-gray-900 px-2 text-sm text-white/70">or</span>
+          <div className="relative flex items-center justify-center gap-4">
+            <Separator className="flex-1 bg-white/20" />
+            <span className="text-sm text-white/70">or</span>
+            <Separator className="flex-1 bg-white/20" />
           </div>
 
           <Button 

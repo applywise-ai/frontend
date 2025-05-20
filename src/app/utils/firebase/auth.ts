@@ -11,7 +11,10 @@ import {
   updatePassword,
   deleteUser,
   EmailAuthProvider,
-  reauthenticateWithCredential
+  reauthenticateWithCredential,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { auth } from './config';
@@ -261,6 +264,46 @@ class FirebaseAuthService {
       }
 
       await deleteUser(user);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Send a password reset email
+   * @param email - User's email
+   * @returns Promise with void or AuthErrorResponse
+   */
+  async sendPasswordResetEmail(email: string): Promise<void | AuthErrorResponse> {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Verify the password reset code
+   * @param code - Password reset code from email
+   * @returns Promise with email or AuthErrorResponse
+   */
+  async verifyPasswordResetCode(code: string): Promise<string | AuthErrorResponse> {
+    try {
+      return await verifyPasswordResetCode(auth, code);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Confirm password reset with code
+   * @param code - Password reset code from email
+   * @param newPassword - New password
+   * @returns Promise with void or AuthErrorResponse
+   */
+  async confirmPasswordReset(code: string, newPassword: string): Promise<void | AuthErrorResponse> {
+    try {
+      await confirmPasswordReset(auth, code, newPassword);
     } catch (error: unknown) {
       return this.handleAuthError(error);
     }

@@ -396,7 +396,7 @@ export default function LocationSearch({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="shadow-sm focus:ring-teal-500 focus:border-teal-500 pr-10"
+          className="shadow-sm focus:ring-teal-500 focus:border-teal-500 pr-10 text-sm"
           placeholder={placeholder}
           required={required}
           autoComplete="off"
@@ -413,7 +413,7 @@ export default function LocationSearch({
         </div>
       </div>
       
-      <div className={`absolute z-50 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm transition-all duration-200 ease-in-out ${
+      <div className={`absolute z-50 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-sm ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none transition-all duration-200 ease-in-out ${
         showSuggestions && (isLoading || filteredSuggestions.length > 0) 
           ? 'opacity-100 mt-1 translate-y-0' 
           : 'opacity-0 -translate-y-1 invisible'

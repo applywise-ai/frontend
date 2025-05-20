@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import authService from '@/app/utils/firebase/auth';
+import { authService } from '@/app/utils/firebase';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 export default function SettingsLayout({
   children,
@@ -10,36 +11,29 @@ export default function SettingsLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const user = await authService.isLoggedIn();
-        
-        // Redirect to login if not authenticated
         if (!user) {
           router.push('/login');
           return;
         }
-        
-        setLoading(false);
+        setIsLoading(false);
       } catch (error) {
         console.error('Authentication check failed:', error);
-        setLoading(false);
+        router.push('/login');
       }
     };
     
     checkAuth();
   }, [router]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse">Loading...</div>
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
   return (

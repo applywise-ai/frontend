@@ -167,7 +167,7 @@ export default function HelpPage() {
           onOpenChange={setFeatureModalOpen}
           title="Suggest a Feature"
           formState={featureSuggestion}
-          onChange={handleFeatureSuggestionChange}
+                  onChange={handleFeatureSuggestionChange}
           onSubmit={handleFeatureSuggestionSubmit}
           titlePlaceholder="Short description of the feature"
           descriptionPlaceholder="Please describe the feature in detail."
@@ -181,7 +181,7 @@ export default function HelpPage() {
           onOpenChange={setBugModalOpen}
           title="Report a Bug"
           formState={bugReport}
-          onChange={handleBugReportChange}
+                  onChange={handleBugReportChange}
           onSubmit={handleBugReportSubmit}
           titlePlaceholder="Short description of the bug"
           descriptionPlaceholder="Please describe the bug in detail."

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/app/utils/firebase';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
 export default function DashboardLayout({
   children,
@@ -10,19 +11,30 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const user = await authService.isLoggedIn();
-      if (!user) {
-        // Redirect to login if not authenticated
+      try {
+        const user = await authService.isLoggedIn();
+        if (!user) {
+          router.push('/login');
+          return;
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Authentication check failed:', error);
         router.push('/login');
       }
     };
 
     checkAuth();
   }, [router]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen text-gray-900">
