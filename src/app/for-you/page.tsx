@@ -393,6 +393,7 @@ export default function ForYou() {
                                     // Handle apply click
                                   }}
                                   className="flex-1"
+                                  applicationId={job.id.toString()}
                                 />
                               </div>
                             </div>

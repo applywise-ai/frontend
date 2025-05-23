@@ -144,23 +144,23 @@ export default function Home() {
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="bg-blue-500/10 p-2 rounded-lg">
+                    <BarChart2 className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">AI-Powered Applications</h3>
+                    <p className="text-gray-400">
+                      Personalize your job applications with AI making you 5x more likely to land interviews.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="bg-blue-500/10 p-2 rounded-lg">
                     <CheckCircle2 className="h-5 w-5 text-blue-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2">Smart Matching</h3>
                     <p className="text-gray-400">
                       Find the best job matches based on your profile, saving you hours of searching.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="bg-blue-500/10 p-2 rounded-lg">
-                    <BarChart2 className="h-5 w-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">Smart Analytics</h3>
-                    <p className="text-gray-400">
-                      Get insights into which applications are most successful and optimize your approach.
                     </p>
                   </div>
                 </div>

@@ -7,7 +7,8 @@ export const DASHBOARD_PAGES = [
   '/profile',
   '/settings',
   '/for-you',
-  '/help'
+  '/help',
+  '/applications'
 ];
 
 /**

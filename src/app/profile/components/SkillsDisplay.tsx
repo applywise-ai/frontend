@@ -2,6 +2,7 @@
 
 import { UserProfile, FieldName } from '@/app/types';
 import { Badge } from '@/app/components/ui/badge';
+import { AlertCircle } from 'lucide-react';
 
 interface SkillsDisplayProps {
   profile: UserProfile;
@@ -22,7 +23,10 @@ export default function SkillsDisplay({ profile }: SkillsDisplayProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 italic">No skills added yet.</p>
+          <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span>No skills added yet.</span>
+          </div>
         )}
       </div>
     </div>

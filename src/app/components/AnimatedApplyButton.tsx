@@ -10,13 +10,15 @@ interface AnimatedApplyButtonProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  applicationId?: string;
 }
 
 export default function AnimatedApplyButton({ 
   onClick, 
   className = '', 
   size = 'md',
-  fullWidth = false 
+  fullWidth = false,
+  applicationId = 'temp-123'
 }: AnimatedApplyButtonProps) {
   const [state, setState] = useState<'idle' | 'loading' | 'review'>('idle');
   const [open, setOpen] = useState(false);
@@ -104,8 +106,8 @@ export default function AnimatedApplyButton({
         open={open}
         setOpen={setOpen}
         onCancel={() => setState('idle')}
-        onEdit={() => setState('idle')}
         onSubmit={() => setState('idle')}
+        applicationId={applicationId}
       />
     </>
   );

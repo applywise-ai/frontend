@@ -7,6 +7,7 @@ import { Separator } from '@/app/components/ui/separator';
 import { Card, CardContent, CardHeader } from '@/app/components/ui/card';
 import { Calendar, Globe, Briefcase, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 
 interface WorkEligibilityFormProps {
   profile: UserProfile;
@@ -16,6 +17,19 @@ interface WorkEligibilityFormProps {
 export default function WorkEligibilityForm({ profile, updateProfile }: WorkEligibilityFormProps) {
   const handleCheckboxChange = (field: string, checked: boolean) => {
     updateProfile({ [field]: checked });
+  };
+
+  const handleSelectChange = (field: string, value: string) => {
+    if (value === "yes") {
+      updateProfile({ [field]: true });
+    } else if (value === "no") {
+      updateProfile({ [field]: false });
+    } else {
+      // For "No answer", set to undefined to clear the field
+      const update: Partial<UserProfile> = {};
+      update[field as keyof UserProfile] = undefined;
+      updateProfile(update);
+    }
   };
 
   return (
@@ -64,42 +78,59 @@ export default function WorkEligibilityForm({ profile, updateProfile }: WorkElig
               <div className="w-full">
                 <h3 className="text-md font-medium text-gray-900 mb-4 flex items-center">
                   Canada Work Eligibility
-                  <Badge className="ml-2 bg-red-50 text-red-700 hover:bg-red-100 border-red-200">Required</Badge>
                 </h3>
                 
                 <div className="space-y-4">
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id={FieldName.ELIGIBLE_CANADA}
-                      checked={profile[FieldName.ELIGIBLE_CANADA] || false}
-                      onCheckedChange={(checked) => handleCheckboxChange(FieldName.ELIGIBLE_CANADA, checked as boolean)}
-                      className="border-gray-300 text-teal-600"
-                    />
-                    <div className="grid gap-1.5 leading-none">
+                  <div className="grid gap-2">
                       <Label htmlFor={FieldName.ELIGIBLE_CANADA} className="font-medium text-gray-700">
                         I am legally eligible to work in Canada
                       </Label>
+                    <Select 
+                      onValueChange={(value) => handleSelectChange(FieldName.ELIGIBLE_CANADA, value)}
+                      value={
+                        profile[FieldName.ELIGIBLE_CANADA] === undefined 
+                        ? "no_answer" 
+                        : profile[FieldName.ELIGIBLE_CANADA] ? "yes" : "no"
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no_answer">No answer</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
                       <p className="text-sm text-gray-500">
                         You are a Canadian citizen, permanent resident, or have a valid work permit.
                       </p>
-                    </div>
                   </div>
                   
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id={FieldName.CA_SPONSORHIP}
-                      checked={profile[FieldName.CA_SPONSORHIP] || false}
-                      onCheckedChange={(checked) => handleCheckboxChange(FieldName.CA_SPONSORHIP, checked as boolean)}
-                      className="border-gray-300 text-teal-600"
-                    />
-                    <div className="grid gap-1.5 leading-none">
+                  <div className="grid gap-2">
                       <Label htmlFor={FieldName.CA_SPONSORHIP} className="font-medium text-gray-700">
                         I require sponsorship to work in Canada
                       </Label>
+                    <Select 
+                      onValueChange={(value) => handleSelectChange(FieldName.CA_SPONSORHIP, value)}
+                      value={
+                        profile[FieldName.CA_SPONSORHIP] === undefined 
+                        ? "no_answer" 
+                        : profile[FieldName.CA_SPONSORHIP] ? "yes" : "no"
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no_answer">No answer</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
                       <p className="text-sm text-gray-500">
                         You require a company to sponsor your work permit or visa to work in Canada.
                       </p>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -115,42 +146,59 @@ export default function WorkEligibilityForm({ profile, updateProfile }: WorkElig
               <div className="w-full">
                 <h3 className="text-md font-medium text-gray-900 mb-4 flex items-center">
                   United States Work Eligibility
-                  <Badge className="ml-2 bg-red-50 text-red-700 hover:bg-red-100 border-red-200">Required</Badge>
                 </h3>
                 
                 <div className="space-y-4">
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id={FieldName.ELIGIBLE_US}
-                      checked={profile[FieldName.ELIGIBLE_US] || false}
-                      onCheckedChange={(checked) => handleCheckboxChange(FieldName.ELIGIBLE_US, checked as boolean)}
-                      className="border-gray-300 text-teal-600"
-                    />
-                    <div className="grid gap-1.5 leading-none">
+                  <div className="grid gap-2">
                       <Label htmlFor={FieldName.ELIGIBLE_US} className="font-medium text-gray-700">
                         I am legally eligible to work in the United States
                       </Label>
+                    <Select 
+                      onValueChange={(value) => handleSelectChange(FieldName.ELIGIBLE_US, value)}
+                      value={
+                        profile[FieldName.ELIGIBLE_US] === undefined 
+                        ? "no_answer" 
+                        : profile[FieldName.ELIGIBLE_US] ? "yes" : "no"
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no_answer">No answer</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
                       <p className="text-sm text-gray-500">
                         You are a U.S. citizen, permanent resident, or have a valid work authorization.
                       </p>
-                    </div>
                   </div>
                   
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id={FieldName.US_SPONSORHIP}
-                      checked={profile[FieldName.US_SPONSORHIP] || false}
-                      onCheckedChange={(checked) => handleCheckboxChange(FieldName.US_SPONSORHIP, checked as boolean)}
-                      className="border-gray-300 text-teal-600"
-                    />
-                    <div className="grid gap-1.5 leading-none">
+                  <div className="grid gap-2">
                       <Label htmlFor={FieldName.US_SPONSORHIP} className="font-medium text-gray-700">
                         I require sponsorship to work in the United States
                       </Label>
+                    <Select 
+                      onValueChange={(value) => handleSelectChange(FieldName.US_SPONSORHIP, value)}
+                      value={
+                        profile[FieldName.US_SPONSORHIP] === undefined 
+                        ? "no_answer" 
+                        : profile[FieldName.US_SPONSORHIP] ? "yes" : "no"
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no_answer">No answer</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
                       <p className="text-sm text-gray-500">
                         You require a company to sponsor your work visa (e.g., H-1B) to work in the U.S.
                       </p>
-                    </div>
                   </div>
                 </div>
               </div>

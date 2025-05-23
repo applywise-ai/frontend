@@ -51,7 +51,7 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
             {profile[FieldName.ROLE_LEVEL] ? (
               <p className="text-sm text-gray-500">{profile[FieldName.ROLE_LEVEL]}</p>
             ) : (
-              <p className="text-sm text-amber-500 italic">Not specified</p>
+              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
             )}
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-amber-500 italic">No specializations selected</p>
+              <p className="text-sm text-yellow-500 font-normal italic">No specializations selected</p>
             )}
           </div>
         </div>
@@ -89,12 +89,12 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-amber-500 italic">No company sizes specified</p>
+              <p className="text-sm text-yellow-500 font-normal italic">No company sizes specified</p>
             )}
           </div>
         </div>
 
-        {profile[FieldName.EXPECTED_SALARY] && (
+        {profile[FieldName.EXPECTED_SALARY] ? (
           <div className="flex items-start">
             <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
             <div>
@@ -104,14 +104,30 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
               </p>
             </div>
           </div>
+        ) : (
+          <div className="flex items-start">
+            <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
+              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
+            </div>
+          </div>
         )}
 
-        {profile[FieldName.NOTICE_PERIOD] && (
+        {profile[FieldName.NOTICE_PERIOD] ? (
           <div className="flex items-start">
             <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
             <div>
               <p className="text-sm font-medium text-gray-900">Notice Period</p>
               <p className="text-sm text-gray-500">{profile[FieldName.NOTICE_PERIOD]}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start">
+            <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Notice Period</p>
+              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
             </div>
           </div>
         )}
@@ -121,13 +137,17 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
           <Briefcase className="h-5 w-5 text-gray-500 mr-3 mt-1" />
           <div>
             <p className="text-sm font-medium text-gray-900">Job Types</p>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {jobTypes.map((type, index) => (
-                <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-                  {type}
-                </Badge>
-              ))}
-            </div>
+            {jobTypes.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {jobTypes.map((type, index) => (
+                  <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                    {type}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-yellow-500 font-normal italic">No job types specified</p>
+            )}
           </div>
         </div>
 
@@ -136,13 +156,17 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
           <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
           <div>
             <p className="text-sm font-medium text-gray-900">Location Preferences</p>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {locationPrefs.map((location, index) => (
-                <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-                  {location}
-                </Badge>
-              ))}
-            </div>
+            {locationPrefs.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {locationPrefs.map((location, index) => (
+                  <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                    {location}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-yellow-500 font-normal italic">No location preferences specified</p>
+            )}
           </div>
         </div>
         

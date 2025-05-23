@@ -15,21 +15,23 @@ export default function DemographicsDisplay({ profile }: DemographicsDisplayProp
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {profile[FieldName.GENDER] && (
-          <div className="flex items-start">
-            <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">Gender</p>
+        <div className="flex items-start">
+          <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <div>
+            <p className="text-sm font-medium text-gray-900">Gender</p>
+            {profile[FieldName.GENDER] ? (
               <p className="text-sm text-gray-500">{profile[FieldName.GENDER]}</p>
-            </div>
+            ) : (
+              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
+            )}
           </div>
-        )}
+        </div>
 
-        {race.length > 0 && (
-          <div className="flex items-start">
-            <Globe className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-2">Race/Ethnicity</p>
+        <div className="flex items-start">
+          <Globe className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <div>
+            <p className="text-sm font-medium text-gray-900">Race/Ethnicity</p>
+            {race.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {race.map((item, index) => (
                   <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
@@ -37,15 +39,17 @@ export default function DemographicsDisplay({ profile }: DemographicsDisplayProp
                   </Badge>
                 ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-yellow-500 font-normal italic">No race/ethnicity specified</p>
+            )}
           </div>
-        )}
+        </div>
 
-        {sexuality.length > 0 && (
-          <div className="flex items-start">
-            <Heart className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-2">Sexual Orientation</p>
+        <div className="flex items-start">
+          <Heart className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+          <div>
+            <p className="text-sm font-medium text-gray-900">Sexual Orientation</p>
+            {sexuality.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {sexuality.map((item, index) => (
                   <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
@@ -53,9 +57,11 @@ export default function DemographicsDisplay({ profile }: DemographicsDisplayProp
                   </Badge>
                 ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-yellow-500 font-normal italic">No sexual orientation specified</p>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <div className="mt-4">

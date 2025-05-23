@@ -13,8 +13,10 @@ import {
   Globe, 
   Users, 
   FileText,
-  Building
+  Building,
+  AlertCircle
 } from 'lucide-react';
+import { Progress } from '@/app/components/ui/progress';
 
 import ProfileSection from './components/ProfileSection';
 import PersonalInfoForm from './components/PersonalInfoForm';
@@ -269,6 +271,76 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
   
+  // Calculate profile completion progress
+  const importantSections = [
+    FieldName.FULL_NAME,
+    FieldName.EMAIL,
+    FieldName.PHONE_NUMBER,
+    FieldName.EDUCATION,
+    FieldName.SKILLS,
+    FieldName.EMPLOYMENT,
+    FieldName.ELIGIBLE_CANADA,
+    FieldName.ELIGIBLE_US,
+    // Job Preferences (grouped)
+    'jobPreferences',
+    // Social Links (grouped)
+    'socialLinks',
+  ];
+  const filledSections = importantSections.filter((field) => {
+    if (field === FieldName.EDUCATION || field === FieldName.EMPLOYMENT || field === FieldName.SKILLS) {
+      const arr = profile[field as keyof UserProfile] as unknown;
+      return Array.isArray(arr) && arr.length > 0;
+    }
+    if (field === 'jobPreferences') {
+      return Boolean(
+        profile[FieldName.NOTICE_PERIOD] ||
+        profile[FieldName.EXPECTED_SALARY] ||
+        (Array.isArray(profile[FieldName.JOB_TYPES]) && profile[FieldName.JOB_TYPES]?.length > 0) ||
+        (Array.isArray(profile[FieldName.LOCATION_PREFERENCES]) && profile[FieldName.LOCATION_PREFERENCES]?.length > 0) ||
+        profile[FieldName.ROLE_LEVEL] ||
+        (Array.isArray(profile[FieldName.INDUSTRY_SPECIALIZATIONS]) && profile[FieldName.INDUSTRY_SPECIALIZATIONS]?.length > 0) ||
+        (Array.isArray(profile[FieldName.COMPANY_SIZE]) && profile[FieldName.COMPANY_SIZE]?.length > 0)
+      );
+    }
+    if (field === 'socialLinks') {
+      return Boolean(
+        profile[FieldName.LINKEDIN] ||
+        profile[FieldName.TWITTER] ||
+        profile[FieldName.GITHUB] ||
+        profile[FieldName.PORTFOLIO] ||
+        profile[FieldName.OTHER]
+      );
+    }
+    if (field === FieldName.ELIGIBLE_CANADA || field === FieldName.ELIGIBLE_US || 
+        field === FieldName.CA_SPONSORHIP || field === FieldName.US_SPONSORHIP) {
+      // Check if a value is provided (either true or false), not just true
+      return profile[field as keyof UserProfile] !== undefined;
+    }
+    return Boolean(profile[field as keyof UserProfile]);
+  });
+  const progress = Math.round((filledSections.length / importantSections.length) * 100);
+  const canAutofill = progress === 100;
+  
+  // Find the next section that needs to be filled
+  const getNextSectionToFill = () => {
+    for (const field of importantSections) {
+      if (!filledSections.includes(field)) {
+        if (field === FieldName.EDUCATION) return { name: 'Education', id: 'education' };
+        if (field === FieldName.EMPLOYMENT) return { name: 'Employment', id: 'employment' };
+        if (field === FieldName.SKILLS) return { name: 'Skills', id: 'skills' };
+        if (field === FieldName.FULL_NAME || field === FieldName.EMAIL || field === FieldName.PHONE_NUMBER) 
+          return { name: 'Personal Info', id: 'personal' };
+        if (field === FieldName.ELIGIBLE_CANADA || field === FieldName.ELIGIBLE_US) 
+          return { name: 'Work Eligibility', id: 'eligibility' };
+        if (field === 'jobPreferences') return { name: 'Job Preferences', id: 'preferences' };
+        if (field === 'socialLinks') return { name: 'Social Links', id: 'social' };
+      }
+    }
+    return null;
+  };
+  
+  const nextSection = getNextSectionToFill();
+  
   if (isLoading) {
     return (
       <div className="bg-gray-50 min-h-screen pb-16">
@@ -286,14 +358,50 @@ export default function ProfilePage() {
   }
   
   return (
-    <div className="bg-gray-50 pb-6">
+    <div className="bg-gray-50 pt-16 fixed inset-0 overflow-hidden">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Left sidebar navigation - hidden on mobile */}
-          <div className="hidden md:block md:w-64 flex-shrink-0">
-            <Card className="sticky top-24">
-              <CardContent className="p-4">
+          {/* Left sidebar: Progress card + Navigation (desktop only) */}
+          <div className="hidden md:flex md:flex-col md:w-72 flex-shrink-0">
+            {/* Sticky container for progress card and navigation */}
+            <Card className="sticky top-8 z-30 flex flex-col gap-0 overflow-visible rounded-2xl shadow-lg border border-gray-100">
+              <div className="p-6 pb-4 border-b border-gray-100 bg-white rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 bg-teal-50 p-3 rounded-full">
+                    <User className="h-7 w-7 text-teal-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Profile Progress</h2>
+                    <p className="text-sm text-gray-500">Complete your profile to unlock autofill and job matching features.</p>
+                  </div>
+                </div>
+                <div className="flex items-center mt-4">
+                  <Progress value={progress} className="flex-1 h-3 bg-gray-100" />
+                  <span className="text-base font-semibold text-teal-700 min-w-[48px] text-right">{progress}%</span>
+                </div>
+                {!canAutofill && nextSection && (
+                  <div 
+                    className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4 cursor-pointer hover:bg-yellow-100 transition-colors"
+                    onClick={() => scrollToSection(nextSection.id)}
+                  >
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>Next: {nextSection.name}</span>
+                  </div>
+                )}
+                {!canAutofill && !nextSection && (
+                  <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>Complete all sections</span>
+                  </div>
+                )}
+                {canAutofill && (
+                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-md px-3 py-2 mt-4">
+                    <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    <span>Your profile is ready for autofill and job matching!</span>
+                  </div>
+                )}
+              </div>
+              <CardContent className="p-4 bg-white rounded-b-2xl">
                 <nav className="flex flex-col space-y-1">
                   <Button
                     variant={activeSection === 'resume' ? 'default' : 'ghost'}
@@ -411,6 +519,47 @@ export default function ProfilePage() {
           {/* Main content area - full width on mobile */}
           <div className="flex-1 w-full">
             <div className="h-[calc(100vh-100px)] md:h-[calc(100vh-180px)] overflow-y-auto pr-4 -mr-4 pb-4 mt-0">
+              {/* Mobile: Progress card above resume card, styled as a Card */}
+              <div className="md:hidden max-w-2xl mx-auto mb-4">
+                <Card className="rounded-2xl shadow-lg border border-gray-100">
+                  <CardContent className="p-6 flex flex-col">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 bg-teal-50 p-3 rounded-full">
+                        <User className="h-7 w-7 text-teal-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">Profile Progress</h2>
+                        <p className="text-sm text-gray-500">Complete your profile to unlock autofill and job matching features.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center mt-4">
+                      <Progress value={progress} className="flex-1 h-3 bg-gray-100" />
+                      <span className="text-base font-semibold text-teal-700 min-w-[48px] text-right">{progress}%</span>
+                    </div>
+                    {!canAutofill && nextSection && (
+                      <div 
+                        className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4 cursor-pointer hover:bg-yellow-100 transition-colors"
+                        onClick={() => scrollToSection(nextSection.id)}
+                      >
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <span>Next: {nextSection.name}</span>
+                      </div>
+                    )}
+                    {!canAutofill && !nextSection && (
+                      <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <span>Complete all sections</span>
+                      </div>
+                    )}
+                    {canAutofill && (
+                      <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-md px-3 py-2 mt-4">
+                        <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        <span>Your profile is ready for autofill and job matching!</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
               {/* Resume Section */}
               <div ref={resumeRef} id="resume">
                 <ProfileSectionResume profile={profile} updateProfile={updateProfile} />

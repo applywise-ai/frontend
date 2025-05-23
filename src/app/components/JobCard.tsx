@@ -159,6 +159,7 @@ export default function JobCard({
                     }}
                     size="sm"
                     className="w-full"
+                    applicationId={id?.toString()}
                   />
                 </div>
                 <button 
@@ -252,6 +253,7 @@ export default function JobCard({
                 }}
                 size="sm"
               className="w-full"
+                applicationId={id?.toString()}
               />
             </div>
             <button 

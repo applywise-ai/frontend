@@ -95,7 +95,7 @@ export default function SocialLinksDisplay({ profile }: SocialLinksDisplayProps)
        !profile[FieldName.GITHUB] && 
        !profile[FieldName.TWITTER] && 
        !profile[FieldName.PORTFOLIO] && (
-        <p className="text-sm text-gray-500 italic col-span-full">No social links added yet.</p>
+        <p className="text-sm text-yellow-800 font-normal italic col-span-full">No social links added yet.</p>
       )}
     </div>
   );

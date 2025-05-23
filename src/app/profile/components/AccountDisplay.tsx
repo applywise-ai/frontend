@@ -31,7 +31,7 @@ export default function AccountDisplay({ profile }: AccountDisplayProps) {
       )}
 
       {!profile[FieldName.WORKDAY_EMAIL] && !profile[FieldName.WORKDAY_PASSWORD] && (
-        <p className="text-sm text-gray-500 italic col-span-full">No account information added yet.</p>
+        <p className="text-sm text-yellow-800 font-normal italic col-span-full">No account information added yet.</p>
       )}
     </div>
   );

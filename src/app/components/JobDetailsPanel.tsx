@@ -58,6 +58,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false }: Job
               // Handle quick apply
             }}
             className="flex-1"
+            applicationId={job.id}
           />
           
           <a 
