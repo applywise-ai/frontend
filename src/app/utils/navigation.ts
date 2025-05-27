@@ -3,12 +3,11 @@
  */
 export const DASHBOARD_PAGES = [
   '/jobs',
-  '/saved-jobs',
+  '/applications',
   '/profile',
   '/settings',
   '/for-you',
-  '/help',
-  '/applications'
+  '/help'
 ];
 
 /**

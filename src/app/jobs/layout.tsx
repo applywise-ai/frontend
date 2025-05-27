@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/app/utils/firebase';
-import LoadingScreen from '@/app/components/LoadingScreen';
+import LoadingScreen from '@/app/components/loading/LoadingScreen';
 
 export default function DashboardLayout({
   children,

@@ -27,7 +27,9 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
   const [activeTab, setActiveTab] = useState("form");
   const [previewTab, setPreviewTab] = useState<"application" | "resume" | "coverLetter">("application");
   const [formChanged, setFormChanged] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const initialQuestionsRef = useRef<FormQuestion[]>([]);
+  const fieldRefs = useRef<{[key: string]: React.RefObject<HTMLDivElement | null>}>({});
   
   // Use React.use() to unwrap params before accessing properties
   const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
@@ -209,6 +211,15 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     initialQuestionsRef.current = JSON.parse(JSON.stringify(formQuestions));
   }, [formQuestions]);
   
+  // Initialize refs for fields
+  useEffect(() => {
+    const refs: {[key: string]: React.RefObject<HTMLDivElement | null>} = {};
+    formQuestions.forEach(q => {
+      refs[q.id] = React.createRef<HTMLDivElement | null>();
+    });
+    fieldRefs.current = refs;
+  }, []);
+
   // Handle input change for any question
   const handleQuestionChange = (id: string, value: string) => {
     if (isSaved) {
@@ -217,24 +228,45 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       setIsSaved(false);
     }
 
+    // Clear validation error for this field if it exists
+    if (validationErrors.includes(id)) {
+      setValidationErrors(prev => prev.filter(item => item !== id));
+    }
+
     setFormQuestions(prev => 
       prev.map(q => q.id === id ? { ...q, answer: value } : q)
     );
   };
 
-  const handleSave = () => {
-    setIsLoading(true);
-    
+  const validateForm = () => {
     // Check for required fields
-    const missingRequiredFields = formQuestions
+    const missingFields = formQuestions
       .filter(q => q.required && !q.answer)
-      .map(q => q.question);
+      .map(q => q.id);
     
-    if (missingRequiredFields.length > 0) {
-      alert(`Please fill in all required fields: \n${missingRequiredFields.join('\n')}`);
-      setIsLoading(false);
+    setValidationErrors(missingFields);
+    
+    if (missingFields.length > 0) {
+      // Scroll to the first error field
+      const firstErrorId = missingFields[0];
+      const errorRef = fieldRefs.current[firstErrorId];
+      
+      if (errorRef && errorRef.current) {
+        errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSave = () => {
+    if (!validateForm()) {
       return;
     }
+    
+    setIsLoading(true);
     
     // Prepare the state to send to the API
     const applicationData = {
@@ -267,13 +299,7 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       return;
     }
     
-    // Check for required fields
-    const missingRequiredFields = formQuestions
-      .filter(q => q.required && !q.answer)
-      .map(q => q.question);
-    
-    if (missingRequiredFields.length > 0) {
-      alert(`Please fill in all required fields: \n${missingRequiredFields.join('\n')}`);
+    if (!validateForm()) {
       return;
     }
     
@@ -283,22 +309,21 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     const applicationData = {
       applicationId,
       formData: formQuestions,
-      status: "Submitted"
+      status: "Applied"
     };
     
     // Log the data being sent (for debugging)
     console.log('Submitting application data:', applicationData);
     
-    // Update status to Submitted
+    // Update status to Applied
     setJobDetails(prev => ({
       ...prev,
-      status: "Submitted"
+      status: "Applied"
     }));
     
     // Simulate API call
     setTimeout(() => {
       // Here you would normally send applicationData to your API
-      setIsLoading(false);
       router.push(`/applications/${applicationId}/submitted`);
     }, 1500);
   };
@@ -325,11 +350,17 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
   // Get badge styling based on status
   const getBadgeStyles = (status: string) => {
     switch (status) {
-      case "Submitted":
-        return "bg-green-50 text-green-600 hover:bg-green-50 border-green-200";
-      case "Draft":
+      case 'Applied':
+        return 'bg-blue-50 text-blue-600 border-blue-200';
+      case 'Saved':
+        return 'bg-purple-50 text-purple-600 border-purple-200';
+      case 'Interviewing':
+        return 'bg-green-50 text-green-600 border-green-200';
+      case 'Rejected':
+        return 'bg-red-50 text-red-600 border-red-200';
+      case 'Draft':
       default:
-        return "bg-amber-50 text-amber-600 hover:bg-amber-50 border-amber-200";
+        return 'bg-amber-50 text-amber-600 border-amber-200';
     }
   };
 
@@ -349,7 +380,7 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
 
   // Form content component to avoid repetition
   const FormContent = () => (
-    <div className="flex flex-col gap-6 pb-8">
+    <div className="flex flex-col gap-6 pb-12">
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
         <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center bg-gray-50">
           <div className="flex items-center">
@@ -377,6 +408,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onQuestionChange={handleQuestionChange} 
           section="personal"
           onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={fieldRefs.current}
         />
         <FormSectionComponent 
           title={getSectionTitle('resume')} 
@@ -384,6 +417,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onQuestionChange={handleQuestionChange} 
           section="resume"
           onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={fieldRefs.current}
         />
         <FormSectionComponent 
           title={getSectionTitle('application')} 
@@ -391,6 +426,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onQuestionChange={handleQuestionChange} 
           section="application"
           onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={fieldRefs.current}
         />
         <FormSectionComponent 
           title={getSectionTitle('screening')} 
@@ -398,6 +435,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onQuestionChange={handleQuestionChange} 
           section="screening"
           onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={fieldRefs.current}
         />
         <FormSectionComponent 
           title={getSectionTitle('custom')} 
@@ -405,6 +444,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onQuestionChange={handleQuestionChange} 
           section="custom"
           onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={fieldRefs.current}
         />
       </div>
     </div>

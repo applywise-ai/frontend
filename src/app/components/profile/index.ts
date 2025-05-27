@@ -1,0 +1,27 @@
+// Profile Components - Centralized exports
+export { default as ProfileSection } from './ProfileSection';
+export { default as PersonalInfoForm } from './PersonalInfoForm';
+export { default as PersonalInfoDisplay } from './PersonalInfoDisplay';
+export { default as SocialLinksForm } from './SocialLinksForm';
+export { default as SocialLinksDisplay } from './SocialLinksDisplay';
+export { default as DemographicsForm } from './DemographicsForm';
+export { default as DemographicsDisplay } from './DemographicsDisplay';
+export { default as WorkEligibilityForm } from './WorkEligibilityForm';
+export { default as WorkEligibilityDisplay } from './WorkEligibilityDisplay';
+export { default as EducationForm } from './EducationForm';
+export { default as EducationDisplay } from './EducationDisplay';
+export { default as EmploymentForm } from './EmploymentForm';
+export { default as EmploymentDisplay } from './EmploymentDisplay';
+export { default as SkillsForm } from './SkillsForm';
+export { default as SkillsDisplay } from './SkillsDisplay';
+export { default as JobPreferencesForm } from './JobPreferencesForm';
+export { default as JobPreferencesDisplay } from './JobPreferencesDisplay';
+export { default as ProfileSectionResume } from './ProfileSectionResume';
+export { default as ProjectForm } from './ProjectForm';
+export { default as ProjectDisplay } from './ProjectDisplay';
+export { default as EditSectionModal } from './EditSectionModal';
+export { default as AccountForm } from './AccountForm';
+export { default as AccountDisplay } from './AccountDisplay';
+export { default as ResumeDisplay } from './ResumeDisplay';
+export { default as LocationSearch } from './LocationSearch';
+export { default as SkillSearch } from './SkillSearch'; 

@@ -33,7 +33,7 @@ export function ApplicationPreview({
       return (
         <iframe
           src={file}
-          className="w-full h-[90vh] border-0"
+          className="w-full h-[92vh] border-0"
           title="Document Preview"
           // style={{ height: '100%' }}
         />
@@ -65,7 +65,7 @@ export function ApplicationPreview({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center h-full py-12">
+        <div className="flex flex-col items-center justify-center min-h-[50vh] md:min-h-[70vh]">
           <div className="bg-blue-50 rounded-full p-3 mb-4">
             <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
           </div>
@@ -114,7 +114,7 @@ export function ApplicationPreview({
                       alt="Application Preview"
                       width={1200}
                       height={1600}
-                      className="w-full h-auto max-w-full rounded-md shadow-sm overflow-auto"
+                      className="w-full h-auto max-w-full rounded-md shadow-sm"
                       style={{ objectFit: 'contain' }}
                       priority
                     />
@@ -122,7 +122,7 @@ export function ApplicationPreview({
                 </div>
               </TabsContent>
               
-              <TabsContent value="resume" className="flex-1 m-0 p-0 overflow-auto">
+              <TabsContent value="resume" className="flex-1 m-0 p-0">
                 <div className="px-6 py-6 h-full">
                   {resumeFile ? (
                     <div className="flex flex-col h-full">
@@ -131,7 +131,7 @@ export function ApplicationPreview({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex flex-col items-center justify-center min-h-[50vh] md:min-h-[70vh] text-center">
                       <div className="p-6 mb-4 bg-gray-50 rounded-full">
                         <FileText className="h-12 w-12 text-gray-400" />
                       </div>
@@ -153,7 +153,7 @@ export function ApplicationPreview({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex flex-col items-center justify-center min-h-[50vh] md:min-h-[70vh] text-center">
                       <div className="p-6 mb-4 bg-gray-50 rounded-full">
                         <FileText className="h-12 w-12 text-gray-400" />
                       </div>

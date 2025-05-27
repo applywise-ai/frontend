@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { XCircle, Pencil, Send, Info } from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ApplicationSubmittedContent from './ApplicationSubmittedContent';
+import ApplicationSubmittedContent from './applications/ApplicationSubmittedContent';
 
 interface ReviewApplicationModalProps {
   open: boolean;
@@ -31,6 +31,7 @@ export default function ReviewApplicationModal({
 }: ReviewApplicationModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   
   const handleClose = () => {
@@ -41,7 +42,7 @@ export default function ReviewApplicationModal({
   };
 
   const handleEdit = () => {
-    setOpen(false);
+    setIsEditing(true)
     if (onEdit) {
       onEdit();
     } else {
@@ -117,9 +118,19 @@ export default function ReviewApplicationModal({
                   <button
                     className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center text-sm"
                     onClick={handleEdit}
+                    disabled={isEditing}
                   >
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit
+                    {isEditing ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                        Editing...
+                      </>
+                    ) : (
+                      <>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </>
+                    )}
                   </button>
                   <button
                     className="px-4 py-2 rounded-md border border-blue-600 bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors flex items-center text-sm"

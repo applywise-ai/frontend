@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ApplicationSubmittedContent from '@/app/components/ApplicationSubmittedContent';
+import ApplicationSubmittedContent from '@/app/components/applications/ApplicationSubmittedContent';
 
 // Define a type for unwrapped params
 type ParamsType = {

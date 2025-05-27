@@ -34,6 +34,8 @@ interface QuestionInputProps {
   question: FormQuestion;
   onChange: (id: string, value: string) => void;
   onPreview?: (fileType: FileType) => void;
+  hasError?: boolean;
+  inputRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 // Get appropriate color accent based on section
@@ -49,8 +51,9 @@ function getAccentColorClass(section: FormSection): string {
 }
 
 // File upload component
-function FileQuestionInput({ question, onChange, onPreview }: QuestionInputProps) {
+function FileQuestionInput({ question, onChange, onPreview, hasError }: QuestionInputProps) {
   const accentColor = getAccentColorClass(question.section);
+  const errorBorderClass = hasError ? 'border-red-500 focus-visible:ring-red-500' : '';
   const [fileName, setFileName] = useState<string>(question.answer || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -106,7 +109,7 @@ function FileQuestionInput({ question, onChange, onPreview }: QuestionInputProps
               type="button" 
               variant="outline" 
               onClick={handlePreview}
-              className={`flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 ${accentColor}`}
+              className={`flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 ${accentColor} ${errorBorderClass}`}
               disabled={!fileName}
             >
               <Eye className="h-4 w-4" />
@@ -132,7 +135,7 @@ function FileQuestionInput({ question, onChange, onPreview }: QuestionInputProps
           <div className="w-full sm:w-auto">
             <label 
               htmlFor={`file-${question.id}`}
-              className={`flex w-full justify-center items-center gap-1.5 cursor-pointer px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 ${accentColor}`}
+              className={`flex w-full justify-center items-center gap-1.5 cursor-pointer px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 ${accentColor} ${errorBorderClass}`}
             >
               <Plus className="h-4 w-4" />
               Upload file
@@ -153,18 +156,18 @@ function FileQuestionInput({ question, onChange, onPreview }: QuestionInputProps
   );
 }
 
-export function QuestionInput({ question, onChange, onPreview }: QuestionInputProps) {
+export function QuestionInput({ question, onChange, onPreview, hasError, inputRef }: QuestionInputProps) {
   const accentColor = getAccentColorClass(question.section);
+  const errorBorderClass = hasError ? 'border-red-500 focus-visible:ring-red-500' : '';
   
   // Create a unique key for the input to help React keep track
   const inputKey = `${question.id}-${question.type}`;
   
-  switch (question.type) {
-    case 'file':
-      return <FileQuestionInput question={question} onChange={onChange} onPreview={onPreview} />;
-      
-    case 'textarea':
-      return (
+  return (
+    <div ref={inputRef}>
+      {question.type === 'file' ? (
+        <FileQuestionInput question={question} onChange={onChange} onPreview={onPreview} hasError={hasError} />
+      ) : question.type === 'textarea' ? (
         <Textarea 
           key={inputKey}
           id={question.id}
@@ -172,19 +175,15 @@ export function QuestionInput({ question, onChange, onPreview }: QuestionInputPr
           value={question.answer || ''} 
           onChange={(e) => onChange(question.id, e.target.value)}
           placeholder={question.placeholder}
-          className={`resize-none mt-1 shadow-sm transition duration-200 ${accentColor}`}
+          className={`resize-none mt-1 shadow-sm transition duration-200 ${accentColor} ${errorBorderClass}`}
         />
-      );
-
-    case 'select':
-    case 'radio': // Handle radio type the same way as select
-      return (
+      ) : question.type === 'select' || question.type === 'radio' ? (
         <Select
           key={inputKey}
           value={question.answer || ''}
           onValueChange={(value: string) => onChange(question.id, value)}
         >
-          <SelectTrigger className={`w-full mt-1 shadow-sm transition duration-200 ${accentColor}`}>
+          <SelectTrigger className={`w-full mt-1 shadow-sm transition duration-200 ${accentColor} ${errorBorderClass}`}>
             <SelectValue placeholder={question.placeholder || "Select an option"} />
           </SelectTrigger>
           <SelectContent>
@@ -193,30 +192,29 @@ export function QuestionInput({ question, onChange, onPreview }: QuestionInputPr
             ))}
           </SelectContent>
         </Select>
-      );
-    
-    case 'date':
-      return (
+      ) : question.type === 'date' ? (
         <div className="mt-1" key={inputKey}>
-          <DatePicker
+          <DatePicker 
             date={question.answer ? new Date(question.answer) : undefined}
             setDate={(date) => onChange(question.id, date ? date.toISOString().split('T')[0] : '')}
-            placeholder="Select a date"
+            placeholder={question.placeholder || "Select a date"}
+            className={errorBorderClass}
           />
         </div>
-      );
-    
-    default:
-      return (
+      ) : (
         <Input 
           key={inputKey}
           id={question.id}
-          type={question.type} 
-          value={question.answer || ''} 
-          onChange={(e) => onChange(question.id, e.target.value)}
+          type={question.type === 'email' ? 'email' : question.type === 'phone' ? 'tel' : 'text'}
           placeholder={question.placeholder}
-          className={`mt-1 shadow-sm transition duration-200 ${accentColor}`}
+          value={question.answer || ''}
+          onChange={(e) => onChange(question.id, e.target.value)}
+          className={`mt-1 shadow-sm transition duration-200 ${accentColor} ${errorBorderClass}`}
         />
-      );
-  }
+      )}
+      {hasError && (
+        <p className="mt-1 text-sm text-red-600">This field is required</p>
+      )}
+    </div>
+  );
 } 

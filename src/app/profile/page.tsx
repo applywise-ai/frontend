@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { UserProfile, FieldName } from '@/app/types';
+import { useState, useEffect, useRef } from 'react';
+import { UserProfile, FieldName } from '@/app/types/profile';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { 
@@ -9,40 +9,19 @@ import {
   Link as LinkIcon, 
   GraduationCap, 
   Code, 
+  Code2,
   Briefcase, 
   Globe, 
   Users, 
   FileText,
   Building,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { Progress } from '@/app/components/ui/progress';
-
-import ProfileSection from './components/ProfileSection';
-import PersonalInfoForm from './components/PersonalInfoForm';
-import PersonalInfoDisplay from './components/PersonalInfoDisplay';
-import SocialLinksForm from './components/SocialLinksForm';
-import SocialLinksDisplay from './components/SocialLinksDisplay';
-import DemographicsForm from './components/DemographicsForm';
-import DemographicsDisplay from './components/DemographicsDisplay';
-import WorkEligibilityForm from './components/WorkEligibilityForm';
-import WorkEligibilityDisplay from './components/WorkEligibilityDisplay';
-import EducationForm from './components/EducationForm';
-import EducationDisplay from './components/EducationDisplay';
-import EmploymentForm from './components/EmploymentForm';
-import EmploymentDisplay from './components/EmploymentDisplay';
-import SkillsForm from './components/SkillsForm';
-import SkillsDisplay from './components/SkillsDisplay';
-import JobPreferencesForm from './components/JobPreferencesForm';
-import JobPreferencesDisplay from './components/JobPreferencesDisplay';
-import ProfileSectionResume from './components/ProfileSectionResume';
-
-// Add type declaration to avoid TypeScript errors
-declare global {
-  interface Window {
-    __isScrolling?: boolean;
-  }
-}
+import { getProfileCompletionState, ProfileCompletionState, calculateCompletionPercentage, getNextSectionToFill } from '@/app/utils/profile';
+import * as PC from '@/app/components/profile';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>({
@@ -51,157 +30,88 @@ export default function ProfilePage() {
     [FieldName.PHONE_NUMBER]: '',
     [FieldName.EDUCATION]: [],
     [FieldName.SKILLS]: [],
+    [FieldName.TEMP_EDUCATION]: {
+      [FieldName.SCHOOL]: '',
+      [FieldName.DEGREE]: '',
+      [FieldName.FIELD_OF_STUDY]: '',
+      [FieldName.EDUCATION_FROM]: '',
+      [FieldName.EDUCATION_TO]: '',
+      [FieldName.EDUCATION_GPA]: ''
+    }
   });
   
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('personal');
+  const [profileState, setProfileState] = useState<ProfileCompletionState>('incomplete');
   
-  // Refs for each section
-  const personalRef = useRef<HTMLDivElement>(null);
-  const socialRef = useRef<HTMLDivElement>(null);
-  const educationRef = useRef<HTMLDivElement>(null);
-  const employmentRef = useRef<HTMLDivElement>(null);
-  const skillsRef = useRef<HTMLDivElement>(null);
-  const preferencesRef = useRef<HTMLDivElement>(null);
-  const eligibilityRef = useRef<HTMLDivElement>(null);
-  const demographicsRef = useRef<HTMLDivElement>(null);
-  const resumeRef = useRef<HTMLDivElement>(null);
-  
-  // Ref to track user scrolling state
-  const isUserScrollingRef = useRef<boolean>(true);
-  
-  // Debounced section update to prevent UI glitches during rapid scrolling
-  const debounce = <T extends (...args: string[]) => void>(func: T, wait: number): ((...args: Parameters<T>) => void) => {
-    let timeout: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func(...args), wait);
-    };
+  // Simplified refs for sections
+  const sectionRefs = {
+    resume: useRef<HTMLDivElement>(null),
+    personal: useRef<HTMLDivElement>(null),
+    education: useRef<HTMLDivElement>(null),
+    employment: useRef<HTMLDivElement>(null),
+    projects: useRef<HTMLDivElement>(null),
+    skills: useRef<HTMLDivElement>(null),
+    social: useRef<HTMLDivElement>(null),
+    preferences: useRef<HTMLDivElement>(null),
+    eligibility: useRef<HTMLDivElement>(null),
+    demographics: useRef<HTMLDivElement>(null),
   };
-  
-  // Map of section IDs to refs
-  const sectionRefs = useMemo(() => ({
-    personal: personalRef,
-    social: socialRef,
-    education: educationRef,
-    employment: employmentRef,
-    skills: skillsRef,
-    preferences: preferencesRef,
-    eligibility: eligibilityRef,
-    demographics: demographicsRef,
-    resume: resumeRef,
-  }), []);
-  
-  // Function to scroll to a section
-  const scrollToSection = (sectionId: string) => {
-    // Temporarily disable intersection observer updates
-    isUserScrollingRef.current = false;
-    
-    // Set active section immediately for better UX
-    setActiveSection(sectionId);
-    
-    // Perform the scroll
-    const ref = sectionRefs[sectionId as keyof typeof sectionRefs];
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    // Re-enable intersection observer after animation likely completes
-    setTimeout(() => {
-      isUserScrollingRef.current = true;
-    }, 1000);
-  };
-  
-  // Set up intersection observer to update active section based on scroll position
+
+  // Add ref for scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Set up scroll listener
   useEffect(() => {
-    if (isLoading) return;
-    
-    let scrollTimeout: NodeJS.Timeout;
-    
-    // Function to update active section with additional checks
-    const updateActiveSection = (id: string) => {
-      if (!isUserScrollingRef.current) return;
+    const setupScrollListener = () => {
+      if (!scrollContainerRef.current) {
+        setTimeout(setupScrollListener, 200);
+        return;
+      }
+
+      console.log('Setting up scroll listener');
+      const scrollContainer = scrollContainerRef.current;
       
-      // Only update if the section isn't already active (prevents flickering)
-      if (activeSection !== id) {
-        setActiveSection(id);
-      }
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      return () => {
+        console.log('Cleaning up scroll listener');
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      };
     };
-    
-    // Debounced version of the update function to avoid rapid changes
-    const debouncedUpdateSection = debounce(updateActiveSection, 50);
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Only process if user is manually scrolling
-        if (!isUserScrollingRef.current) return;
-        
-        // Filter only for elements that are intersecting
-        const intersectingEntries = entries.filter(entry => entry.isIntersecting);
-        
-        if (intersectingEntries.length > 0) {
-          // Sort based on position from top and visibility ratio
-          const sortedEntries = intersectingEntries.sort((a, b) => {
-            // Prioritize elements that are more visible
-            const visibilityDiff = b.intersectionRatio - a.intersectionRatio;
-            
-            // If visibility difference is significant, use that
-            if (Math.abs(visibilityDiff) > 0.2) {
-              return visibilityDiff;
-            }
-            
-            // Otherwise, prioritize elements closer to the top
-            const rectA = a.boundingClientRect;
-            const rectB = b.boundingClientRect;
-            
-            // If the element is above the viewport center, give it higher priority
-            const viewportHeight = window.innerHeight;
-            const viewportCenter = viewportHeight / 2;
-            
-            const distanceFromCenterA = Math.abs(rectA.top - viewportCenter);
-            const distanceFromCenterB = Math.abs(rectB.top - viewportCenter);
-            
-            return distanceFromCenterA - distanceFromCenterB;
-          });
-          
-          const topEntry = sortedEntries[0];
-          debouncedUpdateSection(topEntry.target.id);
-        }
-      },
-      { 
-        threshold: [0, 0.1, 0.25, 0.5, 0.75], // More thresholds for smoother transitions
-        rootMargin: "-10px 0px -70% 0px" // Less aggressive top margin
-      }
-    );
-    
-    // Observe all section elements
-    Object.keys(sectionRefs).forEach((id) => {
-      const ref = sectionRefs[id as keyof typeof sectionRefs];
+
+    setupScrollListener();
+  }, []);
+
+  // Simple scroll handler
+  const handleScroll = (event: Event) => {
+    const scrollContainer = event.target as HTMLElement;
+    const scrollPosition = scrollContainer.scrollTop + 100; // Add offset for better detection
+
+    // Find the current section based on scroll position
+    for (const [id, ref] of Object.entries(sectionRefs)) {
       if (ref.current) {
-        observer.observe(ref.current);
+        const { offsetTop, offsetHeight } = ref.current;
+        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+          setActiveSection(id);
+          break;
+        }
       }
-    });
-    
-    // Improve scroll handling
-    const handleScroll = () => {
-      // Mark that user is scrolling
-      isUserScrollingRef.current = true;
-      
-      // Clear previous timeout
-      clearTimeout(scrollTimeout);
-      
-      // Set a reasonable timeout after scrolling stops to resume normal behavior
-      scrollTimeout = setTimeout(() => {
-        isUserScrollingRef.current = true;
-      }, 100);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [isLoading, sectionRefs, activeSection]);
+    }
+  };
+
+  // Simple scroll to section function
+  const scrollToSection = (sectionId: string) => {
+    const ref = sectionRefs[sectionId as keyof typeof sectionRefs];
+    const scrollContainer = scrollContainerRef.current;
+    if (ref.current && scrollContainer) {
+      const sectionTop = ref.current.offsetTop;
+      scrollContainer.scrollTo({
+        top: sectionTop - 100,
+        behavior: 'smooth'
+      });
+      setActiveSection(sectionId);
+    }
+  };
   
   const updateProfile = (section: Partial<UserProfile>) => {
     setProfile(prev => ({
@@ -219,6 +129,7 @@ export default function ProfilePage() {
         // For now, we'll simulate an API call with mock data
         setTimeout(() => {
           const mockProfile: UserProfile = {
+            [FieldName.RESUME_FILENAME]: 'Kaiz_Nanji_New_Grad_Resume_V4.pdf',
             [FieldName.RESUME]: '/Users/kaiznanji/Documents/RESUMES/2025/Kaiz_Nanji_New_Grad_Resume_V4.pdf',
             [FieldName.FULL_NAME]: 'Kaiz Nanji',
             [FieldName.EMAIL]: 'k4nanji@uwaterloo.ca',
@@ -232,7 +143,6 @@ export default function ProfilePage() {
             [FieldName.GENDER]: 'Man',
             [FieldName.VETERAN]: false,
             [FieldName.SEXUALITY]: ['Heterosexual'],
-            [FieldName.ACKNOWLEDGE]: true,
             [FieldName.ELIGIBLE_CANADA]: true,
             [FieldName.TRANS]: false,
             [FieldName.RACE]: ['East Asian'],
@@ -248,15 +158,13 @@ export default function ProfilePage() {
             [FieldName.EDUCATION]: [
               {
                 [FieldName.SCHOOL]: 'University of Waterloo',
-                [FieldName.DEGREE]: "Bachelor's Degree",
+                [FieldName.DEGREE]: "bachelor",
                 [FieldName.FIELD_OF_STUDY]: 'Computer Science',
-                [FieldName.EDUCATION_FROM]: "2020",
-                [FieldName.EDUCATION_TO]: "2025",
+                [FieldName.EDUCATION_FROM]: "09/2020",
+                [FieldName.EDUCATION_TO]: "04/2025",
               }
             ],
-            [FieldName.SKILLS]: ['Python', 'Java', 'JavaScript'],
-            [FieldName.WORKDAY_EMAIL]: 'mathstutors0@gmail.com',
-            [FieldName.WORKDAY_PASSWORD]: 'Password123!',
+            [FieldName.SKILLS]: ['Python', 'Java', 'JavaScript']
           };
           
           setProfile(mockProfile);
@@ -270,77 +178,16 @@ export default function ProfilePage() {
     
     fetchProfile();
   }, []);
-  
-  // Calculate profile completion progress
-  const importantSections = [
-    FieldName.FULL_NAME,
-    FieldName.EMAIL,
-    FieldName.PHONE_NUMBER,
-    FieldName.EDUCATION,
-    FieldName.SKILLS,
-    FieldName.EMPLOYMENT,
-    FieldName.ELIGIBLE_CANADA,
-    FieldName.ELIGIBLE_US,
-    // Job Preferences (grouped)
-    'jobPreferences',
-    // Social Links (grouped)
-    'socialLinks',
-  ];
-  const filledSections = importantSections.filter((field) => {
-    if (field === FieldName.EDUCATION || field === FieldName.EMPLOYMENT || field === FieldName.SKILLS) {
-      const arr = profile[field as keyof UserProfile] as unknown;
-      return Array.isArray(arr) && arr.length > 0;
+
+  // Calculate profile completion state
+  useEffect(() => {
+    if (!isLoading) {
+      setProfileState(getProfileCompletionState(profile));
     }
-    if (field === 'jobPreferences') {
-      return Boolean(
-        profile[FieldName.NOTICE_PERIOD] ||
-        profile[FieldName.EXPECTED_SALARY] ||
-        (Array.isArray(profile[FieldName.JOB_TYPES]) && profile[FieldName.JOB_TYPES]?.length > 0) ||
-        (Array.isArray(profile[FieldName.LOCATION_PREFERENCES]) && profile[FieldName.LOCATION_PREFERENCES]?.length > 0) ||
-        profile[FieldName.ROLE_LEVEL] ||
-        (Array.isArray(profile[FieldName.INDUSTRY_SPECIALIZATIONS]) && profile[FieldName.INDUSTRY_SPECIALIZATIONS]?.length > 0) ||
-        (Array.isArray(profile[FieldName.COMPANY_SIZE]) && profile[FieldName.COMPANY_SIZE]?.length > 0)
-      );
-    }
-    if (field === 'socialLinks') {
-      return Boolean(
-        profile[FieldName.LINKEDIN] ||
-        profile[FieldName.TWITTER] ||
-        profile[FieldName.GITHUB] ||
-        profile[FieldName.PORTFOLIO] ||
-        profile[FieldName.OTHER]
-      );
-    }
-    if (field === FieldName.ELIGIBLE_CANADA || field === FieldName.ELIGIBLE_US || 
-        field === FieldName.CA_SPONSORHIP || field === FieldName.US_SPONSORHIP) {
-      // Check if a value is provided (either true or false), not just true
-      return profile[field as keyof UserProfile] !== undefined;
-    }
-    return Boolean(profile[field as keyof UserProfile]);
-  });
-  const progress = Math.round((filledSections.length / importantSections.length) * 100);
-  const canAutofill = progress === 100;
-  
-  // Find the next section that needs to be filled
-  const getNextSectionToFill = () => {
-    for (const field of importantSections) {
-      if (!filledSections.includes(field)) {
-        if (field === FieldName.EDUCATION) return { name: 'Education', id: 'education' };
-        if (field === FieldName.EMPLOYMENT) return { name: 'Employment', id: 'employment' };
-        if (field === FieldName.SKILLS) return { name: 'Skills', id: 'skills' };
-        if (field === FieldName.FULL_NAME || field === FieldName.EMAIL || field === FieldName.PHONE_NUMBER) 
-          return { name: 'Personal Info', id: 'personal' };
-        if (field === FieldName.ELIGIBLE_CANADA || field === FieldName.ELIGIBLE_US) 
-          return { name: 'Work Eligibility', id: 'eligibility' };
-        if (field === 'jobPreferences') return { name: 'Job Preferences', id: 'preferences' };
-        if (field === 'socialLinks') return { name: 'Social Links', id: 'social' };
-      }
-    }
-    return null;
-  };
-  
-  const nextSection = getNextSectionToFill();
-  
+  }, [profile, isLoading]);
+
+  const nextSection = getNextSectionToFill(profile, profileState);
+
   if (isLoading) {
     return (
       <div className="bg-gray-50 min-h-screen pb-16">
@@ -372,156 +219,89 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900">Profile Progress</h2>
-                    <p className="text-sm text-gray-500">Complete your profile to unlock autofill and job matching features.</p>
+                    <p className="text-sm text-gray-500">
+                      {profileState === 'complete' 
+                        ? 'Your profile is complete and ready for job applications.'
+                        : profileState === 'partial'
+                        ? 'Your profile is partially complete. Add more details for better autofill and job matches.'
+                        : 'Complete your profile to unlock job application features.'}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center mt-4">
-                  <Progress value={progress} className="flex-1 h-3 bg-gray-100" />
-                  <span className="text-base font-semibold text-teal-700 min-w-[48px] text-right">{progress}%</span>
+                <div className="mt-4 space-y-4">
+                  <div className="flex items-center">
+                    <Progress 
+                      value={calculateCompletionPercentage(profile)} 
+                      className="flex-1 h-3 bg-gray-100" 
+                    />
+                    <span className="text-base font-semibold text-teal-700 min-w-[48px] text-right">
+                      {calculateCompletionPercentage(profile)}%
+                    </span>
+                  </div>
+                  
+                  {profileState === 'incomplete' && (
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-800 text-xs rounded-md px-3 py-2">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>Complete required fields to unlock job applications</span>
+                    </div>
+                  )}
+                  
+                  {profileState === 'partial' && (
+                    <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2">
+                      <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                      <span>Add more details for better autofill and job matches</span>
+                    </div>
+                  )}
+                  
+                  {profileState === 'complete' && (
+                    <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-md px-3 py-2">
+                      <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                      <span>Your profile is ready for job applications!</span>
+                    </div>
+                  )}
+                  
+                  {nextSection && profileState !== 'complete' && (
+                    <div 
+                      className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 cursor-pointer hover:bg-yellow-100 transition-colors"
+                      onClick={() => scrollToSection(nextSection.id)}
+                    >
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>Next: {nextSection.name}</span>
+                    </div>
+                  )}
                 </div>
-                {!canAutofill && nextSection && (
-                  <div 
-                    className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4 cursor-pointer hover:bg-yellow-100 transition-colors"
-                    onClick={() => scrollToSection(nextSection.id)}
-                  >
-                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                    <span>Next: {nextSection.name}</span>
-                  </div>
-                )}
-                {!canAutofill && !nextSection && (
-                  <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                    <span>Complete all sections</span>
-                  </div>
-                )}
-                {canAutofill && (
-                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-md px-3 py-2 mt-4">
-                    <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    <span>Your profile is ready for autofill and job matching!</span>
-                  </div>
-                )}
               </div>
               <CardContent className="p-4 bg-white rounded-b-2xl">
                 <nav className="flex flex-col space-y-1">
-                  <Button
-                    variant={activeSection === 'resume' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'resume' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('resume')}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Resume
-                  </Button>
-                  <Button
-                    variant={activeSection === 'personal' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'personal' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('personal')}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    Personal Info
-                  </Button>
-                  <Button
-                    variant={activeSection === 'education' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'education' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('education')}
-                  >
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    Education
-                  </Button>
-                  <Button
-                    variant={activeSection === 'employment' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'employment' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('employment')}
-                  >
-                    <Building className="mr-2 h-4 w-4" />
-                    Employment
-                  </Button>
-                  <Button
-                    variant={activeSection === 'skills' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'skills' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('skills')}
-                  >
-                    <Code className="mr-2 h-4 w-4" />
-                    Skills
-                  </Button>
-                  <Button
-                    variant={activeSection === 'social' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'social' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('social')}
-                  >
-                    <LinkIcon className="mr-2 h-4 w-4" />
-                    Social Links
-                  </Button>
-                  <Button
-                    variant={activeSection === 'preferences' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'preferences' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('preferences')}
-                  >
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    Job Preferences
-                  </Button>
-                  <Button
-                    variant={activeSection === 'eligibility' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'eligibility' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('eligibility')}
-                  >
-                    <Globe className="mr-2 h-4 w-4" />
-                    Work Eligibility
-                  </Button>
-                  <Button
-                    variant={activeSection === 'demographics' ? 'default' : 'ghost'}
-                    className={`justify-start ${
-                      activeSection === 'demographics' 
-                        ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                        : 'text-gray-700'
-                    }`}
-                    onClick={() => scrollToSection('demographics')}
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    Demographics
-                  </Button>
+                  {Object.entries(sectionRefs).map(([id]) => (
+                    <Button
+                      key={id}
+                      variant={activeSection === id ? 'default' : 'ghost'}
+                      className={`justify-start ${
+                        activeSection === id 
+                          ? 'bg-teal-600 text-white hover:bg-teal-700' 
+                          : 'text-gray-700'
+                      }`}
+                      onClick={() => scrollToSection(id)}
+                    >
+                      {getSectionIcon(id)}
+                      {getSectionTitle(id)}
+                    </Button>
+                  ))}
                 </nav>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main content area - full width on mobile */}
+          {/* Main content area */}
           <div className="flex-1 w-full">
-            <div className="h-[calc(100vh-100px)] md:h-[calc(100vh-180px)] overflow-y-auto pr-4 -mr-4 pb-4 mt-0">
-              {/* Mobile: Progress card above resume card, styled as a Card */}
-              <div className="md:hidden max-w-2xl mx-auto mb-4">
-                <Card className="rounded-2xl shadow-lg border border-gray-100">
+            <div 
+              ref={scrollContainerRef}
+              className="h-[calc(100vh-100px)] overflow-y-auto pr-4 -mr-4 pb-4 mt-0"
+            >
+              {/* Mobile Progress Card */}
+              <div className="md:hidden w-full mx-auto mb-4">
+                <Card>
                   <CardContent className="p-6 flex flex-col">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 bg-teal-50 p-3 rounded-full">
@@ -529,133 +309,169 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <h2 className="text-lg font-semibold text-gray-900">Profile Progress</h2>
-                        <p className="text-sm text-gray-500">Complete your profile to unlock autofill and job matching features.</p>
+                        <p className="text-sm text-gray-500">
+                          {profileState === 'complete' 
+                            ? 'Your profile is complete and ready for job applications.'
+                            : profileState === 'partial'
+                            ? 'Your profile is partially complete. Add more details for better autofill and job matches.'
+                            : 'Complete your profile to unlock job application features.'}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex items-center mt-4">
-                      <Progress value={progress} className="flex-1 h-3 bg-gray-100" />
-                      <span className="text-base font-semibold text-teal-700 min-w-[48px] text-right">{progress}%</span>
+                    <div className="mt-4 space-y-4">
+                      <div className="flex items-center">
+                        <Progress 
+                          value={calculateCompletionPercentage(profile)} 
+                          className="flex-1 h-3 bg-gray-100" 
+                        />
+                        <span className="text-base font-semibold text-teal-700 min-w-[48px] text-right">
+                          {calculateCompletionPercentage(profile)}%
+                        </span>
+                      </div>
+                      
+                      {profileState === 'incomplete' && (
+                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-800 text-xs rounded-md px-3 py-2">
+                          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                          <span>Complete required fields to unlock job applications</span>
+                        </div>
+                      )}
+                      
+                      {profileState === 'partial' && (
+                        <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2">
+                          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                          <span>Add more details for better job matches</span>
+                        </div>
+                      )}
+                      
+                      {profileState === 'complete' && (
+                        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-md px-3 py-2">
+                          <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                          <span>Your profile is ready for job applications!</span>
+                        </div>
+                      )}
+                      
+                      {nextSection && profileState !== 'complete' && (
+                        <div 
+                          className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 cursor-pointer hover:bg-yellow-100 transition-colors"
+                          onClick={() => scrollToSection(nextSection.id)}
+                        >
+                          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                          <span>Next: {nextSection.name}</span>
+                        </div>
+                      )}
                     </div>
-                    {!canAutofill && nextSection && (
-                      <div 
-                        className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4 cursor-pointer hover:bg-yellow-100 transition-colors"
-                        onClick={() => scrollToSection(nextSection.id)}
-                      >
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <span>Next: {nextSection.name}</span>
-                      </div>
-                    )}
-                    {!canAutofill && !nextSection && (
-                      <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-3 py-2 mt-4">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <span>Complete all sections</span>
-                      </div>
-                    )}
-                    {canAutofill && (
-                      <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-md px-3 py-2 mt-4">
-                        <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                        <span>Your profile is ready for autofill and job matching!</span>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               </div>
+
               {/* Resume Section */}
-              <div ref={resumeRef} id="resume">
-                <ProfileSectionResume profile={profile} updateProfile={updateProfile} />
+              <div ref={sectionRefs.resume} id="resume">
+                <PC.ProfileSectionResume profile={profile} updateProfile={updateProfile} />
               </div>
               
-              <div ref={personalRef} id="personal">
-                <ProfileSection
+              <div ref={sectionRefs.personal} id="personal">
+                <PC.ProfileSection
                   id="personal"
                   title="Personal Information"
                   icon={<User size={24} />}
-                  displayContent={<PersonalInfoDisplay profile={profile} />}
-                  editContent={<PersonalInfoForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.PersonalInfoDisplay profile={profile} />}
+                  editContent={<PC.PersonalInfoForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={educationRef} id="education">
-                <ProfileSection
+              <div ref={sectionRefs.education} id="education">
+                <PC.ProfileSection
                   id="education"
                   title="Education"
                   icon={<GraduationCap size={24} />}
-                  displayContent={<EducationDisplay profile={profile} />}
-                  editContent={<EducationForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.EducationDisplay profile={profile} updateProfile={updateProfile} />}
+                  editContent={<PC.EducationForm profile={profile} updateProfile={updateProfile} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={employmentRef} id="employment">
-                <ProfileSection
+              <div ref={sectionRefs.employment} id="employment">
+                <PC.ProfileSection
                   id="employment"
-                  title="Employment"
-                  icon={<Briefcase size={24} />}
-                  displayContent={<EmploymentDisplay profile={profile} />}
-                  editContent={<EmploymentForm profile={profile} updateProfile={() => {}} />}
+                  title="Employment History"
+                  icon={<Building size={24} />}
+                  displayContent={<PC.EmploymentDisplay profile={profile} updateProfile={updateProfile} />}
+                  editContent={<PC.EmploymentForm profile={profile} updateProfile={updateProfile} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={skillsRef} id="skills">
-                <ProfileSection
+              <div ref={sectionRefs.projects} id="projects">
+                <PC.ProfileSection
+                  id="projects"
+                  title="Projects"
+                  icon={<Code2 size={24} />}
+                  displayContent={<PC.ProjectDisplay profile={profile} updateProfile={updateProfile} />}
+                  editContent={<PC.ProjectForm profile={profile} updateProfile={updateProfile} />}
+                  profile={profile}
+                  updateProfile={updateProfile}
+                />
+              </div>
+
+              <div ref={sectionRefs.skills} id="skills">
+                <PC.ProfileSection
                   id="skills"
                   title="Skills"
                   icon={<Code size={24} />}
-                  displayContent={<SkillsDisplay profile={profile} />}
-                  editContent={<SkillsForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.SkillsDisplay profile={profile} />}
+                  editContent={<PC.SkillsForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={socialRef} id="social">
-                <ProfileSection
+              <div ref={sectionRefs.social} id="social">
+                <PC.ProfileSection
                   id="social"
                   title="Social Links"
                   icon={<LinkIcon size={24} />}
-                  displayContent={<SocialLinksDisplay profile={profile} />}
-                  editContent={<SocialLinksForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.SocialLinksDisplay profile={profile} />}
+                  editContent={<PC.SocialLinksForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={preferencesRef} id="preferences">
-                <ProfileSection
+              <div ref={sectionRefs.preferences} id="preferences">
+                <PC.ProfileSection
                   id="preferences"
                   title="Job Preferences"
                   icon={<Briefcase size={24} />}
-                  displayContent={<JobPreferencesDisplay profile={profile} />}
-                  editContent={<JobPreferencesForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.JobPreferencesDisplay profile={profile} />}
+                  editContent={<PC.JobPreferencesForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={eligibilityRef} id="eligibility">
-                <ProfileSection
+              <div ref={sectionRefs.eligibility} id="eligibility">
+                <PC.ProfileSection
                   id="eligibility"
                   title="Work Eligibility"
                   icon={<Globe size={24} />}
-                  displayContent={<WorkEligibilityDisplay profile={profile} />}
-                  editContent={<WorkEligibilityForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.WorkEligibilityDisplay profile={profile} />}
+                  editContent={<PC.WorkEligibilityForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
               </div>
 
-              <div ref={demographicsRef} id="demographics">
-                <ProfileSection
+              <div ref={sectionRefs.demographics} id="demographics">
+                <PC.ProfileSection
                   id="demographics"
                   title="Demographics"
                   icon={<Users size={24} />}
-                  displayContent={<DemographicsDisplay profile={profile} />}
-                  editContent={<DemographicsForm profile={profile} updateProfile={() => {}} />}
+                  displayContent={<PC.DemographicsDisplay profile={profile} />}
+                  editContent={<PC.DemographicsForm profile={profile} updateProfile={() => {}} />}
                   profile={profile}
                   updateProfile={updateProfile}
                 />
@@ -666,4 +482,38 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-} 
+}
+
+// Helper function to get section icons
+const getSectionIcon = (id: string) => {
+  switch (id) {
+    case 'resume': return <FileText className="mr-2 h-4 w-4" />;
+    case 'personal': return <User className="mr-2 h-4 w-4" />;
+    case 'education': return <GraduationCap className="mr-2 h-4 w-4" />;
+    case 'employment': return <Building className="mr-2 h-4 w-4" />;
+    case 'skills': return <Code className="mr-2 h-4 w-4" />;
+    case 'social': return <LinkIcon className="mr-2 h-4 w-4" />;
+    case 'preferences': return <Briefcase className="mr-2 h-4 w-4" />;
+    case 'eligibility': return <Globe className="mr-2 h-4 w-4" />;
+    case 'demographics': return <Users className="mr-2 h-4 w-4" />;
+    case 'projects': return <Code2 className="mr-2 h-4 w-4" />;
+    default: return null;
+  }
+};
+
+// Helper function to get section titles
+const getSectionTitle = (id: string) => {
+  switch (id) {
+    case 'resume': return 'Resume';
+    case 'personal': return 'Personal Info';
+    case 'education': return 'Education';
+    case 'employment': return 'Employment';
+    case 'skills': return 'Skills';
+    case 'social': return 'Social Links';
+    case 'preferences': return 'Job Preferences';
+    case 'eligibility': return 'Work Eligibility';
+    case 'demographics': return 'Demographics';
+    case 'projects': return 'Projects';
+    default: return id;
+  }
+}; 

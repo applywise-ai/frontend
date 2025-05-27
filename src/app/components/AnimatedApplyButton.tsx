@@ -4,13 +4,22 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Loader2, CheckCircle2 } from 'lucide-react';
 import ReviewApplicationModal from './ReviewApplicationModal';
+import ProfileCompletionAlert, { ProfileCompletionState } from './ProfileCompletionAlert';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+// import { getProfileCompletionState } from '@/app/utils/profile';
 
 interface AnimatedApplyButtonProps {
   onClick?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   applicationId?: string;
+  buttonText?: string;
 }
 
 export default function AnimatedApplyButton({ 
@@ -18,25 +27,65 @@ export default function AnimatedApplyButton({
   className = '', 
   size = 'md',
   fullWidth = false,
-  applicationId = 'temp-123'
+  applicationId = 'temp-123',
+  buttonText = 'Quick Apply'
 }: AnimatedApplyButtonProps) {
   const [state, setState] = useState<'idle' | 'loading' | 'review'>('idle');
   const [open, setOpen] = useState(false);
+  const [profileAlertOpen, setProfileAlertOpen] = useState(false);
+  const [profileState, setProfileState] = useState<ProfileCompletionState>('complete');
+
+  const checkProfileCompletion = async () => {
+    // Simulate API delay
+    // await new Promise(resolve => setTimeout(resolve, 500));
+    // return getProfileCompletionState(profile);
+    return 'complete'
+  };
 
   const handleClick = async () => {
     if (state !== 'idle') return;
     setState('loading');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setState('review');
-    setOpen(true);
-    onClick?.();
+    
+    try {
+      const profileState = await checkProfileCompletion();
+      setProfileState(profileState as ProfileCompletionState);
+      
+      if (profileState === 'incomplete') {
+        setProfileAlertOpen(true);
+        setState('idle');
+        return;
+      }
+      
+      if (profileState === 'partial') {
+        setProfileAlertOpen(true);
+        setState('idle');
+        return;
+      }
+      
+      // If profile is complete, proceed with application
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setState('review');
+      setOpen(true);
+      onClick?.();
+    } catch (error) {
+      console.error('Error checking profile completion:', error);
+      setState('idle');
+    }
   };
 
   const handleReviewClick = () => {
     setOpen(true);
   };
 
+  const handleContinueAnyway = () => {
+    setProfileAlertOpen(false);
+    setState('review');
+    setOpen(true);
+    onClick?.();
+  };
+
   const sizeClasses = {
+    xs: 'h-8 px-3 text-sm',
     sm: 'px-4 py-2 text-sm',
     md: 'px-6 py-3 text-base',
     lg: 'px-8 py-4 text-lg'
@@ -69,8 +118,8 @@ export default function AnimatedApplyButton({
               exit={{ opacity: 0, x: -20 }}
               className="flex items-center"
             >
-              <Zap className="mr-2 h-5 w-5" />
-              Quick Apply
+              <Zap className="mr-2 h-4 w-4" />
+              {buttonText}
             </motion.div>
           )}
 
@@ -82,7 +131,7 @@ export default function AnimatedApplyButton({
               exit={{ opacity: 0, scale: 0.8 }}
               className="flex items-center"
             >
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Applying...
             </motion.div>
           )}
@@ -95,7 +144,7 @@ export default function AnimatedApplyButton({
               exit={{ opacity: 0, x: -20 }}
               className="flex items-center"
             >
-              <CheckCircle2 className="mr-2 h-5 w-5" />
+              <CheckCircle2 className="mr-2 h-4 w-4" />
               Review
             </motion.div>
           )}
@@ -109,6 +158,20 @@ export default function AnimatedApplyButton({
         onSubmit={() => setState('idle')}
         applicationId={applicationId}
       />
+
+      <Dialog open={profileAlertOpen} onOpenChange={setProfileAlertOpen}>
+        <DialogContent className="sm:max-w-md bg-white rounded-xl shadow-lg border border-gray-100">
+          <DialogHeader className="space-y-3 pb-4">
+            <DialogTitle className="text-xl font-semibold text-gray-900">Profile Status</DialogTitle>
+          </DialogHeader>
+          <div className="px-1">
+            <ProfileCompletionAlert
+              state={profileState}
+              onContinue={handleContinueAnyway}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 } 

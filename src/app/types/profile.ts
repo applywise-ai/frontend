@@ -1,15 +1,30 @@
+// Re-export job-related types
+export type {
+  JobType,
+  LocationType,
+  RoleLevel,
+  IndustrySpecialization,
+  CompanySize,
+  DegreeType
+} from './job';
+
+export {
+  JOB_TYPE_OPTIONS,
+  LOCATION_TYPE_OPTIONS,
+  ROLE_LEVEL_OPTIONS,
+  INDUSTRY_SPECIALIZATION_OPTIONS,
+  COMPANY_SIZE_OPTIONS,
+  DEGREE_OPTIONS
+} from './job';
+
 export enum FieldName {
   // Personal Information
   RESUME = 'resume',
   RESUME_FILENAME = 'resumeFilename',
+  RESUME_AUTOFILL = 'resumeAutofill',
   FULL_NAME = 'fullName',
   EMAIL = 'email',
   PHONE_NUMBER = 'phoneNumber',
-  CITY = 'city',
-  PROVINCE = 'province',
-  COUNTRY = 'country',
-  POSTAL_CODE = 'postalCode',
-  ADDRESS_LINE1 = 'addressLine1',
   CURRENT_LOCATION = 'currentLocation',
   
   // Social Links
@@ -51,6 +66,8 @@ export enum FieldName {
   FIELD_OF_STUDY = 'fieldOfStudy',
   EDUCATION_FROM = 'educationFrom',
   EDUCATION_TO = 'educationTo',
+  EDUCATION_GPA = 'educationGpa',
+  TEMP_EDUCATION = 'tempEducation',
   
   // Employment
   EMPLOYMENT = 'employment',
@@ -60,15 +77,20 @@ export enum FieldName {
   EMPLOYMENT_TO = 'employmentTo',
   EMPLOYMENT_DESCRIPTION = 'employmentDescription',
   EMPLOYMENT_LOCATION = 'employmentLocation',
+  TEMP_EMPLOYMENT = 'tempEmployment',
   
   // Skills
   SKILLS = 'skills',
   
   // Other
-  ACKNOWLEDGE = 'acknowledge',
   SOURCE = 'source',
-  WORKDAY_EMAIL = 'workdayEmail',
-  WORKDAY_PASSWORD = 'workdayPassword',
+  
+  // Projects
+  PROJECTS = 'projects',
+  PROJECT_NAME = 'projectName',
+  PROJECT_DESCRIPTION = 'projectDescription',
+  PROJECT_LINK = 'projectLink',
+  TEMP_PROJECT = 'tempProject',
 }
 
 export interface Education {
@@ -77,6 +99,7 @@ export interface Education {
   [FieldName.FIELD_OF_STUDY]: string;
   [FieldName.EDUCATION_FROM]: string;
   [FieldName.EDUCATION_TO]: string;
+  [FieldName.EDUCATION_GPA]?: string;
 }
 
 export interface Employment {
@@ -88,18 +111,20 @@ export interface Employment {
   [FieldName.EMPLOYMENT_LOCATION]?: string;
 }
 
+export interface Project {
+  [FieldName.PROJECT_NAME]: string;
+  [FieldName.PROJECT_DESCRIPTION]: string;
+  [FieldName.PROJECT_LINK]?: string;
+}
+
 export interface UserProfile {
   // Personal Information
   [FieldName.RESUME]?: string;
   [FieldName.RESUME_FILENAME]?: string;
+  [FieldName.RESUME_AUTOFILL]?: boolean;
   [FieldName.FULL_NAME]: string;
   [FieldName.EMAIL]: string;
   [FieldName.PHONE_NUMBER]: string;
-  [FieldName.CITY]?: string;
-  [FieldName.PROVINCE]?: string;
-  [FieldName.COUNTRY]?: string;
-  [FieldName.POSTAL_CODE]?: string;
-  [FieldName.ADDRESS_LINE1]?: string;
   [FieldName.CURRENT_LOCATION]?: string;
   
   // Social Links
@@ -135,75 +160,28 @@ export interface UserProfile {
   [FieldName.COMPANY_SIZE]?: string[];
   
   // Education
-  [FieldName.EDUCATION]: Education[];
+  [FieldName.EDUCATION]?: Education[];
+  [FieldName.TEMP_EDUCATION]?: Education;
   
   // Employment
   [FieldName.EMPLOYMENT]?: Employment[];
+  [FieldName.TEMP_EMPLOYMENT]?: Employment;
   
   // Skills
   [FieldName.SKILLS]: string[];
   
   // Other
-  [FieldName.ACKNOWLEDGE]?: boolean;
   [FieldName.SOURCE]?: string;
-  [FieldName.WORKDAY_EMAIL]?: string;
-  [FieldName.WORKDAY_PASSWORD]?: string;
+  
+  // Projects
+  [FieldName.PROJECTS]?: Project[];
+  [FieldName.TEMP_PROJECT]?: Project;
 }
 
 // Options for select fields
 export const genderOptions = ['Man', 'Woman', 'Non-binary', 'Prefer not to say'];
 export const raceOptions = ['White', 'Black', 'East Asian', 'South Asian', 'Southeast Asian', 'Middle Eastern', 'Indigenous', 'Pacific Islander', 'Other', 'Prefer not to say'];
 export const sexualityOptions = ['Heterosexual', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Other', 'Prefer not to say'];
-export const degreeOptions = ['High School', 'Associate\'s Degree', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD', 'Other'];
 export const noticePeriodOptions = ['Immediately', '2 weeks', '4 weeks', '8 weeks', '3 months', 'More than 3 months'];
 export const sourceOptions = ['LinkedIn', 'Indeed', 'Company Website', 'Referral', 'Job Board', 'University/College', 'Other'];
-export const jobTypeOptions = ['Full-time', 'Part-time', 'Contract', 'Internship'];
-export const locationOptions = ['Remote', 'Hybrid', 'On-site'];
 
-// New options for job preferences
-export const roleLevelOptions = [
-  'Entry Level & New Grad',
-  'Junior (1-3 years)',
-  'Mid-Level (3-5 years)',
-  'Senior (5-8 years)',
-  'Lead/Principal (8+ years)',
-  'Manager',
-  'Director',
-  'VP/Executive'
-];
-
-export const industrySpecializationOptions = [
-  'Backend Engineering',
-  'Frontend Engineering',
-  'Full Stack Engineering',
-  'Mobile Development',
-  'DevOps & Infrastructure',
-  'Data Science',
-  'Data Engineering',
-  'Machine Learning & AI',
-  'Product Management',
-  'UX/UI Design',
-  'QA & Testing',
-  'Security Engineering',
-  'Cloud Computing',
-  'Blockchain',
-  'Game Development',
-  'AR/VR Development',
-  'Embedded Systems',
-  'IoT Engineering',
-  'Robotics',
-  'Fintech',
-  'Healthtech',
-  'Edtech',
-  'E-commerce',
-  'Marketing Technology',
-  'Enterprise Software'
-];
-
-export const companySizeOptions = [
-  'Startup (1-50 employees)',
-  'Small (51-200 employees)',
-  'Medium (201-1000 employees)',
-  'Large (1001-5000 employees)',
-  'Enterprise (5000+ employees)'
-]; 

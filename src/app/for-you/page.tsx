@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Building, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Job } from '@/app/types';
+import { Job } from '@/app/types/job';
 import { useRouter } from 'next/navigation';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 

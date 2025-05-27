@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import JobSearchBar from '@/app/components/JobSearchBar';
-import JobCard from '@/app/components/JobCard';
-import JobDetailsPanel from '@/app/components/JobDetailsPanel';
+import JobSearchBar from '@/app/components/jobs/JobSearchBar';
+import JobCard from '@/app/components/jobs/JobCard';
+import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
-import { Job } from '@/app/types';
+import { Job } from '@/app/types/job';
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const jobsPerPage = 5; // Number of jobs to display per page
+  const jobsPerPage = 9; // Updated to match applications page
   
   // Sample job data
   const sampleJobs: Job[] = [
@@ -170,6 +170,216 @@ export default function Dashboard() {
         "Strong problem-solving skills and attention to detail",
         "Willingness to learn and grow professionally"
       ]
+    },
+    {
+      id: 6,
+      title: 'Machine Learning Engineer',
+      company: 'AI Solutions Corp',
+      logo: '',
+      location: 'Boston, MA',
+      salary: '140,000 - 180,000',
+      salaryValue: 140000,
+      jobType: 'Full-time',
+      postedDate: '4 days ago',
+      description: 'Join our AI team to develop and deploy machine learning models that power our next-generation products. Experience with TensorFlow, PyTorch, and cloud ML platforms required.',
+      isVerified: true,
+      providesSponsorship: true,
+      experienceLevel: 'senior',
+      jobUrl: 'https://example.com/jobs/ml-engineer',
+      responsibilities: [
+        "Design and implement machine learning models",
+        "Optimize model performance and scalability",
+        "Collaborate with data scientists and engineers",
+        "Deploy models to production environments",
+        "Research and implement new ML techniques"
+      ],
+      requirements: [
+        "5+ years of experience in machine learning",
+        "Strong Python programming skills",
+        "Experience with ML frameworks (TensorFlow, PyTorch)",
+        "Knowledge of cloud ML platforms (AWS SageMaker, GCP AI Platform)",
+        "Master's or PhD in Computer Science, Statistics, or related field"
+      ]
+    },
+    {
+      id: 7,
+      title: 'Product Manager',
+      company: 'Innovation Labs',
+      logo: '',
+      location: 'Seattle, WA (Hybrid)',
+      salary: '100,000 - 130,000',
+      salaryValue: 100000,
+      jobType: 'Full-time',
+      postedDate: '2 weeks ago',
+      description: 'We\'re looking for a Product Manager to drive the development of our enterprise software solutions. You\'ll work closely with engineering, design, and business teams to deliver exceptional products.',
+      isVerified: true,
+      providesSponsorship: false,
+      experienceLevel: 'mid',
+      jobUrl: 'https://example.com/jobs/product-manager',
+      responsibilities: [
+        "Define product strategy and roadmap",
+        "Gather and prioritize product requirements",
+        "Work with cross-functional teams to deliver features",
+        "Analyze market trends and competitor products",
+        "Track and report on product metrics"
+      ],
+      requirements: [
+        "3+ years of product management experience",
+        "Strong analytical and problem-solving skills",
+        "Excellent communication and leadership abilities",
+        "Experience with agile development methodologies",
+        "Technical background or understanding of software development"
+      ]
+    },
+    {
+      id: 8,
+      title: 'Mobile App Developer Intern',
+      company: 'AppWorks',
+      logo: '',
+      location: 'Remote',
+      salary: '95,000 - 125,000',
+      salaryValue: 95000,
+      jobType: 'Full-time',
+      postedDate: '1 week ago',
+      description: 'Join our mobile development team to create innovative iOS and Android applications. Experience with React Native, Swift, or Kotlin required.',
+      isVerified: false,
+      providesSponsorship: true,
+      experienceLevel: 'intern',
+      jobUrl: 'https://example.com/jobs/mobile-developer',
+      responsibilities: [
+        "Develop and maintain mobile applications",
+        "Implement responsive and intuitive UIs",
+        "Integrate with backend services and APIs",
+        "Optimize app performance and user experience",
+        "Collaborate with designers and product managers"
+      ],
+      requirements: [
+        "3+ years of mobile development experience",
+        "Proficiency in React Native, Swift, or Kotlin",
+        "Experience with mobile app architecture patterns",
+        "Knowledge of mobile UI/UX best practices",
+        "Understanding of app store submission process"
+      ]
+    },
+    {
+      id: 9,
+      title: 'Data Scientist',
+      company: 'Analytics Pro',
+      logo: '',
+      location: 'Austin, TX',
+      salary: '115,000 - 145,000',
+      salaryValue: 115000,
+      jobType: 'Full-time',
+      postedDate: '3 days ago',
+      description: 'We\'re seeking a Data Scientist to help us extract insights from large datasets and build predictive models. Experience with statistical analysis and machine learning required.',
+      isVerified: true,
+      providesSponsorship: true,
+      experienceLevel: 'senior',
+      jobUrl: 'https://example.com/jobs/data-scientist',
+      responsibilities: [
+        "Analyze complex datasets to identify patterns",
+        "Develop and implement predictive models",
+        "Create data visualizations and reports",
+        "Collaborate with business stakeholders",
+        "Present findings to technical and non-technical audiences"
+      ],
+      requirements: [
+        "4+ years of experience in data science",
+        "Strong programming skills in Python or R",
+        "Experience with statistical analysis and ML",
+        "Knowledge of SQL and data warehousing",
+        "Master's degree in Statistics, Mathematics, or related field"
+      ]
+    },
+    {
+      id: 10,
+      title: 'Security Engineer',
+      company: 'SecureTech',
+      logo: '',
+      location: 'Washington, DC',
+      salary: '125,000 - 155,000',
+      salaryValue: 125000,
+      jobType: 'Full-time',
+      postedDate: '5 days ago',
+      description: 'Join our security team to protect our systems and data. Experience with security tools, penetration testing, and compliance frameworks required.',
+      isVerified: true,
+      providesSponsorship: false,
+      experienceLevel: 'senior',
+      jobUrl: 'https://example.com/jobs/security-engineer',
+      responsibilities: [
+        "Implement security controls and best practices",
+        "Conduct security assessments and penetration testing",
+        "Monitor and respond to security incidents",
+        "Develop security policies and procedures",
+        "Ensure compliance with security standards"
+      ],
+      requirements: [
+        "5+ years of experience in security engineering",
+        "Knowledge of security tools and frameworks",
+        "Experience with penetration testing",
+        "Understanding of compliance requirements",
+        "Relevant security certifications (CISSP, CEH, etc.)"
+      ]
+    },
+    {
+      id: 11,
+      title: 'Full Stack Developer',
+      company: 'WebTech Solutions',
+      logo: '',
+      location: 'Denver, CO (Hybrid)',
+      salary: '105,000 - 135,000',
+      salaryValue: 105000,
+      jobType: 'Full-time',
+      postedDate: '2 days ago',
+      description: 'We\'re looking for a Full Stack Developer to build and maintain our web applications. Experience with modern JavaScript frameworks and backend technologies required.',
+      isVerified: false,
+      providesSponsorship: true,
+      experienceLevel: 'mid',
+      jobUrl: 'https://example.com/jobs/full-stack-developer',
+      responsibilities: [
+        "Develop full-stack web applications",
+        "Implement responsive and accessible UIs",
+        "Design and optimize database schemas",
+        "Write clean, maintainable code",
+        "Collaborate with cross-functional teams"
+      ],
+      requirements: [
+        "3+ years of full-stack development experience",
+        "Proficiency in JavaScript/TypeScript",
+        "Experience with React, Node.js, and SQL",
+        "Knowledge of web development best practices",
+        "Understanding of cloud platforms and services"
+      ]
+    },
+    {
+      id: 12,
+      title: 'QA Engineer',
+      company: 'Quality First',
+      logo: '',
+      location: 'Remote',
+      salary: '85,000 - 110,000',
+      salaryValue: 85000,
+      jobType: 'Full-time',
+      postedDate: '1 week ago',
+      description: 'Join our QA team to ensure the quality of our software products. Experience with automated testing, test planning, and quality assurance processes required.',
+      isVerified: false,
+      providesSponsorship: false,
+      experienceLevel: 'mid',
+      jobUrl: 'https://example.com/jobs/qa-engineer',
+      responsibilities: [
+        "Develop and execute test plans",
+        "Create and maintain automated tests",
+        "Perform manual testing when needed",
+        "Report and track bugs",
+        "Collaborate with development teams"
+      ],
+      requirements: [
+        "3+ years of QA experience",
+        "Knowledge of testing methodologies",
+        "Experience with test automation tools",
+        "Understanding of software development lifecycle",
+        "Strong attention to detail"
+      ]
     }
   ];
   
@@ -212,20 +422,22 @@ export default function Dashboard() {
       }
       
       // Apply location filter
-      const location = searchParams.get('location');
-      if (location && location !== 'any') {
-        if (location === 'remote') {
-          filtered = filtered.filter(job => job.location.toLowerCase().includes('remote'));
-        } else if (location === 'hybrid') {
-          filtered = filtered.filter(job => job.location.toLowerCase().includes('hybrid'));
-        } else if (location === 'onsite') {
-          filtered = filtered.filter(job => 
-            !job.location.toLowerCase().includes('remote') && 
-            !job.location.toLowerCase().includes('hybrid')
-          );
-        } else if (location === 'us') {
-          filtered = filtered.filter(job => job.location.includes('CA') || job.location.includes('NY') || job.location.includes('IL'));
-        }
+      const locations = searchParams.get('locations')?.split(',') || [];
+      if (locations.length > 0) {
+        filtered = filtered.filter(job => {
+          const jobLocation = job.location.toLowerCase();
+          return locations.some(loc => {
+            if (loc === 'remote') {
+              return jobLocation.includes('remote');
+            } else if (loc === 'hybrid') {
+              return jobLocation.includes('hybrid');
+            } else {
+              // For city locations, check if the job location contains the city name
+              const cityName = loc.split('-')[0].replace(/-/g, ' '); // Convert 'new-york-ny' to 'new york'
+              return jobLocation.includes(cityName);
+            }
+          });
+        });
       }
       
       // Apply experience level filter
@@ -276,6 +488,34 @@ export default function Dashboard() {
     }, 300);
   };
 
+  // Add this function before the return statement
+  const getVisiblePages = (currentPage: number, totalPages: number) => {
+    const delta = 2; // Number of pages to show on each side of current page
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (const i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen w-full pb-6">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -286,7 +526,7 @@ export default function Dashboard() {
             {/* Search and Filters */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
               <h1 className="text-lg sm:text-2xl font-bold mb-6 text-gray-900">Find Your Next Opportunity</h1>
-              <JobSearchBar detailsOpen={!!selectedJob} isLoading={isLoading} />
+              <JobSearchBar detailsOpen={!!selectedJob} isLoading={false} />
             </div>
             
             {/* Job Listing Header */}
@@ -322,22 +562,24 @@ export default function Dashboard() {
             </div>
             
             {/* Job Listings */}
-            <div className="space-y-4">
+            <div className={`space-y-4 ${isLoading ? 'animate-pulse' : ''}`}>
               {isLoading ? (
                 // Show skeleton cards when loading
                 [...Array(5)].map((_, index) => (
-                  <JobCard
-                    key={index}
-                    title=""
-                    company=""
-                    logo=""
-                    location=""
-                    salary=""
-                    jobType=""
-                    postedDate=""
-                    description=""
-                    isLoading={true}
-                  />
+                  <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-start">
+                      <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
+                      <div className="ml-4 flex-1">
+                        <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                        <div className="flex flex-wrap gap-2">
+                          <div className="h-4 bg-gray-200 rounded w-20"></div>
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))
               ) : currentJobs.length > 0 ? (
                 currentJobs.map((job) => (
@@ -378,52 +620,63 @@ export default function Dashboard() {
               {/* Pagination - Only show if we have jobs and more than one page */}
               {!isLoading && filteredJobs.length > 0 && totalPages > 0 && (
                 <div className="mt-8 flex justify-center">
-                  <nav className="inline-flex rounded-md shadow bg-white border border-gray-200">
-                    {/* Previous button - only show if not on first page */}
-                    {currentPage > 1 && (
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePageChange(currentPage - 1);
-                        }}
-                        className="inline-flex items-center px-3 py-2 rounded-l-md border-r border-gray-200 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        Previous
-                      </a>
-                    )}
-                    
-                    {/* Page numbers */}
-                    {Array.from({ length: totalPages }, (_, index) => (
-                      <a
-                        key={index + 1}
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePageChange(index + 1);
-                        }}
-                        className={`inline-flex items-center px-3 py-2 border-r border-gray-200 bg-white text-sm font-medium ${
-                          currentPage === index + 1 ? 'text-teal-600' : 'text-gray-500 hover:bg-gray-50'
-                        } ${currentPage > 1 || index > 0 ? '' : 'rounded-l-md'} ${currentPage < totalPages || index < totalPages - 1 ? '' : 'rounded-r-md border-r-0'}`}
-                      >
-                        {index + 1}
-                      </a>
+                  <nav className="inline-flex items-center gap-1" aria-label="Pagination">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-md border text-sm font-medium ${
+                        currentPage === 1
+                          ? 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed' 
+                          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:border-gray-400'
+                      }`}
+                      aria-label="Previous page"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+
+                    {getVisiblePages(currentPage, totalPages).map((pageNum, idx) => (
+                      pageNum === '...' ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700"
+                        >
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={`page-${pageNum}`}
+                          onClick={() => handlePageChange(Number(pageNum))}
+                          className={`relative inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md min-w-[2.5rem] justify-center ${
+                            currentPage === pageNum
+                              ? 'z-10 bg-teal-50 border-teal-500 text-teal-600 hover:bg-teal-100'
+                              : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:border-gray-400'
+                          }`}
+                          aria-current={currentPage === pageNum ? 'page' : undefined}
+                        >
+                          {pageNum}
+                        </button>
+                      )
                     ))}
-                    
-                    {/* Next button - only show if not on last page */}
-                    {currentPage < totalPages && (
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePageChange(currentPage + 1);
-                        }}
-                        className="inline-flex items-center px-3 py-2 rounded-r-md bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        Next
-                      </a>
-                    )}
-                  </nav>
+
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-md border text-sm font-medium ${
+                            currentPage === totalPages
+                          ? 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed' 
+                          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:border-gray-400'
+                          }`}
+                      aria-label="Next page"
+                        >
+                          <span className="sr-only">Next</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </nav>
                 </div>
               )}
             </div>

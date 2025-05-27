@@ -8,8 +8,10 @@ interface FormSectionProps {
   title: string;
   questions: FormQuestion[];
   onQuestionChange: (id: string, value: string) => void;
-  section?: FormSectionType;
+  section: FormSectionType;
   onPreview?: (fileType: FileType) => void;
+  validationErrors?: string[];
+  fieldRefs?: {[key: string]: React.RefObject<HTMLDivElement | null>};
 }
 
 // Get section style based on section type
@@ -66,7 +68,7 @@ function getSectionStyle(section?: FormSectionType) {
   }
 }
 
-export function FormSection({ title, questions, onQuestionChange, section, onPreview }: FormSectionProps) {
+export function FormSection({ title, questions, onQuestionChange, section, onPreview, validationErrors, fieldRefs }: FormSectionProps) {
   // Get section styling
   const style = getSectionStyle(section);
 
@@ -95,6 +97,8 @@ export function FormSection({ title, questions, onQuestionChange, section, onPre
                 question={question}
                 onChange={onQuestionChange}
                 onPreview={onPreview}
+                hasError={validationErrors?.includes(question.id)}
+                inputRef={fieldRefs?.[question.id]}
               />
             </div>
           ))}

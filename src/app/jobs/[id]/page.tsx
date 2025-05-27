@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { DollarSign, MapPin, Briefcase, Clock, Building, Bookmark, BadgeCheck, Globe, Link as LinkIcon, GraduationCap, ExternalLink, ArrowLeft } from 'lucide-react';
-import { Job, experienceLevelMap } from '@/app/types';
+import { Job } from '@/app/types/job';
+import { ROLE_LEVEL_OPTIONS } from '@/app/types/job';
 import Link from 'next/link';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 
@@ -269,6 +270,7 @@ export default function JobDetailsPage() {
                     // Handle quick apply
                   }}
                   className="flex-1"
+                  applicationId={job.id.toString()}
                 />
                 
                 <a 
@@ -338,7 +340,9 @@ export default function JobDetailsPage() {
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Experience</div>
-                    <div className="font-medium">{experienceLevelMap[job.experienceLevel] || job.experienceLevel}</div>
+                    <div className="font-medium">
+                      {ROLE_LEVEL_OPTIONS.find(level => level.value === job.experienceLevel)?.label || job.experienceLevel}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
