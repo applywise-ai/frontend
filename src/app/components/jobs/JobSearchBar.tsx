@@ -1,22 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, Briefcase, FilterIcon, X, Code } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, MapPin, Briefcase, FilterIcon, X, Code, DollarSign, Globe, Check } from 'lucide-react';
 import { MultiSelect } from '@/app/components/ui/multi-select';
 import { useRouter, useSearchParams } from 'next/navigation';
 import JobSearchBarSkeleton from '@/app/components/loading/JobSearchBarSkeleton';
 import { LOCATION_TYPE_OPTIONS, ROLE_LEVEL_OPTIONS, INDUSTRY_SPECIALIZATION_OPTIONS } from '@/app/types/job';
-import JobSearchMoreFilters from '@/app/components/jobs/JobSearchMoreFilters';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/select';
+import { Button } from '@/app/components/ui/button';
 
 interface JobSearchBarProps {
   detailsOpen?: boolean;
   isLoading?: boolean;
+  isMobile?: boolean;
 }
 
-export default function JobSearchBar({ detailsOpen = false, isLoading = false }: JobSearchBarProps) {
+export default function JobSearchBar({ detailsOpen = false, isLoading = false, isMobile }: JobSearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   
   // Initialize state from URL parameters
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +27,7 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false }:
   const [experienceLevels, setExperienceLevels] = useState<string[]>([]);
   const [sponsorship, setSponsorship] = useState('any');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   
   // Define filter options
   const salaryRanges = [
@@ -41,6 +42,12 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false }:
     { value: '200000', label: 'Min $200,000' }
   ];
   
+  useEffect(() => {
+    if (isMobile) {
+      setShowFilters(false);
+    }
+  }, [isMobile]);
+
   // Load filters from URL parameters on component mount
   useEffect(() => {
     const query = searchParams.get('query') || '';
@@ -81,15 +88,6 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false }:
     
     setActiveFilters(filters);
   }, [searchParams]);
-  
-  // Clean up timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current);
-      }
-    };
-  }, []);
   
   // Handle filter changes with immediate update
   const handleSalaryChange = (value: string) => {
@@ -135,7 +133,7 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false }:
     }, 0);
   };
   
-  // Handle search submission - still needed for Enter key support
+  // Handle search submission - search only when button is clicked
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -146,23 +144,18 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false }:
     router.replace(`/jobs?${params.toString()}`);
   };
   
-  // Handle text input changes with debounce
+  // Handle text input changes without automatic search
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    
-    // Clear any existing timeout
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
-    }
-    
-    // Set a new timeout to update the URL after the user stops typing
-    searchTimeout.current = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value) params.set('query', value);
-      else params.delete('query');
-      router.replace(`/jobs?${params.toString()}`);
-    }, 500); // 500ms debounce time
+  };
+  
+  // Clear search input
+  const clearSearch = () => {
+    setSearchQuery('');
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('query');
+    router.replace(`/jobs?${params.toString()}`);
   };
   
   // Add handler for specializations
@@ -235,134 +228,181 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false }:
   
   // If loading, show skeleton
   if (isLoading) {
-    return <JobSearchBarSkeleton detailsOpen={detailsOpen} />;
+    return <JobSearchBarSkeleton />;
   }
 
   return (
     <div className="w-full">
       <form onSubmit={handleSearch}>
         <div className="flex flex-col space-y-4">
-          {/* Main search bar with filters toggle */}
-          <div className="flex space-x-2">
-            <div className="relative flex-grow">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
+          {/* Modern search bar with integrated filters toggle */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Search for jobs, skills, or companies..."
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none"
+                placeholder="Search jobs, skills, companies..."
+                className="block w-full px-4 py-2.5 pr-10 bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-200 text-gray-900 placeholder-gray-500 text-sm"
                 value={searchQuery}
                 onChange={handleSearchInputChange}
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             
-            {/* Filters toggle button (visible on mobile) */}
+            {/* Compact filters toggle for mobile */}
             <button
               type="button"
-              className="md:hidden inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md bg-white hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-lg text-sm font-medium text-gray-700 hover:bg-white/90 hover:border-gray-300 transition-all duration-200"
               onClick={() => setShowFilters(!showFilters)}
             >
-              <FilterIcon className="h-5 w-5 mr-2" />
-              Filters
+              {showFilters ? (
+                <>
+                  <X className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Close</span>
+                </>
+              ) : (
+                <>
+                  <FilterIcon className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Filters</span>
+                </>
+              )}
             </button>
             
-            {/* Search button */}
+            {/* Modern search button */}
             <button
               type="submit"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
             >
-              Search
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm">Search</span>
             </button>
           </div>
           
-          {/* Filters - desktop view always visible, mobile only when toggled */}
-          <div className={`${showFilters ? 'block' : 'hidden md:block'}`}>
-            <div className={`grid grid-cols-1 ${detailsOpen ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'} gap-4`}>
-              {/* Specialization Filter */}
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0 bg-gray-100 p-2 rounded-md">
-                  <Code className="h-5 w-5 text-gray-500" />
+          {/* Modern filters section */}
+          <div className={`${showFilters ? 'block' : 'hidden'} transition-all duration-300`}>
+            <div className={`grid grid-cols-1 ${detailsOpen ? 'xl:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'} gap-2`}>
+              {/* Specialization Filter with modern icon */}
+              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
+                <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
+                  <Code className="h-3.5 w-3.5 text-white" />
                 </div>
                 <MultiSelect
                   options={INDUSTRY_SPECIALIZATION_OPTIONS}
                   selected={specializations}
                   onChange={handleSpecializationsChange}
-                  placeholder="Select specializations..."
+                  placeholder="Specializations"
                   itemName="specialization"
+                  className="flex-1"
                 />
               </div>
               
-              {/* Location Filter */}
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0 bg-gray-100 p-2 rounded-md">
-                  <MapPin className="h-5 w-5 text-gray-500" />
+              {/* Location Filter with modern icon */}
+              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
+                <div className="flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
+                  <MapPin className="h-3.5 w-3.5 text-white" />
                 </div>
                 <MultiSelect
                   options={LOCATION_TYPE_OPTIONS}
                   selected={locations}
                   onChange={handleLocationsChange}
-                  placeholder="Select locations..."
+                  placeholder="Locations"
                   itemName="location"
+                  className="flex-1"
                 />
               </div>
               
-              {/* Experience Level Filter */}
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0 bg-gray-100 p-2 rounded-md">
-                  <Briefcase className="h-5 w-5 text-gray-500" />
+              {/* Experience Level Filter with modern icon */}
+              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
+                <div className="flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
+                  <Briefcase className="h-3.5 w-3.5 text-white" />
                 </div>
                 <MultiSelect
                   options={ROLE_LEVEL_OPTIONS}
                   selected={experienceLevels}
                   onChange={handleExperienceLevelsChange}
-                  placeholder="Select experience levels..."
+                  placeholder="Experience"
                   itemName="experience"
+                  className="flex-1"
                 />
               </div>
               
-              {/* More Filters */}
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0 bg-gray-100 p-2 rounded-md">
-                  <FilterIcon className="h-5 w-5 text-gray-500" />
+              {/* Salary Filter with modern icon */}
+              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
+                <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-emerald-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
+                  <DollarSign className="h-3.5 w-3.5 text-white" />
                 </div>
-                <JobSearchMoreFilters
-                  minSalary={minSalary}
-                  sponsorship={sponsorship}
-                  onSalaryChange={handleSalaryChange}
-                  onSponsorshipChange={toggleSponsorshipFilter}
-                  salaryRanges={salaryRanges}
-                />
+                <Select value={minSalary} onValueChange={handleSalaryChange}>
+                  <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white hover:bg-white hover:text-black hover:border-gray-400 px-3 py-2 text-sm ring-offset-white focus:outline-none">
+                    <SelectValue placeholder="Any salary" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60">
+                    {salaryRanges.map((range) => (
+                      <SelectItem 
+                        key={range.value} 
+                        value={range.value}
+                        className="hover:bg-gray-900 hover:text-white focus:bg-gray-900 focus:text-white text-sm"
+                      >
+                        {range.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Visa Sponsorship Filter with modern icon */}
+              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
+                <div className="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
+                  <Globe className="h-3.5 w-3.5 text-white" />
+                </div>
+                <Button
+                  variant="outline"
+                  className={`flex h-10 w-full items-center justify-start rounded-md border border-gray-200 bg-white hover:bg-white hover:text-teal-700 hover:border-gray-400 px-3 py-2 text-sm ring-offset-white focus:outline-none transition-all duration-200 ${
+                    sponsorship === 'yes' 
+                      ? 'text-teal-600 font-semibold' 
+                      : 'text-gray-700'
+                  }`}
+                  onClick={toggleSponsorshipFilter}
+                >
+                  {sponsorship === 'yes' ? <Check className="h-4 w-4 mr-2" /> : null}
+                  Visa sponsorship
+                </Button>
               </div>
             </div>
             
-            {/* Active Filter Tags & Clear Filters Button */}
-            <div className="mt-4 flex justify-between items-center">
-              <div className="flex flex-wrap gap-2">
-                {activeFilters.map((filter) => (
-                  <div key={filter} className="bg-teal-50 text-teal-700 rounded-full px-3 py-1 text-sm flex items-center">
-                    {filter}
-                    <button 
-                      type="button"
-                      onClick={() => removeFilter(filter)} 
-                      className="ml-2 text-teal-500 hover:text-teal-700"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              
-              {activeFilters.length > 0 && (
+            {/* Modern active filter tags */}
+            {activeFilters.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {activeFilters.map((filter) => (
+                    <div key={filter} className="bg-gradient-to-r from-teal-50 to-teal-100 text-teal-700 rounded-full px-3 py-1 text-xs flex items-center gap-1.5 border border-teal-200/50 hover:from-teal-100 hover:to-teal-200 transition-all duration-200">
+                      <span className="font-medium">{filter}</span>
+                      <button 
+                        type="button"
+                        onClick={() => removeFilter(filter)} 
+                        className="text-teal-500 hover:text-teal-700 hover:bg-teal-200 rounded-full p-0.5 transition-all duration-200"
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-sm text-teal-600 hover:text-teal-800 font-medium"
+                  className="text-xs text-teal-600 hover:text-teal-800 font-medium px-2 py-1 rounded-md hover:bg-teal-50 transition-all duration-200"
                 >
-                  Clear all filters
+                  Clear all
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </form>

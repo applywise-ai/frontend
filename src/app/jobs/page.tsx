@@ -7,8 +7,11 @@ import JobCard from '@/app/components/jobs/JobCard';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Job } from '@/app/types/job';
+import { getBreakpoint } from '@/app/utils/breakpoints';
+import { useRouter } from 'next/navigation';
 
-export default function Dashboard() {
+export default function JobsPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [sortOption, setSortOption] = useState('none');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
@@ -16,6 +19,7 @@ export default function Dashboard() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const jobsPerPage = 9; // Updated to match applications page
   
   // Sample job data
@@ -395,6 +399,25 @@ export default function Dashboard() {
     window.scrollTo(0, 0); // Scroll to top when changing pages
   };
 
+  // Close details panel on large viewport or smaller
+  useEffect(() => {
+    const handleResize = () => {
+      const isDetailsPanelOpen = !!selectedJob
+      if (window.innerWidth < getBreakpoint('lg') && isDetailsPanelOpen) { 
+        setSelectedJob(null); // Close details panel on large viewport
+      }
+      setIsMobile(
+        window.innerWidth < getBreakpoint('sm') ||
+        (isDetailsPanelOpen && window.innerWidth < getBreakpoint('2xl'))
+      ); // Set mobile viewport for jobs page
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    }
+  }, [selectedJob]);
+
   // Filter jobs based on URL parameters
   useEffect(() => {
     setIsLoading(true);
@@ -517,166 +540,192 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full pb-6">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        {/* Main content layout with optional details panel */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left column: Search, filters, and job listings */}
-          <div className={`${selectedJob ? 'lg:w-2/5' : 'w-full'} flex-shrink-0`}>
-            {/* Search and Filters */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-              <h1 className="text-lg sm:text-2xl font-bold mb-6 text-gray-900">Find Your Next Opportunity</h1>
-              <JobSearchBar detailsOpen={!!selectedJob} isLoading={false} />
-            </div>
-            
-            {/* Job Listing Header */}
-            <div className="bg-white rounded-lg p-4 shadow-sm mb-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="text-gray-600">
-                  {isLoading ? (
-                    <div className="h-5 bg-gray-200 rounded w-32 animate-pulse"></div>
-                  ) : (
-                    <p className="font-medium">{filteredJobs.length} jobs found</p>
-                  )}
+    <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 h-screen w-full overflow-hidden flex flex-col">
+      {/* Sticky Search and Filters Header */}
+      <div className={`flex-shrink-0 pt-2 bg-white backdrop-blur-sm border-t border-b border-gray-200/60 shadow-sm ${selectedJob ? 'lg:w-2/5' : 'w-full'}`}>
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-col gap-4">
+            {/* Top row: Title and results/sort */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-bold text-gray-900">{isMobile ? 'Jobs' : 'Find Your Next Opportunity'}</h1>
+              
+              {/* Results count and sort - always visible */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-4 bg-gradient-to-b from-teal-500 to-teal-600 rounded-full"></div>
+                  <div className="text-gray-600">
+                    {isLoading ? (
+                      <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+                    ) : (
+                      <p className="text-sm font-medium">{filteredJobs.length} jobs</p>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">Sort by:</span>
+                <div className="flex items-center gap-2 relative z-[60]">
+                  <span className="text-xs text-gray-500">Sort:</span>
                   <Select 
                     value={sortOption}
                     onValueChange={handleSortChange}
                     disabled={isLoading}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[140px] h-8 bg-white/80 border-gray-200/60 hover:border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Choose one</SelectItem>
-                      <SelectItem value="recent">Most Recent</SelectItem>
-                      <SelectItem value="salary-high">Salary: High to Low</SelectItem>
-                      <SelectItem value="salary-low">Salary: Low to High</SelectItem>
+                    <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 z-[70]">
+                      <SelectItem value="none" className="text-sm">Default</SelectItem>
+                      <SelectItem value="recent" className="text-sm">Recent</SelectItem>
+                      <SelectItem value="salary-high" className="text-sm">Salary ↓</SelectItem>
+                      <SelectItem value="salary-low" className="text-sm">Salary ↑</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </div>
             
+            {/* Bottom row: Search and filters */}
+            <div className="w-full">
+              <JobSearchBar 
+                detailsOpen={!!selectedJob} 
+                isLoading={false}
+                isMobile={isMobile}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
+          {/* Left column: Job listings */}
+          <div className={`${selectedJob ? 'lg:w-2/5 lg:-ml-5' : 'w-full'} flex-shrink-0 h-full overflow-hidden flex flex-col`}>
             {/* Job Listings */}
-            <div className={`space-y-4 ${isLoading ? 'animate-pulse' : ''}`}>
+            <div className={`flex-1 overflow-y-auto space-y-4 pb-8 ${isLoading ? 'animate-pulse' : ''}`}>
               {isLoading ? (
-                // Show skeleton cards when loading
+                // Modern skeleton cards
                 [...Array(5)].map((_, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-start">
-                      <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
-                      <div className="ml-4 flex-1">
-                        <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                  <div key={index} className="bg-white/60 backdrop-blur-sm rounded-xl border border-white/30 p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl"></div>
+                      <div className="flex-1 space-y-3">
+                        <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
+                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2"></div>
                         <div className="flex flex-wrap gap-2">
-                          <div className="h-4 bg-gray-200 rounded w-20"></div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                          <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-20"></div>
+                          <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-24"></div>
+                          <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-16"></div>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))
               ) : currentJobs.length > 0 ? (
-                currentJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    title={job.title}
-                    company={job.company}
-                    logo={job.logo}
-                    location={job.location}
-                    salary={job.salary}
-                    jobType={job.jobType}
-                    postedDate={job.postedDate}
-                    description={job.description}
-                    isVerified={job.isVerified}
-                    isSponsored={job.isSponsored}
-                    providesSponsorship={job.providesSponsorship}
-                    compact={false}
-                    isSelected={selectedJob?.id === job.id}
-                    isAnySelected={!!selectedJob}
-                    onViewDetails={() => handleViewDetails(job)}
-                    id={job.id}
-                  />
-                ))
-              ) : (
-                // Empty State (when no jobs found)
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-                  <p className="text-gray-500 mb-6">Try adjusting your search filters or search for a different role.</p>
-                  <button 
-                    onClick={() => window.location.href = '/jobs'}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              )}
-              
-              {/* Pagination - Only show if we have jobs and more than one page */}
-              {!isLoading && filteredJobs.length > 0 && totalPages > 0 && (
-                <div className="mt-8 flex justify-center">
-                  <nav className="inline-flex items-center gap-1" aria-label="Pagination">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-md border text-sm font-medium ${
-                        currentPage === 1
-                          ? 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed' 
-                          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:border-gray-400'
-                      }`}
-                      aria-label="Previous page"
-                    >
-                      <span className="sr-only">Previous</span>
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-
-                    {getVisiblePages(currentPage, totalPages).map((pageNum, idx) => (
-                      pageNum === '...' ? (
-                        <span
-                          key={`ellipsis-${idx}`}
-                          className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700"
-                        >
-                          ...
-                        </span>
-                      ) : (
+                <>
+                  {currentJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      title={job.title}
+                      company={job.company}
+                      logo={job.logo}
+                      location={job.location}
+                      salary={job.salary}
+                      jobType={job.jobType}
+                      postedDate={job.postedDate}
+                      description={job.description}
+                      isVerified={job.isVerified}
+                      isSponsored={job.isSponsored}
+                      providesSponsorship={job.providesSponsorship}
+                      compact={false}
+                      isSelected={selectedJob?.id === job.id}
+                      isAnySelected={!!selectedJob}
+                      onViewDetails={() => handleViewDetails(job)}
+                      id={job.id}
+                    />
+                  ))}
+                  
+                  {/* Modern Pagination */}
+                  {!isLoading && filteredJobs.length > 0 && totalPages > 0 && (
+                    <div className="mt-12 flex justify-center pb-6">
+                      <nav className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-xl p-2 border border-white/30" aria-label="Pagination">
                         <button
-                          key={`page-${pageNum}`}
-                          onClick={() => handlePageChange(Number(pageNum))}
-                          className={`relative inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md min-w-[2.5rem] justify-center ${
-                            currentPage === pageNum
-                              ? 'z-10 bg-teal-50 border-teal-500 text-teal-600 hover:bg-teal-100'
-                              : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:border-gray-400'
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`relative inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            currentPage === 1
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
                           }`}
-                          aria-current={currentPage === pageNum ? 'page' : undefined}
+                          aria-label="Previous page"
                         >
-                          {pageNum}
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
                         </button>
-                      )
-                    ))}
+
+                        {getVisiblePages(currentPage, totalPages).map((pageNum, idx) => (
+                          pageNum === '...' ? (
+                            <span
+                              key={`ellipsis-${idx}`}
+                              className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500"
+                            >
+                              ...
+                            </span>
+                          ) : (
+                            <button
+                              key={`page-${pageNum}`}
+                              onClick={() => handlePageChange(Number(pageNum))}
+                              className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg min-w-[2.5rem] justify-center transition-all duration-200 ${
+                                currentPage === pageNum
+                                  ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                              }`}
+                              aria-current={currentPage === pageNum ? 'page' : undefined}
+                            >
+                              {pageNum}
+                            </button>
+                          )
+                        ))}
 
                         <button
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-md border text-sm font-medium ${
+                          className={`relative inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                             currentPage === totalPages
-                          ? 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed' 
-                          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:border-gray-400'
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
                           }`}
-                      aria-label="Next page"
+                          aria-label="Next page"
                         >
-                          <span className="sr-only">Next</span>
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </button>
                       </nav>
+                    </div>
+                  )}
+                </>
+              ) : (
+                // Modern Empty State
+                <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/30 p-12 text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">No jobs found</h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+                    We couldn&apos;t find any jobs matching your criteria. Try adjusting your search filters or exploring different roles.
+                  </p>
+                  <button 
+                    onClick={() => router.replace("/jobs")}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Clear All Filters
+                  </button>
                 </div>
               )}
             </div>
@@ -684,7 +733,7 @@ export default function Dashboard() {
           
           {/* Right column: Job Details Panel */}
           {(selectedJob || isLoadingDetails) && (
-            <div className="lg:w-3/5 lg:sticky lg:top-[5.5rem] lg:h-[calc(100vh-7rem)] self-start">
+            <div className="lg:w-3/5 lg:fixed lg:right-0 lg:top-16 lg:overflow-hidden self-start" style={{ height: 'calc(100vh - 4rem)' }}>
               <JobDetailsPanel 
                 job={selectedJob} 
                 onClose={() => setSelectedJob(null)} 

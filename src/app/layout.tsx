@@ -36,6 +36,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isAuthPage = shouldHideNavbar(pathname);
   const isDashboard = isDashboardPage(pathname);
+  const noScrollPage = pathname === '/jobs' || pathname === '/profile';
   const [layoutLoading, setLayoutLoading] = useState(true);
 
   // Simulate layout loading
@@ -51,13 +52,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-50 min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-50 ${noScrollPage ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col`}
       >
         <Navbar isLoading={layoutLoading} />
-        <main className={`${isAuthPage ? '' : 'pt-16'} flex-grow`}>
+        <main className={`${isAuthPage ? '' : 'pt-16'} ${noScrollPage ? 'flex-1 overflow-hidden' : 'flex-grow'}`}>
           {children}
         </main>
-        {isAuthPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
+        {isAuthPage || noScrollPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
       </body>
     </html>
   );

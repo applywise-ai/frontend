@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
-import { XCircle, Pencil, Send, Info } from 'lucide-react';
+import { Trash2, Pencil, Send, Info } from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ApplicationSubmittedContent from './applications/ApplicationSubmittedContent';
@@ -111,8 +111,8 @@ export default function ReviewApplicationModal({
                       className="px-4 py-2 rounded-md border border-red-500 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 font-medium transition-colors flex items-center text-sm"
                       onClick={handleClose}
                     >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Cancel
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
                     </button>
                   </div>
                   <button

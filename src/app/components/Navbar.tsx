@@ -106,12 +106,16 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
     window.location.href = '/';
   };
 
+  // Check if current page is jobs page
+  const isJobsPage = pathname === '/jobs' || pathname?.startsWith('/jobs/');
+
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 ${
       isCurrentDashboardPage || isLoggedIn
         ? 'bg-white text-gray-900' 
         : 'bg-gray-900 text-white'
     } transition-all duration-300 ${
+      isJobsPage ? '' : // No border/shadow for jobs page
       isCurrentDashboardPage ? 'border-b border-gray-200 shadow-sm' : 
       scrolled ? (isCurrentDashboardPage || isLoggedIn ? 'border-b border-gray-200 shadow-md' : 'border-b border-gray-700 shadow-lg') : ''
     }`}>

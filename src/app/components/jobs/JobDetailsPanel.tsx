@@ -23,9 +23,9 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false }: Job
   if (!job) return null;
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden h-full flex flex-col">
+    <div className="bg-white border-t border-l border-gray-200/60 shadow-lg h-screen flex flex-col pb-16">
       {/* Header with close button */}
-      <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center flex-shrink-0 z-10">
         <div className="flex items-center">
           <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-200 mr-3">
             {job.logo ? (

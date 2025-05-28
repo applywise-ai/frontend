@@ -97,10 +97,11 @@ export default function AnimatedApplyButton({
         onClick={state === 'review' ? handleReviewClick : handleClick}
         className={`
           inline-flex items-center justify-center
-          border border-transparent font-medium rounded-md shadow-sm
-          text-white bg-teal-600 hover:bg-teal-700
+          border border-transparent font-medium rounded-lg shadow-lg
+          text-white bg-gradient-to-r from-teal-600 to-teal-700 
+          hover:from-teal-700 hover:to-teal-800 hover:shadow-xl
           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500
-          transition-colors
+          transition-all duration-200 transform hover:-translate-y-0.5
           ${sizeClasses[size]}
           ${fullWidth ? 'w-full' : ''}
           ${className}

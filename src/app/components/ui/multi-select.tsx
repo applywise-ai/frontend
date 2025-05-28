@@ -79,7 +79,7 @@ export function MultiSelect({
         <Command className="w-full bg-white">
           <CommandInput placeholder="Search..." className="h-9 bg-white text-black placeholder-gray-500" />
           <CommandEmpty className="text-black">No results found.</CommandEmpty>
-          <CommandGroup className="max-h-[300px] overflow-y-auto bg-white border-gray-200">
+          <CommandGroup className="max-h-[300px] overflow-y-auto bg-white">
             {options.map((option) => (
               <CommandItem
                 key={option.value}

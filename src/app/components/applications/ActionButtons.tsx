@@ -1,5 +1,5 @@
 import { Button } from '@/app/components/ui/button';
-import { Check, X, Save } from 'lucide-react';
+import { Check, Trash2, Save } from 'lucide-react';
 
 interface ActionButtonsProps {
   onCancel: () => void;
@@ -23,8 +23,8 @@ export function ActionButtons({
           onClick={onCancel}
           className="rounded-md px-3 sm:px-3.5 py-2 sm:py-0 border-red-300 hover:bg-red-50 hover:text-red-800 text-red-700 flex items-center text-xs sm:text-sm"
         >
-          <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-          Cancel
+          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+          Delete
         </Button>
         
         <Button 

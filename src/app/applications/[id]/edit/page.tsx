@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Briefcase, FileText } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import Link from 'next/link';
+import { getBreakpoint } from '@/app/utils/breakpoints';
 
 // Import our components
 import { FormQuestion, FormSection, FileType } from '@/app/components/applications/QuestionInput';
@@ -366,13 +367,12 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
 
   // Function to handle file preview requests
   const handleFilePreview = (fileType: FileType) => {
-    // Handle only resume and coverLetter file types
     if (fileType === 'resume' || fileType === 'coverLetter') {
       // Set appropriate preview tab
       setPreviewTab(fileType);
       
       // If on mobile, switch to preview tab
-      if (window.innerWidth < 1024) {
+      if (window.innerWidth < getBreakpoint('lg')) {
         setActiveTab('preview');
       }
     }

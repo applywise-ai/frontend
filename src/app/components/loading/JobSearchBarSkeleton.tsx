@@ -1,6 +1,6 @@
 'use client';
 
-export default function JobSearchBarSkeleton({ detailsOpen = false }: { detailsOpen?: boolean }) {
+export default function JobSearchBarSkeleton() {
   return (
     <div className="animate-pulse">
       {/* Search Input Skeleton */}
@@ -9,7 +9,7 @@ export default function JobSearchBarSkeleton({ detailsOpen = false }: { detailsO
       </div>
       
       {/* Filters Grid Skeleton */}
-      <div className={`grid ${detailsOpen ? 'grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'} gap-4`}>
+      <div className={`grid sm:grid-cols-2 lg:grid-cols-4 gap-4`}>
         {/* Minimum Salary Filter Skeleton */}
         <div>
           <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
