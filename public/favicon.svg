@@ -1,0 +1,43 @@
+<svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" 
+     shape-rendering="crispEdges" 
+     image-rendering="pixelated"
+     style="image-rendering: -moz-crisp-edges; image-rendering: pixelated;">
+  
+  <!-- Outer robot head shape -->
+  <rect x="60" y="10" width="380" height="380" rx="60" ry="60" 
+        fill="#1e3a8a" 
+        stroke="#0f172a" 
+        stroke-width="12"/>
+  
+  <!-- Inner white background -->
+  <rect x="90" y="40" width="320" height="320" rx="40" ry="40" 
+        fill="white" 
+        stroke="none"/>
+  
+  <!-- Inner blue face area -->
+  <rect x="120" y="70" width="260" height="260" rx="25" ry="25" 
+        fill="#1e3a8a" 
+        stroke="none"/>
+  
+  <!-- Left eye -->
+  <circle cx="190" cy="200" r="25" 
+          fill="white" 
+          stroke="none"/>
+  
+  <!-- Right eye -->
+  <circle cx="310" cy="200" r="25" 
+          fill="white" 
+          stroke="none"/>
+  
+  <!-- Left ear/antenna -->
+  <rect x="20" y="140" width="60" height="120" rx="25" ry="25" 
+        fill="#1e3a8a" 
+        stroke="#0f172a" 
+        stroke-width="6"/>
+  
+  <!-- Right ear/antenna -->
+  <rect x="420" y="140" width="60" height="120" rx="25" ry="25" 
+        fill="#1e3a8a" 
+        stroke="#0f172a" 
+        stroke-width="6"/>
+</svg>
