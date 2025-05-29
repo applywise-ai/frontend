@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Building, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Job } from '@/app/types/job';
 import { useRouter } from 'next/navigation';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
+import { getAvatarColor } from '@/app/utils/avatar';
 
 export default function ForYou() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -181,21 +182,22 @@ export default function ForYou() {
   };
   
   return (
-    <div className="bg-gray-50 w-full pb-6">
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-teal-50/50 w-full pb-4 min-h-screen">
+      <div className="w-full mx-auto px-3 sm:px-4 lg:px-6 py-3">
         {/* Loading Animation or Carousel */}
-        <div className="relative mt-2">
+        <div className="relative mt-1">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center min-h-[500px]">
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
               {/* Cool Loading Animation */}
-              <div className="flex space-x-4 items-center justify-center">
+              <div className="flex space-x-3 items-center justify-center">
                 {[0, 1, 2, 3, 4].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-4 h-4 rounded-full bg-teal-500"
+                    className="w-3 h-3 rounded-full bg-teal-500"
                     animate={{
                       y: ["0%", "-100%", "0%"],
                       opacity: [1, 0.5, 1],
+                      scale: [1, 1.2, 1],
                     }}
                     transition={{
                       duration: 1,
@@ -207,38 +209,43 @@ export default function ForYou() {
                 ))}
               </div>
               <motion.div 
-                className="mt-8 text-teal-600 font-medium"
+                className="mt-6 text-teal-600 font-semibold text-base flex items-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
+                <Sparkles className="h-4 w-4 mr-2 text-teal-500" />
                 Finding perfect matches for you...
               </motion.div>
             </div>
           ) : (
             <>
               {/* Navigation Controls */}
-              <div className="absolute left-0 top-[45%] transform -translate-y-1/2 z-20 ml-[-12px] sm:ml-0">
+              <div className="absolute left-0 top-[45%] transform -translate-y-1/2 z-20 ml-[-8px] sm:ml-0">
                 <button
                   onClick={goToPrevious}
                   disabled={currentIndex === 0}
-                  className={`bg-white p-3 rounded-full shadow-lg ${
-                    currentIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-teal-600'
+                  className={`bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg border border-white/20 transition-all duration-200 ${
+                    currentIndex === 0 
+                      ? 'text-gray-300 cursor-not-allowed' 
+                      : 'text-gray-700 hover:text-teal-600 hover:bg-white hover:shadow-xl hover:scale-105'
                   }`}
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
               </div>
               
-              <div className="absolute right-0 top-[45%] transform -translate-y-1/2 z-20 mr-[-12px] sm:mr-0">
+              <div className="absolute right-0 top-[45%] transform -translate-y-1/2 z-20 mr-[-8px] sm:mr-0">
                 <button
                   onClick={goToNext}
                   disabled={currentIndex === jobs.length - 1}
-                  className={`bg-white p-3 rounded-full shadow-lg ${
-                    currentIndex === jobs.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-teal-600'
+                  className={`bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg border border-white/20 transition-all duration-200 ${
+                    currentIndex === jobs.length - 1 
+                      ? 'text-gray-300 cursor-not-allowed' 
+                      : 'text-gray-700 hover:text-teal-600 hover:bg-white hover:shadow-xl hover:scale-105'
                   }`}
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
               
@@ -260,44 +267,50 @@ export default function ForYou() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-xl shadow-xl overflow-hidden mx-auto max-w-4xl border border-gray-200"
+                            className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden mx-auto max-w-7xl border border-white/20 hover:shadow-2xl transition-all duration-300"
                           >
                             {/* Match Percentage */}
-                            <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-4 text-white flex justify-between items-center">
-                              <div className="flex items-center">
-                                <Heart className="h-5 w-5 mr-2 fill-white" />
-                                <span className="font-bold">{job.matchPercentage}% Match</span>
+                            <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-3 text-white flex justify-between items-center relative overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+                              <div className="flex items-center relative z-10">
+                                <Heart className="h-4 w-4 mr-2 fill-white drop-shadow-sm" />
+                                <span className="font-bold text-base">{job.matchPercentage}% Match</span>
                               </div>
-                              <div className="text-sm">
+                              <div className="text-sm font-medium relative z-10">
                                 Job {index + 1} of {jobs.length}
                               </div>
                             </div>
                             
                             {/* Job Content */}
-                            <div className="p-6">
+                            <div className="p-5">
                               {/* Header */}
                               <div className="flex justify-between items-start">
                                 <div className="flex items-start">
-                                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 mr-4">
+                                  <div className={`
+                                    w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden border border-white shadow-md mr-4 transition-transform duration-200 hover:scale-105
+                                    ${job.logo ? 'bg-gray-50' : getAvatarColor(job.company)}
+                                  `}>
                                     {job.logo ? (
                                       <img src={job.logo} alt={`${job.company} logo`} className="w-full h-full object-contain" />
                                     ) : (
-                                      <Building className="h-8 w-8 text-gray-400" />
+                                      <div className="text-lg font-bold text-white drop-shadow-sm">
+                                        {job.company.charAt(0)}
+                                      </div>
                                     )}
                                   </div>
                                   <div>
-                                    <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{job.title}</h2>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{job.title}</h2>
                                     <div className="flex items-center">
-                                      <span className="text-base sm:text-lg text-gray-700">{job.company}</span>
+                                      <span className="text-base sm:text-lg text-gray-700 font-medium">{job.company}</span>
                                       {job.isVerified && (
-                                        <BadgeCheck className="ml-1 h-5 w-5 text-teal-500" />
+                                        <BadgeCheck className="ml-2 h-5 w-5 text-teal-500" />
                                       )}
                                     </div>
                                   </div>
                                 </div>
                                 <button
                                   onClick={() => toggleSaveJob(job.id)}
-                                  className="flex-shrink-0 text-gray-400 hover:text-teal-600 transition-colors"
+                                  className="flex-shrink-0 text-gray-400 hover:text-teal-600 transition-all duration-200 hover:scale-110"
                                   aria-label={isSaved[job.id] ? "Unsave job" : "Save job"}
                                 >
                                   <Bookmark className={`h-6 w-6 ${isSaved[job.id] ? 'fill-teal-600 text-teal-600' : 'fill-transparent'}`} />
@@ -307,27 +320,35 @@ export default function ForYou() {
                               {/* Job Details */}
                               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="flex items-center space-x-2">
-                                  <MapPin className="h-5 w-5 text-gray-400" />
-                                  <span className="text-gray-700">{job.location}</span>
+                                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-md">
+                                    <MapPin className="h-5 w-5 text-white" />
+                                  </div>
+                                  <span className="text-gray-700 font-medium text-sm">{job.location}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <DollarSign className="h-5 w-5 text-gray-400" />
-                                  <span className="text-gray-700">{job.salary}</span>
+                                  <div className="bg-gradient-to-br from-green-500 to-green-600 p-2 rounded-md">
+                                    <DollarSign className="h-5 w-5 text-white" />
+                                  </div>
+                                  <span className="text-gray-700 font-medium text-sm">{job.salary}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Briefcase className="h-5 w-5 text-gray-400" />
-                                  <span className="text-gray-700">{job.jobType}</span>
+                                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-2 rounded-md">
+                                    <Briefcase className="h-5 w-5 text-white" />
+                                  </div>
+                                  <span className="text-gray-700 font-medium text-sm">{job.jobType}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Clock className="h-5 w-5 text-gray-400" />
-                                  <span className="text-gray-700">{job.postedDate}</span>
+                                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2 rounded-md">
+                                    <Clock className="h-5 w-5 text-white" />
+                                  </div>
+                                  <span className="text-gray-700 font-medium text-sm">{job.postedDate}</span>
                                 </div>
                               </div>
                               
                               {/* Description */}
                               <div className="mt-4">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">Job Description</h3>
-                                <p className="text-gray-700">{job.description}</p>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">Job Description</h3>
+                                <p className="text-gray-700 leading-relaxed text-sm">{job.description}</p>
                               </div>
                               
                               {/* Tags, Responsibilities, and Qualifications */}
@@ -335,12 +356,12 @@ export default function ForYou() {
                                 {/* Tags */}
                                 {job.tags && job.tags.length > 0 && (
                                   <div>
-                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">Skills & Technologies</h4>
+                                    <h4 className="text-base font-bold text-gray-900 mb-2">Skills & Technologies</h4>
                                     <div className="flex flex-wrap gap-2">
                                       {job.tags.map((tag, idx) => (
                                         <span 
                                           key={idx} 
-                                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200"
+                                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 border border-teal-200/50 shadow-sm hover:shadow-md transition-shadow duration-200"
                                         >
                                           <Tag className="h-3 w-3 mr-1" />
                                           {tag}
@@ -353,38 +374,51 @@ export default function ForYou() {
                                 {/* Responsibilities */}
                                 {job.shortResponsibilities && (
                                   <div>
-                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">Key Responsibilities</h4>
-                                    <p className="text-sm text-gray-700">{job.shortResponsibilities}</p>
+                                    <h4 className="text-base font-bold text-gray-900 mb-2">Key Responsibilities</h4>
+                                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
+                                      <p className="text-gray-700 leading-relaxed text-sm">{job.shortResponsibilities}</p>
+                                    </div>
                                   </div>
                                 )}
                                 
                                 {/* Qualifications */}
                                 {job.shortQualifications && (
                                   <div>
-                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">Qualifications</h4>
-                                    <p className="text-sm text-gray-700">{job.shortQualifications}</p>
+                                    <h4 className="text-base font-bold text-gray-900 mb-2">Key Qualifications</h4>
+                                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
+                                      <p className="text-gray-700 leading-relaxed text-sm">{job.shortQualifications}</p>
+                                    </div>
                                   </div>
                                 )}
                               </div>
                               
                               {/* Why We Recommended */}
-                              <div className="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <h3 className="text-sm sm:text-md font-semibold text-gray-900 mb-1">
-                                  <Heart className="h-4 w-4 inline mr-2 text-rose-500" />
+                              <div className="mt-4 bg-gradient-to-r from-rose-50 to-pink-50 p-3 rounded-lg border border-rose-100 shadow-sm">
+                                <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center">
+                                  <Heart className="h-4 w-4 mr-2 text-rose-500" />
                                   Why we recommended this
                                 </h3>
-                                <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
-                                  <li>Matches your experience in {job.experienceLevel === 'senior' ? 'senior-level positions' : job.experienceLevel === 'mid' ? 'mid-level roles' : 'entry-level positions'}</li>
-                                  <li>Aligns with your preferred {job.location.toLowerCase().includes('remote') ? 'remote work style' : 'location preferences'}</li>
-                                  <li>Matches your skill set in {job.title.split(' ')[0]} development</li>
+                                <ul className="text-gray-700 space-y-1">
+                                  <li className="flex items-start text-sm">
+                                    <div className="w-1.5 h-1.5 bg-rose-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                                    Matches your experience in {job.experienceLevel === 'senior' ? 'senior-level positions' : job.experienceLevel === 'mid' ? 'mid-level roles' : 'entry-level positions'}
+                                  </li>
+                                  <li className="flex items-start text-sm">
+                                    <div className="w-1.5 h-1.5 bg-rose-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                                    Aligns with your preferred {job.location.toLowerCase().includes('remote') ? 'remote work style' : 'location preferences'}
+                                  </li>
+                                  <li className="flex items-start text-sm">
+                                    <div className="w-1.5 h-1.5 bg-rose-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                                    Matches your skill set in {job.title.split(' ')[0]} development
+                                  </li>
                                 </ul>
                               </div>
                               
                               {/* Action Buttons */}
-                              <div className="mt-6 flex space-x-4">
+                              <div className="mt-5 flex space-x-3">
                                 <button
                                   onClick={() => viewJobDetails(job.id)}
-                                  className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 py-3 px-4 rounded-lg font-medium transition-colors"
+                                  className="flex-1 bg-white/80 backdrop-blur-sm border-2 border-gray-200 hover:border-gray-300 hover:bg-white text-gray-800 py-3 px-4 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 text-sm"
                                 >
                                   View Full Details
                                 </button>
@@ -401,48 +435,54 @@ export default function ForYou() {
                         </AnimatePresence>
                         
                         {/* Job Feedback Section */}
-                        <div className="mt-4 mb-4 flex flex-col items-center">
-                          <p className="text-gray-700 font-medium mb-2">Would you like to see more jobs like this?</p>
+                        <div className="mt-4 mb-3 flex flex-col items-center">
+                          <p className="text-gray-700 font-semibold mb-3 text-base">Would you like to see more jobs like this?</p>
                           <div className="flex space-x-4">
                             <button
                               onClick={() => handleJobFeedback(job.id, true)}
-                              className={`flex items-center px-6 py-2 rounded-md transition-colors ${
+                              className={`flex items-center px-6 py-2 rounded-lg font-semibold transition-all duration-200 text-sm ${
                                 jobFeedback[job.id] === true 
-                                  ? 'bg-teal-100 text-teal-700 border border-teal-500' 
-                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                  ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-lg border-2 border-teal-500 transform scale-105' 
+                                  : 'bg-white/80 backdrop-blur-sm text-gray-700 border-2 border-gray-200 hover:border-teal-300 hover:bg-white hover:shadow-lg hover:-translate-y-0.5'
                               }`}
                             >
-                              <ThumbsUp className={`h-5 w-5 mr-2 ${jobFeedback[job.id] === true ? 'text-teal-600' : 'text-gray-500'}`} />
-                              Yes
+                              <ThumbsUp className={`h-4 w-4 mr-2 ${jobFeedback[job.id] === true ? 'text-white' : 'text-gray-500'}`} />
+                              Yes, more like this
                             </button>
                             <button
                               onClick={() => handleJobFeedback(job.id, false)}
-                              className={`flex items-center px-6 py-2 rounded-md transition-colors ${
+                              className={`flex items-center px-6 py-2 rounded-lg font-semibold transition-all duration-200 text-sm ${
                                 jobFeedback[job.id] === false 
-                                  ? 'bg-gray-100 text-gray-700 border border-gray-400' 
-                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                  ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg border-2 border-gray-500 transform scale-105' 
+                                  : 'bg-white/80 backdrop-blur-sm text-gray-700 border-2 border-gray-200 hover:border-gray-400 hover:bg-white hover:shadow-lg hover:-translate-y-0.5'
                               }`}
                             >
-                              <ThumbsDown className={`h-5 w-5 mr-2 ${jobFeedback[job.id] === false ? 'text-gray-600' : 'text-gray-500'}`} />
-                              No
+                              <ThumbsDown className={`h-4 w-4 mr-2 ${jobFeedback[job.id] === false ? 'text-white' : 'text-gray-500'}`} />
+                              Not interested
                             </button>
                           </div>
                           {jobFeedback[job.id] !== undefined && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <motion.p 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-gray-600 mt-2 font-medium"
+                            >
                               {jobFeedback[job.id] 
-                                ? "Thanks! We'll show you more jobs like this." 
-                                : "Thanks! We'll refine your recommendations."}
-                            </p>
+                                ? "✨ Thanks! We'll show you more jobs like this." 
+                                : "👍 Thanks! We'll refine your recommendations."}
+                            </motion.p>
                           )}
                         </div>
                         
                         {/* Progress Indicators */}
-                        <div className="flex justify-center mt-2 space-x-2">
+                        <div className="flex justify-center mt-3 space-x-2">
                           {jobs.map((_, i) => (
                             <button
                               key={i}
-                              className={`h-2 rounded-full transition-all ${
-                                i === currentIndex ? 'w-8 bg-teal-500' : 'w-2 bg-gray-300'
+                              className={`h-2 rounded-full transition-all duration-300 ${
+                                i === currentIndex 
+                                  ? 'w-8 bg-gradient-to-r from-teal-500 to-blue-500 shadow-md' 
+                                  : 'w-2 bg-gray-300 hover:bg-gray-400'
                               }`}
                               onClick={() => setCurrentIndex(i)}
                               aria-label={`Go to job ${i + 1}`}

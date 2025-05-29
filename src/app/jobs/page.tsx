@@ -392,6 +392,7 @@ export default function JobsPage() {
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const isDetailsPanelOpen = !!selectedJob
   
   // Handle page changes
   const handlePageChange = (pageNumber: number) => {
@@ -402,7 +403,6 @@ export default function JobsPage() {
   // Close details panel on large viewport or smaller
   useEffect(() => {
     const handleResize = () => {
-      const isDetailsPanelOpen = !!selectedJob
       if (window.innerWidth < getBreakpoint('lg') && isDetailsPanelOpen) { 
         setSelectedJob(null); // Close details panel on large viewport
       }
@@ -416,7 +416,7 @@ export default function JobsPage() {
     return () => {
       window.removeEventListener('resize', handleResize);
     }
-  }, [selectedJob]);
+  }, [isDetailsPanelOpen]);
 
   // Filter jobs based on URL parameters
   useEffect(() => {
@@ -542,7 +542,7 @@ export default function JobsPage() {
   return (
     <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 h-screen w-full overflow-hidden flex flex-col">
       {/* Sticky Search and Filters Header */}
-      <div className={`flex-shrink-0 pt-2 bg-white backdrop-blur-sm border-t border-b border-gray-200/60 shadow-sm ${selectedJob ? 'lg:w-2/5' : 'w-full'}`}>
+      <div className={`${isDetailsPanelOpen && 'z-[60]'} flex-shrink-0 pt-2 bg-white backdrop-blur-sm border-t border-b border-gray-200/60 shadow-sm relative ${selectedJob ? 'lg:w-2/5' : 'w-full'}`}>
         <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-4">
             {/* Top row: Title and results/sort */}
@@ -562,7 +562,7 @@ export default function JobsPage() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 relative z-[60]">
+                <div className={`flex items-center gap-2 relative ${isDetailsPanelOpen && 'z-[80]'}`}>
                   <span className="text-xs text-gray-500">Sort:</span>
                   <Select 
                     value={sortOption}
@@ -572,7 +572,7 @@ export default function JobsPage() {
                     <SelectTrigger className="w-[140px] h-8 bg-white/80 border-gray-200/60 hover:border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 z-[70]">
+                    <SelectContent className={`bg-white/95 backdrop-blur-sm border-gray-200/60 ${isDetailsPanelOpen && 'z-[80]'}`}>
                       <SelectItem value="none" className="text-sm">Default</SelectItem>
                       <SelectItem value="recent" className="text-sm">Recent</SelectItem>
                       <SelectItem value="salary-high" className="text-sm">Salary ↓</SelectItem>

@@ -109,7 +109,7 @@ export default function JobSearchMoreFilters({
       {/* Salary Filter with MultiSelect-matching styling */}
       <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
         <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-emerald-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
-          <DollarSign className="h-3.5 w-3.5 text-white" />
+          <DollarSign className="h-4 w-4 text-white" />
         </div>
         <Select value={minSalary} onValueChange={onSalaryChange}>
           <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white hover:bg-white hover:text-black hover:border-gray-400 px-3 py-2 text-sm ring-offset-white focus:outline-none">
@@ -132,7 +132,7 @@ export default function JobSearchMoreFilters({
       {/* Visa Sponsorship Button with MultiSelect-matching styling */}
       <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg py-1 border border-white/30 hover:bg-white/80 transition-all duration-200">
         <div className="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 p-1.5 rounded-md flex items-center justify-center w-7 h-7 shadow-sm">
-          <Globe className="h-3.5 w-3.5 text-white" />
+          <Globe className="h-4 w-4 text-white" />
         </div>
         <Button
           variant="outline"

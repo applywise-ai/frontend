@@ -312,7 +312,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
       {isLoggedIn && (
         <div className="md:hidden">
           {mobileMenuOpen && (
-            <div ref={mobileMenuRef} className="absolute top-16 left-0 w-full bg-white shadow-md z-40 border-t border-gray-200">
+            <div ref={mobileMenuRef} className="absolute top-16 left-0 w-full bg-white shadow-md z-[90] border-t border-gray-200">
               <div className="px-4 py-2">
                 <Link 
                   href="/jobs" 

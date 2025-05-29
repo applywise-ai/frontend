@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { useRouter } from 'next/navigation';
+import { getAvatarColor } from '@/app/utils/avatar';
 
 interface ApplicationCardProps {
   application: Application;
@@ -55,28 +56,6 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onDelete, onAp
       default:
         return 'bg-amber-50 text-amber-600 border-amber-200';
     }
-  };
-  
-  // Get avatar background color based on company name
-  const getAvatarColor = (companyName: string) => {
-    const colors = [
-      'bg-blue-500',
-      'bg-purple-500',
-      'bg-green-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-teal-500',
-      'bg-orange-500',
-      'bg-cyan-500'
-    ];
-    
-    // Generate a simple hash from the company name
-    const hash = companyName.split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    
-    return colors[hash % colors.length];
   };
   
   const handleDelete = async () => {
