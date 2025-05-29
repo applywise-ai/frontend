@@ -153,13 +153,28 @@ export default function JobCard({
               {/* Job Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
-                  <h3 className={`
-                    ${showMinimal ? 'text-sm' : 'text-base sm:text-lg'} 
-                    font-bold text-gray-900 mb-0.5 line-clamp-2 leading-tight
-                    group-hover:text-teal-700 transition-colors duration-200 flex-1 min-w-0
-                  `}>
-                    {title}
-                  </h3>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`
+                      ${showMinimal ? 'text-sm' : 'text-base sm:text-lg'} 
+                      font-bold text-gray-900 line-clamp-2 leading-tight
+                      group-hover:text-teal-700 transition-colors duration-200
+                    `}>
+                      {title}
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <p className={`
+                        ${showMinimal ? 'text-xs' : 'text-sm'} 
+                        font-semibold text-gray-700
+                      `}>
+                        {company}
+                      </p>
+                      {isVerified && (
+                        <div className="flex items-center">
+                          <BadgeCheck className="h-4 w-4 text-teal-500" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   {/* Save Button - beside job title */}
                   {!showMinimal && (
                     <button
@@ -171,23 +186,10 @@ export default function JobCard({
                     </button>
                   )}
                 </div>
-                <div className="flex items-center space-x-2 mb-1">
-                  <p className={`
-                    ${showMinimal ? 'text-xs' : 'text-sm'} 
-                    font-semibold text-gray-700
-                  `}>
-                    {company}
-                  </p>
-                  {isVerified && (
-                    <div className="flex items-center">
-                      <BadgeCheck className="h-4 w-4 text-teal-500" />
-                    </div>
-                  )}
-                </div>
                 
                 {/* Minimal info for selected state */}
                 {showMinimal && (
-                  <div className="flex items-center space-x-2 text-xs text-gray-500">
+                  <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1">
                     <div className="flex items-center space-x-1">
                       <MapPin className="h-3 w-3" />
                       <span className="truncate max-w-[110px]">{location}</span>
@@ -207,7 +209,7 @@ export default function JobCard({
 
             {/* Tags */}
             {!showMinimal && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {isSponsored && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-400 text-white border border-orange-300/50">
                     Sponsored
