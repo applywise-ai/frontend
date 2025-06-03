@@ -12,6 +12,8 @@ interface FormSectionProps {
   onPreview?: (fileType: FileType) => void;
   validationErrors?: string[];
   fieldRefs?: {[key: string]: React.RefObject<HTMLDivElement | null>};
+  onSuccess?: (message: string) => void;
+  isPremium?: boolean;
 }
 
 // Get section style based on section type
@@ -33,7 +35,7 @@ function getSectionStyle(section?: FormSectionType) {
         iconColor: 'text-green-600',
         icon: <FileSpreadsheet className="h-5 w-5" />
       };
-    case 'application':
+    case 'coverLetter':
       return {
         bgColor: 'bg-indigo-50',
         borderColor: 'border-indigo-100',
@@ -68,7 +70,7 @@ function getSectionStyle(section?: FormSectionType) {
   }
 }
 
-export function FormSection({ title, questions, onQuestionChange, section, onPreview, validationErrors, fieldRefs }: FormSectionProps) {
+export function FormSection({ title, questions, onQuestionChange, section, onPreview, validationErrors, fieldRefs, onSuccess, isPremium }: FormSectionProps) {
   // Get section styling
   const style = getSectionStyle(section);
 
@@ -99,6 +101,8 @@ export function FormSection({ title, questions, onQuestionChange, section, onPre
                 onPreview={onPreview}
                 hasError={validationErrors?.includes(question.id)}
                 inputRef={fieldRefs?.[question.id]}
+                onSuccess={onSuccess}
+                isPremium={isPremium}
               />
             </div>
           ))}

@@ -16,6 +16,7 @@ export interface Job {
   isSponsored?: boolean;
   providesSponsorship?: boolean;
   experienceLevel: string;
+  specialization?: string;
   responsibilities?: string[];
   requirements?: string[];
   jobUrl?: string;

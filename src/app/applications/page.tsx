@@ -9,6 +9,7 @@ import ApplicationCard from '@/app/components/applications/ApplicationCard';
 import ApplicationFilters from '@/app/components/applications/ApplicationFilters';
 import Link from 'next/link';
 import { Input } from '@/app/components/ui/input';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -18,6 +19,7 @@ export default function ApplicationsPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const applicationsPerPage = 9;
+  const { showSuccess } = useNotification();
   
   useEffect(() => {
     const fetchApplications = async () => {
@@ -44,10 +46,11 @@ export default function ApplicationsPage() {
       if (success) {
         // Remove the application from state
         setApplications(applications.filter(app => app.id !== id));
+        showSuccess('Application deleted successfully!');
       }
     } catch (err) {
       console.error('Error deleting application:', err);
-      // Could add a toast notification here
+      // Could add error notification here
     }
   };
   
@@ -61,9 +64,12 @@ export default function ApplicationsPage() {
       setApplications(applications.map(app => 
         app.id === id ? updatedApplication : app
       ));
+      
+      // Show success notification
+      showSuccess(`Application status updated to ${newStatus}!`);
     } catch (err) {
       console.error('Error updating application status:', err);
-      // Could add a toast notification here
+      // Could add error notification here
     }
   };
   

@@ -9,6 +9,8 @@ import DashboardFooter from "./components/DashboardFooter";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { isDashboardPage, shouldHideNavbar } from "./utils/navigation";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import { GlobalNotification } from "./components/ui/GlobalNotification";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,11 +59,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-50 ${noScrollPage ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col`}
       >
-        <Navbar isLoading={layoutLoading} />
-        <main className={`${isAuthPage ? '' : 'pt-16'} ${noScrollPage ? 'flex-1 overflow-hidden' : 'flex-grow'}`}>
-          {children}
-        </main>
-        {isAuthPage || noScrollPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
+        <NotificationProvider>
+          <Navbar isLoading={layoutLoading} />
+          <GlobalNotification />
+          <main className={`${isAuthPage ? '' : 'pt-16'} ${noScrollPage ? 'flex-1 overflow-hidden' : 'flex-grow'}`}>
+            {children}
+          </main>
+          {isAuthPage || noScrollPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
+        </NotificationProvider>
       </body>
     </html>
   );

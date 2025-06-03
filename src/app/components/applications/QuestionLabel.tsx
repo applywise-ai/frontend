@@ -85,7 +85,7 @@ function getIconColorBySection(section: FormSection): string {
   switch (section) {
     case 'personal': return 'text-blue-600';
     case 'resume': return 'text-green-600';
-    case 'application': return 'text-indigo-600';
+    case 'coverLetter': return 'text-indigo-600';
     case 'screening': return 'text-teal-600';
     case 'custom': return 'text-amber-600';
     default: return 'text-gray-500';

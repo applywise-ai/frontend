@@ -5,6 +5,7 @@ import { Trash2, Pencil, Send, Info } from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ApplicationSubmittedContent from './applications/ApplicationSubmittedContent';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 interface ReviewApplicationModalProps {
   open: boolean;
@@ -33,12 +34,38 @@ export default function ReviewApplicationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { showSuccess } = useNotification();
   
   const handleClose = () => {
     setOpen(false);
     onCancel?.();
     // Reset state when modal is closed
     setIsSubmitted(false);
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    
+    try {
+      // Simulate API call to delete the application
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show success notification
+      showSuccess('Application deleted successfully!');
+      
+      // Close modal and redirect
+      setOpen(false);
+      onCancel?.();
+      
+      // Wait a bit for the notification to show, then redirect
+      setTimeout(() => {
+        router.push('/applications');
+      }, 500);
+    } catch (err) {
+      console.error('Error deleting application:', err);
+      setIsDeleting(false);
+    }
   };
 
   const handleEdit = () => {
@@ -109,10 +136,20 @@ export default function ReviewApplicationModal({
                   <div className="flex-1 flex justify-start">
                     <button
                       className="px-4 py-2.5 rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 hover:text-red-800 font-medium transition-all duration-200 flex items-center text-sm shadow-sm"
-                      onClick={handleClose}
+                      onClick={handleDelete}
+                      disabled={isDeleting}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
+                      {isDeleting ? (
+                        <>
+                          <div className="animate-spin h-4 w-4 mr-2 border-2 border-red-400 border-t-transparent rounded-full"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </>
+                      )}
                     </button>
                   </div>
                   <button

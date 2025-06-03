@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag, Sparkles, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Job } from '@/app/types/job';
 import { useRouter } from 'next/navigation';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getAvatarColor } from '@/app/utils/avatar';
+import SubscriptionCard from '@/app/components/SubscriptionCard';
 
 export default function ForYou() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -14,6 +15,7 @@ export default function ForYou() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaved, setIsSaved] = useState<Record<number | string, boolean>>({});
   const [jobFeedback, setJobFeedback] = useState<Record<number | string, boolean | null>>({});
+  const [aiAppliesLeft] = useState(5); // This would come from user data/context
   const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   
@@ -40,6 +42,7 @@ export default function ForYou() {
             isVerified: true,
             providesSponsorship: true,
             experienceLevel: 'senior',
+            specialization: 'frontend',
             matchPercentage: 98,
             jobUrl: 'https://example.com/jobs/senior-frontend-developer',
             tags: ['React', 'TypeScript', 'UI/UX', 'JavaScript'],
@@ -61,6 +64,7 @@ export default function ForYou() {
             isSponsored: true,
             providesSponsorship: false,
             experienceLevel: 'mid',
+            specialization: 'backend',
             matchPercentage: 92,
             jobUrl: 'https://example.com/jobs/backend-engineer',
             tags: ['Node.js', 'Python', 'AWS', 'API Design'],
@@ -81,6 +85,7 @@ export default function ForYou() {
             isVerified: false,
             providesSponsorship: false,
             experienceLevel: 'mid',
+            specialization: 'ux_ui',
             matchPercentage: 87,
             jobUrl: 'https://example.com/jobs/ux-ui-designer',
             tags: ['Figma', 'UI Design', 'User Research', 'Prototyping'],
@@ -101,6 +106,7 @@ export default function ForYou() {
             isVerified: true,
             providesSponsorship: true,
             experienceLevel: 'senior',
+            specialization: 'devops',
             matchPercentage: 85,
             jobUrl: 'https://example.com/jobs/devops-engineer',
             tags: ['AWS', 'Kubernetes', 'CI/CD', 'Docker'],
@@ -121,6 +127,7 @@ export default function ForYou() {
             isVerified: true,
             providesSponsorship: true,
             experienceLevel: 'senior',
+            specialization: 'ml_ai',
             matchPercentage: 82,
             jobUrl: 'https://example.com/jobs/ml-engineer',
             tags: ['Python', 'TensorFlow', 'Deep Learning', 'NLP'],
@@ -318,30 +325,56 @@ export default function ForYou() {
                               </div>
                               
                               {/* Job Details */}
-                              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex items-center space-x-2">
-                                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-md">
-                                    <MapPin className="h-5 w-5 text-white" />
+                              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="bg-gradient-to-br from-teal-100 to-teal-200 rounded-lg p-2 shadow-sm">
+                                    <DollarSign className="h-4 w-4 text-teal-700" />
                                   </div>
-                                  <span className="text-gray-700 font-medium text-sm">{job.location}</span>
+                                  <div>
+                                    <div className="text-xs text-gray-500 font-medium">Salary Range</div>
+                                    <div className="font-semibold text-sm text-gray-900">{job.salary}</div>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="bg-gradient-to-br from-green-500 to-green-600 p-2 rounded-md">
-                                    <DollarSign className="h-5 w-5 text-white" />
+                                <div className="flex items-center space-x-3">
+                                  <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg p-2 shadow-sm">
+                                    <MapPin className="h-4 w-4 text-blue-700" />
                                   </div>
-                                  <span className="text-gray-700 font-medium text-sm">{job.salary}</span>
+                                  <div>
+                                    <div className="text-xs text-gray-500 font-medium">Location</div>
+                                    <div className="font-semibold text-sm text-gray-900">{job.location}</div>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-2 rounded-md">
-                                    <Briefcase className="h-5 w-5 text-white" />
+                                <div className="flex items-center space-x-3">
+                                  <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-2 shadow-sm">
+                                    <Briefcase className="h-4 w-4 text-purple-700" />
                                   </div>
-                                  <span className="text-gray-700 font-medium text-sm">{job.jobType}</span>
+                                  <div>
+                                    <div className="text-xs text-gray-500 font-medium">Job Type</div>
+                                    <div className="font-semibold text-sm text-gray-900">{job.jobType}</div>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2 rounded-md">
-                                    <Clock className="h-5 w-5 text-white" />
+                                <div className="flex items-center space-x-3">
+                                  <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg p-2 shadow-sm">
+                                    <Clock className="h-4 w-4 text-amber-700" />
                                   </div>
-                                  <span className="text-gray-700 font-medium text-sm">{job.postedDate}</span>
+                                  <div>
+                                    <div className="text-xs text-gray-500 font-medium">Posted</div>
+                                    <div className="font-semibold text-sm text-gray-900">{job.postedDate}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-2 shadow-sm">
+                                    <GraduationCap className="h-4 w-4 text-green-700" />
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-gray-500 font-medium">Experience</div>
+                                    <div className="font-semibold text-sm text-gray-900">
+                                      {job.experienceLevel === 'senior' ? 'Senior (5-8 years)' : 
+                                       job.experienceLevel === 'mid' ? 'Mid-level (2-5 years)' : 
+                                       job.experienceLevel === 'entry' ? 'Entry-level (0-2 years)' : 
+                                       job.experienceLevel}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                               
@@ -371,23 +404,28 @@ export default function ForYou() {
                                   </div>
                                 )}
                                 
-                                {/* Responsibilities */}
-                                {job.shortResponsibilities && (
-                                  <div>
-                                    <h4 className="text-base font-bold text-gray-900 mb-2">Key Responsibilities</h4>
-                                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
-                                      <p className="text-gray-700 leading-relaxed text-sm">{job.shortResponsibilities}</p>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {/* Qualifications */}
-                                {job.shortQualifications && (
-                                  <div>
-                                    <h4 className="text-base font-bold text-gray-900 mb-2">Key Qualifications</h4>
-                                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
-                                      <p className="text-gray-700 leading-relaxed text-sm">{job.shortQualifications}</p>
-                                    </div>
+                                {/* Responsibilities and Qualifications Side by Side */}
+                                {(job.shortResponsibilities || job.shortQualifications) && (
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:items-stretch">
+                                    {/* Responsibilities */}
+                                    {job.shortResponsibilities && (
+                                      <div className="flex flex-col">
+                                        <h4 className="text-base font-bold text-gray-900 mb-2">Key Responsibilities</h4>
+                                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 flex-1">
+                                          <p className="text-gray-700 leading-relaxed text-sm">{job.shortResponsibilities}</p>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Qualifications */}
+                                    {job.shortQualifications && (
+                                      <div className="flex flex-col">
+                                        <h4 className="text-base font-bold text-gray-900 mb-2">Key Qualifications</h4>
+                                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 flex-1">
+                                          <p className="text-gray-700 leading-relaxed text-sm">{job.shortQualifications}</p>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -412,6 +450,14 @@ export default function ForYou() {
                                     Matches your skill set in {job.title.split(' ')[0]} development
                                   </li>
                                 </ul>
+                              </div>
+                              
+                              {/* Subscription Card */}
+                              <div className="mt-4">
+                                <SubscriptionCard
+                                  aiAppliesLeft={aiAppliesLeft}
+                                  applicationId={job.id.toString()}
+                                />
                               </div>
                               
                               {/* Action Buttons */}

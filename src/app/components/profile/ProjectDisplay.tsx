@@ -5,6 +5,7 @@ import { Link as LinkIcon, PencilIcon, Trash2, AlertCircle } from 'lucide-react'
 import { Button } from '@/app/components/ui/button';
 import { useState } from 'react';
 import { validateProject } from '@/app/utils/validation';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 import ProjectForm from './ProjectForm';
 import EditSectionModal from './EditSectionModal';
@@ -19,6 +20,7 @@ export default function ProjectDisplay({ profile, updateProfile }: ProjectDispla
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const projects = profile[FieldName.PROJECTS] as Project[] || [];
+  const { showSuccess } = useNotification();
 
   const handleEdit = (index: number) => {
     setEditingIndex(index);
@@ -28,31 +30,39 @@ export default function ProjectDisplay({ profile, updateProfile }: ProjectDispla
     const updatedProjects = [...projects];
     updatedProjects.splice(index, 1);
     updateProfile({ [FieldName.PROJECTS]: updatedProjects });
+    showSuccess('Project deleted successfully!');
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    // Get the new entry from profile
-    const newEntry = profile[FieldName.TEMP_PROJECT] as Project;
-        
-    const e = validateProject(newEntry);
-    if (Object.keys(e).length > 0) {
-      setErrors(e);
-      setIsSaving(false);
-      return;
-    }
+    try {
+      // Get the new entry from profile
+      const newEntry = profile[FieldName.TEMP_PROJECT] as Project;
+          
+      const e = validateProject(newEntry);
+      if (Object.keys(e).length > 0) {
+        setErrors(e);
+        setIsSaving(false);
+        return;
+      }
 
-    const updatedProjects = [...(profile[FieldName.PROJECTS] || [])];
-    if (editingIndex !== undefined) {
-      // If editing, replace the specific project entry
-      updatedProjects[editingIndex] = newEntry;
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const updatedProjects = [...(profile[FieldName.PROJECTS] || [])];
+      if (editingIndex !== undefined) {
+        // If editing, replace the specific project entry
+        updatedProjects[editingIndex] = newEntry;
+      }
+    
+      // Update the profile with the updated projects array
+      updateProfile({ [FieldName.PROJECTS]: updatedProjects });
+      showSuccess('Project updated successfully!');
+      setEditingIndex(undefined);
+      setErrors({});
+    } finally {
+      setIsSaving(false);
     }
-  
-    // Update the profile with the updated projects array
-    updateProfile({ [FieldName.PROJECTS]: updatedProjects });
-    setIsSaving(false);
-    setEditingIndex(undefined);
-    setErrors({});
   };
 
   const handleClose = () => {

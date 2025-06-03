@@ -9,7 +9,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Switch } from '@/app/components/ui/switch';
-import { AlertCircle, CheckCircle2, KeyRound, Trash2, User as UserIcon, Bell } from 'lucide-react';
+import { AlertCircle, KeyRound, Trash2, User as UserIcon, Bell } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -19,6 +19,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '@/app/components/ui/dialog';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -26,8 +27,6 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [accountError, setAccountError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [accountSuccess, setAccountSuccess] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
   const [deleteAccountError, setDeleteAccountError] = useState('');
   
   // Form states
@@ -45,6 +44,9 @@ export default function SettingsPage() {
   // Dialog states
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
+  
+  // Global notification hook
+  const { showSuccess } = useNotification();
   
   // Fetch user data on mount
   useEffect(() => {
@@ -79,7 +81,6 @@ export default function SettingsPage() {
     
     try {
       setAccountError('');
-      setAccountSuccess('');
       
       if (!email) {
         setAccountError('Email cannot be empty');
@@ -108,7 +109,7 @@ export default function SettingsPage() {
       // Here you would also update the display name in your database
       // For now, we're just handling the Firebase auth update
       
-      setAccountSuccess('Account information updated successfully');
+      showSuccess('Account information updated successfully!');
       setAccountCurrentPassword('');
     } catch (err) {
       setAccountError('Failed to update account information. Please try again.');
@@ -121,7 +122,6 @@ export default function SettingsPage() {
     
     try {
       setPasswordError('');
-      setPasswordSuccess('');
       
       if (!passwordCurrentPassword) {
         setPasswordError('Current password is required');
@@ -157,7 +157,7 @@ export default function SettingsPage() {
         return;
       }
       
-      setPasswordSuccess('Password updated successfully');
+      showSuccess('Password updated successfully!');
       setPasswordCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -229,7 +229,10 @@ export default function SettingsPage() {
               <Switch
                 id="new-job-matches"
                 checked={newJobMatches}
-                onCheckedChange={setNewJobMatches}
+                onCheckedChange={(checked) => {
+                  setNewJobMatches(checked);
+                  showSuccess(checked ? 'Email notifications enabled!' : 'Email notifications disabled!');
+                }}
               />
             </div>
             
@@ -241,7 +244,10 @@ export default function SettingsPage() {
               <Switch
                 id="auto-apply"
                 checked={autoApplyWithoutReview}
-                onCheckedChange={setAutoApplyWithoutReview}
+                onCheckedChange={(checked) => {
+                  setAutoApplyWithoutReview(checked);
+                  showSuccess(checked ? 'Auto apply enabled!' : 'Auto apply disabled!');
+                }}
               />
             </div>
             
@@ -295,12 +301,6 @@ export default function SettingsPage() {
                 <span>{accountError}</span>
               </div>
             )}
-            {accountSuccess && (
-              <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md mt-2 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
-                <span>{accountSuccess}</span>
-              </div>
-            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
@@ -346,12 +346,6 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mt-2 text-sm">
                 <AlertCircle className="h-4 w-4 text-red-400" />
                 <span>{passwordError}</span>
-              </div>
-            )}
-            {passwordSuccess && (
-              <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md mt-2 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
-                <span>{passwordSuccess}</span>
               </div>
             )}
           </CardHeader>

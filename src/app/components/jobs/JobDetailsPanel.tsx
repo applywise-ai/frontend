@@ -7,6 +7,8 @@ import { Job } from '@/app/types/job';
 import { ROLE_LEVEL_OPTIONS } from '@/app/types/job';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getAvatarColor } from '@/app/utils/avatar';
+import SubscriptionCard from '@/app/components/SubscriptionCard';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 interface JobDetailsPanelProps {
   job: Job | null;
@@ -17,6 +19,20 @@ interface JobDetailsPanelProps {
 
 export default function JobDetailsPanel({ job, onClose, isLoading = false, fullPage = false }: JobDetailsPanelProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const [aiAppliesLeft] = useState(5); // This would come from user data/context
+  const { showSuccess } = useNotification();
+  
+  const handleSaveToggle = () => {
+    const newSavedState = !isSaved;
+    setIsSaved(newSavedState);
+    
+    // Show success notification
+    if (newSavedState) {
+      showSuccess('Job saved successfully!');
+    } else {
+      showSuccess('Job removed from saved jobs!');
+    }
+  };
   
   if (isLoading) {
     return <JobDetailsPanelSkeleton />;
@@ -72,7 +88,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
               </a>
               
               <button
-                onClick={() => setIsSaved(!isSaved)}
+                onClick={handleSaveToggle}
                 className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                 aria-label={isSaved ? "Unsave job" : "Save job"}
               >
@@ -116,7 +132,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
             </a>
             
             <button
-              onClick={() => setIsSaved(!isSaved)}
+              onClick={handleSaveToggle}
               className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
               aria-label={isSaved ? "Unsave job" : "Save job"}
             >
@@ -124,6 +140,12 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
             </button>
           </div>
         )}
+        
+        {/* AI Applies Card */}
+        <SubscriptionCard
+          aiAppliesLeft={aiAppliesLeft}
+          applicationId={job.id.toString()}
+        />
         
         {/* Key Details and Company Info - Side by side on large screens when fullPage */}
         <div className={`${fullPage ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}`}>

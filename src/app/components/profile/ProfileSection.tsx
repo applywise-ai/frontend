@@ -7,6 +7,7 @@ import { PencilIcon, PlusIcon } from 'lucide-react';
 import EditSectionModal from './EditSectionModal';
 import { UserProfile, FieldName } from '@/app/types/profile';
 import { validateEmployment, validateEducation, validateProject } from '@/app/utils/validation';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 type EditContentProps = {
   profile: Partial<UserProfile>;
@@ -38,6 +39,9 @@ export default function ProfileSection({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [tempProfile, setTempProfile] = useState<Partial<UserProfile>>({});
+  
+  // Global notification hook
+  const { showSuccess } = useNotification();
 
   const handleEdit = () => {
     setTempProfile({ ...profile });
@@ -52,9 +56,15 @@ export default function ProfileSection({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Update the main profile with the temp profile changes
       updateProfile(tempProfile);
       setIsEditing(false);
+      
+      // Show success notification
+      showSuccess(`${title} updated successfully!`);
     } finally {
       setIsSaving(false);
     }
@@ -96,12 +106,19 @@ export default function ProfileSection({
           return;
         }
 
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Add the new entry to the array
         const existingArray = (profile[config.arrayField as keyof UserProfile] || []) as unknown[];
         const newArray = [...existingArray, newEntry];
         
         // Update the profile with the new array
         updateProfile({ [config.arrayField]: newArray });
+        
+        // Show success notification
+        const itemName = id === 'employment' ? 'Employment' : id === 'education' ? 'Education' : 'Project';
+        showSuccess(`${itemName} added successfully!`);
       }
       
       setIsEditing(false);

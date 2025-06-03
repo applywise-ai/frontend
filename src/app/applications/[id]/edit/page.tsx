@@ -14,6 +14,7 @@ import { JobDetails } from '@/app/components/applications/JobDetails';
 import { ApplicationPreview } from '@/app/components/applications/ApplicationPreview';
 import { ActionButtons } from '@/app/components/applications/ActionButtons';
 import { ApplicationPreviewHeader } from '@/app/components/applications/ApplicationPreviewHeader';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 // Define a type for unwrapped params
 type ParamsType = {
@@ -23,6 +24,7 @@ type ParamsType = {
 export default function EditJobApplicationPage({ params }: { params: ParamsType }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSaved, setIsSaved] = useState(true);
   const [loadingPreview, setLoadingPreview] = useState(true);
   const [activeTab, setActiveTab] = useState("form");
@@ -31,6 +33,9 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const initialQuestionsRef = useRef<FormQuestion[]>([]);
   const fieldRefs = useRef<{[key: string]: React.RefObject<HTMLDivElement | null>}>({});
+  
+  // Global notification hook
+  const { showSuccess } = useNotification();
   
   // Use React.use() to unwrap params before accessing properties
   const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
@@ -46,6 +51,9 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     daysAgo: 14,
     jobType: "Full-time"
   });
+  
+  // Mock user premium status (replace with actual user data)
+  const [isPremium] = useState(false); // This would come from user context/API
   
   // Load the preview when component mounts
   useEffect(() => {
@@ -147,7 +155,7 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       answer: 'john_doe_cover_letter.pdf',
       type: 'file',
       placeholder: 'Upload PDF, DOCX, or TXT file',
-      section: 'application',
+      section: 'coverLetter',
       fileType: 'coverLetter',
       required: false
     },
@@ -175,7 +183,7 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       answer: 'Hybrid',
       type: 'select',
       options: ['Remote', 'In-office', 'Hybrid'],
-      section: 'screening',
+      section: 'custom',
       required: true
     },
     {
@@ -288,6 +296,9 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       // Store the current state as the new baseline
       initialQuestionsRef.current = JSON.parse(JSON.stringify(formQuestions));
       
+      // Show success notification
+      showSuccess('Application saved successfully!');
+      
       // Switch to preview tab in mobile view
       setActiveTab('preview');
     }, 1500);
@@ -324,15 +335,40 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     
     // Simulate API call
     setTimeout(() => {
-      // Here you would normally send applicationData to your API
-      router.push(`/applications/${applicationId}/submitted`);
+      // Show success notification before redirecting
+      showSuccess('Application submitted successfully!');
+      
+      // Wait a bit for the notification to show, then redirect
+      setTimeout(() => {
+        router.push(`/applications/${applicationId}/submitted`);
+      }, 1000);
     }, 1500);
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    
+    try {
+      // Simulate API call to delete the application
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show success notification
+      showSuccess('Application deleted successfully!');
+      
+      // Wait a bit for the notification to show, then redirect
+      setTimeout(() => {
+        router.push('/applications');
+      }, 1000);
+    } catch (err) {
+      console.error('Error deleting application:', err);
+      setIsDeleting(false);
+    }
   };
 
   // Filter questions by section
   const personalQuestions = formQuestions.filter(q => q.section === 'personal');
   const resumeQuestions = formQuestions.filter(q => q.section === 'resume');
-  const applicationQuestions = formQuestions.filter(q => q.section === 'application');
+  const coverLetterQuestions = formQuestions.filter(q => q.section === 'coverLetter');
   const screeningQuestions = formQuestions.filter(q => q.section === 'screening');
   const customQuestions = formQuestions.filter(q => q.section === 'custom');
   
@@ -341,7 +377,7 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     switch (section) {
       case 'personal': return 'Personal Information';
       case 'resume': return 'Resume';
-      case 'application': return 'Cover Letter';
+      case 'coverLetter': return 'Cover Letter';
       case 'screening': return 'Screening Questions';
       case 'custom': return 'Additional Information';
       default: return 'Other Information';
@@ -410,6 +446,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
+          onSuccess={showSuccess}
+          isPremium={isPremium}
         />
         <FormSectionComponent 
           title={getSectionTitle('resume')} 
@@ -419,15 +457,19 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
+          onSuccess={showSuccess}
+          isPremium={isPremium}
         />
         <FormSectionComponent 
-          title={getSectionTitle('application')} 
-          questions={applicationQuestions} 
+          title={getSectionTitle('coverLetter')} 
+          questions={coverLetterQuestions} 
           onQuestionChange={handleQuestionChange} 
-          section="application"
+          section="coverLetter"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
+          onSuccess={showSuccess}
+          isPremium={isPremium}
         />
         <FormSectionComponent 
           title={getSectionTitle('screening')} 
@@ -437,6 +479,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
+          onSuccess={showSuccess}
+          isPremium={isPremium}
         />
         <FormSectionComponent 
           title={getSectionTitle('custom')} 
@@ -446,6 +490,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
+          onSuccess={showSuccess}
+          isPremium={isPremium}
         />
       </div>
     </div>
@@ -459,9 +505,10 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           {showHeader && (
             <ApplicationPreviewHeader
               activeTab={previewTab}
-              onCancel={() => router.push('/applications')}
+              onCancel={handleDelete}
               onSaveSubmit={isSaved && !formChanged ? handleSubmit : handleSave}
               isLoading={isLoading}
+              isDeleting={isDeleting}
               isSaved={isSaved}
               formChanged={formChanged}
             />
@@ -491,9 +538,10 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
           </div>
           
           <ActionButtons
-            onCancel={() => router.push('/applications')}
+            onCancel={handleDelete}
             onSaveSubmit={isSaved && !formChanged ? handleSubmit : handleSave}
             isLoading={isLoading}
+            isDeleting={isDeleting}
             isSaved={isSaved}
             formChanged={formChanged}
           />

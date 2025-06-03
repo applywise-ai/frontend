@@ -20,6 +20,8 @@ export default function JobsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [savedJobs, setSavedJobs] = useState<Set<number>>(new Set());
+  const [loadingJobs] = useState<Set<number>>(new Set());
   const jobsPerPage = 9; // Updated to match applications page
   
   // Sample job data
@@ -38,6 +40,7 @@ export default function JobsPage() {
       isVerified: true,
       providesSponsorship: true,
       experienceLevel: 'senior',
+      specialization: 'frontend',
       jobUrl: 'https://example.com/jobs/senior-frontend-developer',
       responsibilities: [
         "Lead frontend development for complex web applications",
@@ -69,6 +72,7 @@ export default function JobsPage() {
       isSponsored: true,
       providesSponsorship: false,
       experienceLevel: 'mid',
+      specialization: 'backend',
       jobUrl: 'https://example.com/jobs/backend-engineer',
       responsibilities: [
         "Design and implement scalable backend services and APIs",
@@ -99,6 +103,7 @@ export default function JobsPage() {
       isVerified: false,
       providesSponsorship: false,
       experienceLevel: 'mid',
+      specialization: 'ux_ui',
       jobUrl: 'https://example.com/jobs/ux-ui-designer',
       responsibilities: [
         "Create wireframes, prototypes, and high-fidelity mockups",
@@ -129,6 +134,7 @@ export default function JobsPage() {
       isVerified: true,
       providesSponsorship: true,
       experienceLevel: 'senior',
+      specialization: 'devops',
       jobUrl: 'https://example.com/jobs/devops-engineer',
       responsibilities: [
         "Design and implement cloud infrastructure using IaC tools",
@@ -159,6 +165,7 @@ export default function JobsPage() {
       isVerified: false,
       providesSponsorship: false,
       experienceLevel: 'entry',
+      specialization: 'fullstack',
       jobUrl: 'https://example.com/jobs/junior-software-developer',
       responsibilities: [
         "Develop and maintain web applications using JavaScript frameworks",
@@ -189,6 +196,7 @@ export default function JobsPage() {
       isVerified: true,
       providesSponsorship: true,
       experienceLevel: 'senior',
+      specialization: 'ml_ai',
       jobUrl: 'https://example.com/jobs/ml-engineer',
       responsibilities: [
         "Design and implement machine learning models",
@@ -219,6 +227,7 @@ export default function JobsPage() {
       isVerified: true,
       providesSponsorship: false,
       experienceLevel: 'mid',
+      specialization: 'product',
       jobUrl: 'https://example.com/jobs/product-manager',
       responsibilities: [
         "Define product strategy and roadmap",
@@ -249,6 +258,7 @@ export default function JobsPage() {
       isVerified: false,
       providesSponsorship: true,
       experienceLevel: 'intern',
+      specialization: 'mobile',
       jobUrl: 'https://example.com/jobs/mobile-developer',
       responsibilities: [
         "Develop and maintain mobile applications",
@@ -279,6 +289,7 @@ export default function JobsPage() {
       isVerified: true,
       providesSponsorship: true,
       experienceLevel: 'senior',
+      specialization: 'data_science',
       jobUrl: 'https://example.com/jobs/data-scientist',
       responsibilities: [
         "Analyze complex datasets to identify patterns",
@@ -309,6 +320,7 @@ export default function JobsPage() {
       isVerified: true,
       providesSponsorship: false,
       experienceLevel: 'senior',
+      specialization: 'security',
       jobUrl: 'https://example.com/jobs/security-engineer',
       responsibilities: [
         "Implement security controls and best practices",
@@ -339,6 +351,7 @@ export default function JobsPage() {
       isVerified: false,
       providesSponsorship: true,
       experienceLevel: 'mid',
+      specialization: 'fullstack',
       jobUrl: 'https://example.com/jobs/full-stack-developer',
       responsibilities: [
         "Develop full-stack web applications",
@@ -369,6 +382,7 @@ export default function JobsPage() {
       isVerified: false,
       providesSponsorship: false,
       experienceLevel: 'mid',
+      specialization: 'qa',
       jobUrl: 'https://example.com/jobs/qa-engineer',
       responsibilities: [
         "Develop and execute test plans",
@@ -463,10 +477,18 @@ export default function JobsPage() {
         });
       }
       
+      // Apply specialization filter
+      const specializations = searchParams.get('specializations')?.split(',') || [];
+      if (specializations.length > 0) {
+        filtered = filtered.filter(job => {
+          return job.specialization && specializations.includes(job.specialization);
+        });
+      }
+      
       // Apply experience level filter
-      const experience = searchParams.get('experience');
-      if (experience && experience !== 'any') {
-        filtered = filtered.filter(job => job.experienceLevel === experience);
+      const experienceLevels = searchParams.get('experienceLevels')?.split(',') || [];
+      if (experienceLevels.length > 0) {
+        filtered = filtered.filter(job => experienceLevels.includes(job.experienceLevel));
       }
       
       // Apply sponsorship filter
@@ -509,6 +531,16 @@ export default function JobsPage() {
       setSelectedJob(job);
       setIsLoadingDetails(false);
     }, 300);
+  };
+
+  // Handle unsaving a job
+  const handleUnsaveJob = (jobId: number) => {
+    setSavedJobs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(jobId);
+      return newSet;
+    });
+    // In a real app, you would call an API to unsave the job
   };
 
   // Add this function before the return statement
@@ -636,10 +668,14 @@ export default function JobsPage() {
                       isVerified={job.isVerified}
                       isSponsored={job.isSponsored}
                       providesSponsorship={job.providesSponsorship}
-                      compact={false}
+                      experienceLevel={job.experienceLevel}
+                      specialization={job.specialization}
+                      onViewDetails={() => handleViewDetails(job)}
                       isSelected={selectedJob?.id === job.id}
                       isAnySelected={!!selectedJob}
-                      onViewDetails={() => handleViewDetails(job)}
+                      isSaved={savedJobs.has(job.id)}
+                      onUnsave={() => handleUnsaveJob(job.id)}
+                      isLoading={loadingJobs.has(job.id)}
                       id={job.id}
                     />
                   ))}

@@ -2,10 +2,11 @@ import { ExternalLink, FileText } from 'lucide-react';
 import { ActionButtons } from './ActionButtons';
 
 interface ApplicationPreviewHeaderProps {
-    activeTab: string;
+    activeTab: "application" | "resume" | "coverLetter";
     onCancel: () => void;
     onSaveSubmit: () => void;
     isLoading: boolean;
+    isDeleting?: boolean;
     isSaved: boolean;
     formChanged: boolean;
 }
@@ -15,6 +16,7 @@ export function ApplicationPreviewHeader({
     onCancel,
     onSaveSubmit,
     isLoading,
+    isDeleting = false,
     isSaved,
     formChanged
 }: ApplicationPreviewHeaderProps) {
@@ -59,6 +61,7 @@ export function ApplicationPreviewHeader({
             onCancel={onCancel}
             onSaveSubmit={onSaveSubmit}
             isLoading={isLoading}
+            isDeleting={isDeleting}
             isSaved={isSaved}
             formChanged={formChanged}
         />

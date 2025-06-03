@@ -6,6 +6,7 @@ import { Calendar, School, PencilIcon, Trash2, AlertCircle, Award } from 'lucide
 import { Button } from '@/app/components/ui/button';
 import { useState } from 'react';
 import { validateEducation } from '@/app/utils/validation';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 import EducationForm from './EducationForm';
 import EditSectionModal from './EditSectionModal';
@@ -21,6 +22,7 @@ export default function EducationDisplay({ profile, updateProfile }: EducationDi
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const education = profile[FieldName.EDUCATION] as Education[] || [];
+  const { showSuccess } = useNotification();
 
   const handleEdit = (index: number) => {
     setEditingIndex(index);
@@ -30,31 +32,39 @@ export default function EducationDisplay({ profile, updateProfile }: EducationDi
     const updatedEducation = [...education];
     updatedEducation.splice(index, 1);
     updateProfile({ [FieldName.EDUCATION]: updatedEducation });
+    showSuccess('Education entry deleted successfully!');
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    // Get the new entry from profile
-    const newEntry = profile[FieldName.TEMP_EDUCATION] as Education;
-        
-    const e = validateEducation(newEntry);
-    if (Object.keys(e).length > 0) {
-      setErrors(e);
-      setIsSaving(false);
-      return;
-    }
+    try {
+      // Get the new entry from profile
+      const newEntry = profile[FieldName.TEMP_EDUCATION] as Education;
+          
+      const e = validateEducation(newEntry);
+      if (Object.keys(e).length > 0) {
+        setErrors(e);
+        setIsSaving(false);
+        return;
+      }
 
-    const updatedEducation = [...(profile[FieldName.EDUCATION] || [])];
-    if (editingIndex !== undefined) {
-      // If editing, replace the specific education entry
-      updatedEducation[editingIndex] = newEntry;
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const updatedEducation = [...(profile[FieldName.EDUCATION] || [])];
+      if (editingIndex !== undefined) {
+        // If editing, replace the specific education entry
+        updatedEducation[editingIndex] = newEntry;
+      }
+    
+      // Update the profile with the updated education array
+      updateProfile({ [FieldName.EDUCATION]: updatedEducation });
+      showSuccess('Education updated successfully!');
+      setEditingIndex(undefined);
+      setErrors({});
+    } finally {
+      setIsSaving(false);
     }
-  
-    // Update the profile with the updated education array
-    updateProfile({ [FieldName.EDUCATION]: updatedEducation });
-    setIsSaving(false);
-    setEditingIndex(undefined);
-    setErrors({});
   };
 
   const handleClose = () => {

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DollarSign, MapPin, Briefcase, Clock, Bookmark, BadgeCheck, Globe, Eye } from 'lucide-react';
+import { DollarSign, MapPin, Briefcase, Clock, Bookmark, BadgeCheck, Globe, Eye, GraduationCap } from 'lucide-react';
 import JobCardSkeleton from '@/app/components/loading/JobCardSkeleton';
 import { useRouter } from 'next/navigation';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getBreakpoint } from '@/app/utils/breakpoints';
 import { getAvatarColor } from '@/app/utils/avatar';
+import { INDUSTRY_SPECIALIZATION_OPTIONS } from '@/app/types/job';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 interface JobCardProps {
   title: string;
@@ -20,6 +22,8 @@ interface JobCardProps {
   isSponsored?: boolean;
   isVerified?: boolean;
   providesSponsorship?: boolean;
+  experienceLevel?: string;
+  specialization?: string;
   compact?: boolean;
   onViewDetails?: () => void;
   isSelected?: boolean;
@@ -42,6 +46,8 @@ export default function JobCard({
   isSponsored = false,
   isVerified = false,
   providesSponsorship,
+  experienceLevel,
+  specialization,
   compact = false,
   onViewDetails,
   isSelected = false,
@@ -54,6 +60,7 @@ export default function JobCard({
   const [isLocalSaved, setIsLocalSaved] = useState(isSaved);
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+  const { showSuccess } = useNotification();
   
   // Update local state when prop changes
   useEffect(() => {
@@ -90,9 +97,18 @@ export default function JobCard({
     if (isSaved && onUnsave) {
       // If this is a saved job with an unsave handler, use that
       onUnsave();
+      showSuccess('Job removed from saved jobs!');
     } else {
       // Otherwise, just toggle the local state
-      setIsLocalSaved(!isLocalSaved);
+      const newSavedState = !isLocalSaved;
+      setIsLocalSaved(newSavedState);
+      
+      // Show notification
+      if (newSavedState) {
+        showSuccess(`Job saved successfully!`);
+      } else {
+        showSuccess('Job removed from saved jobs!');
+      }
     }
   };
 
@@ -104,6 +120,12 @@ export default function JobCard({
       // On desktop, only open the details panel if another job is selected
       onViewDetails();
     }
+  };
+
+  // Helper function to get specialization display name
+  const getSpecializationLabel = (spec: string) => {
+    const option = INDUSTRY_SPECIALIZATION_OPTIONS.find(opt => opt.value === spec);
+    return option ? option.label : spec;
   };
 
   return (
@@ -215,9 +237,21 @@ export default function JobCard({
                     Sponsored
                   </span>
                 )}
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200/50">
-                  {jobType}
-                </span>
+                {specialization && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200/50">
+                    <Briefcase className="mr-1.5 h-3 w-3" />
+                    {getSpecializationLabel(specialization)}
+                  </span>
+                )}
+                {experienceLevel && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border border-purple-200/50">
+                    <GraduationCap className="mr-1.5 h-3 w-3" />
+                    {experienceLevel === 'senior' ? 'Senior' : 
+                     experienceLevel === 'mid' ? 'Mid-level' : 
+                     experienceLevel === 'entry' ? 'Entry-level' : 
+                     experienceLevel}
+                  </span>
+                )}
                 {providesSponsorship && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-50 to-green-100 text-green-700 border border-green-200/50">
                     <Globe className="mr-1.5 h-3 w-3" />

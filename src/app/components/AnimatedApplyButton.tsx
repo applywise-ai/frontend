@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Loader2, CheckCircle2 } from 'lucide-react';
+import { Zap, Loader2, CheckCircle2, LucideIcon } from 'lucide-react';
 import ReviewApplicationModal from './ReviewApplicationModal';
 import ProfileCompletionAlert, { ProfileCompletionState } from './ProfileCompletionAlert';
 import {
@@ -20,6 +20,7 @@ interface AnimatedApplyButtonProps {
   fullWidth?: boolean;
   applicationId?: string;
   buttonText?: string;
+  icon?: LucideIcon;
 }
 
 export default function AnimatedApplyButton({ 
@@ -28,7 +29,8 @@ export default function AnimatedApplyButton({
   size = 'md',
   fullWidth = false,
   applicationId = 'temp-123',
-  buttonText = 'Quick Apply'
+  buttonText = 'Quick Apply',
+  icon: Icon = Zap
 }: AnimatedApplyButtonProps) {
   const [state, setState] = useState<'idle' | 'loading' | 'review'>('idle');
   const [open, setOpen] = useState(false);
@@ -119,7 +121,7 @@ export default function AnimatedApplyButton({
               exit={{ opacity: 0, x: -20 }}
               className="flex items-center"
             >
-              <Zap className="mr-2 h-4 w-4" />
+              <Icon className="mr-2 h-4 w-4" />
               {buttonText}
             </motion.div>
           )}
