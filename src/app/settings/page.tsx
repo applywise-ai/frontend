@@ -20,6 +20,7 @@ import {
   DialogTrigger 
 } from '@/app/components/ui/dialog';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import MembershipPanel from '@/app/components/settings/MembershipPanel';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -28,6 +29,9 @@ export default function SettingsPage() {
   const [accountError, setAccountError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [deleteAccountError, setDeleteAccountError] = useState('');
+  
+  // Mock user subscription status - replace with actual data
+  const isPro = false; // Change to true to test pro member view
   
   // Form states
   const [email, setEmail] = useState('');
@@ -382,6 +386,9 @@ export default function SettingsPage() {
             <Button onClick={handleUpdatePassword} className="bg-teal-600 hover:bg-teal-700">Update Password</Button>
           </CardFooter>
         </Card>
+
+        {/* Membership Panel - Above Delete Account */}
+        <MembershipPanel isPro={isPro} />
         
         {/* Delete Account - At the bottom */}
         <Card className="border-red-100">

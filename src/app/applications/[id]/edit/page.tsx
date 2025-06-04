@@ -31,6 +31,7 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
   const [previewTab, setPreviewTab] = useState<"application" | "resume" | "coverLetter">("application");
   const [formChanged, setFormChanged] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const initialQuestionsRef = useRef<FormQuestion[]>([]);
   const fieldRefs = useRef<{[key: string]: React.RefObject<HTMLDivElement | null>}>({});
   
@@ -53,168 +54,182 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
   });
   
   // Mock user premium status (replace with actual user data)
-  const [isPremium] = useState(false); // This would come from user context/API
+  const [isPro] = useState(false); // This would come from user context/API
   
   // Load the preview when component mounts
   useEffect(() => {
     // Simulate loading the preview
     const timer = setTimeout(() => {
       setLoadingPreview(false);
-    }, 1000);
+    }, 500);
     
     return () => clearTimeout(timer);
   }, []);
   
   // Format all form fields as questions
   // This would typically come from the backend API
-  const [formQuestions, setFormQuestions] = useState<FormQuestion[]>([
-    {
-      id: 'fullName',
-      question: 'What is your full name?',
-      answer: 'John Doe',
-      type: 'text',
-      placeholder: 'Enter your full name',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'email',
-      question: 'What is your email address?',
-      answer: 'johndoe@example.com',
-      type: 'email',
-      placeholder: 'Enter your email address',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'phone',
-      question: 'What is your phone number?',
-      answer: '(555) 123-4567',
-      type: 'phone',
-      placeholder: 'Enter your phone number',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'currentCompany',
-      question: 'Where do you currently work?',
-      answer: 'Tech Solutions Inc.',
-      type: 'text',
-      placeholder: 'Enter your current company',
-      section: 'personal',
-      required: false
-    },
-    {
-      id: 'currentRole',
-      question: 'What is your current job title?',
-      answer: 'Senior Software Engineer',
-      type: 'text',
-      placeholder: 'Enter your current role',
-      section: 'personal',
-      required: false
-    },
-    {
-      id: 'yearsOfExperience',
-      question: 'How many years of experience do you have?',
-      answer: '5',
-      type: 'text',
-      placeholder: 'Enter years of experience',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'desiredSalary',
-      question: 'What is your desired salary?',
-      answer: '$120,000',
-      type: 'text',
-      placeholder: 'Enter desired salary',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'availableStartDate',
-      question: 'When can you start?',
-      answer: '2023-12-01',
-      type: 'date',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'resume',
-      question: 'Upload your resume',
-      answer: 'john_doe_resume.pdf',
-      type: 'file',
-      placeholder: 'Upload PDF, DOCX, or TXT file',
-      section: 'resume',
-      fileType: 'resume',
-      required: true
-    },
-    {
-      id: 'coverLetter',
-      question: 'Upload your cover letter',
-      answer: 'john_doe_cover_letter.pdf',
-      type: 'file',
-      placeholder: 'Upload PDF, DOCX, or TXT file',
-      section: 'coverLetter',
-      fileType: 'coverLetter',
-      required: false
-    },
-    {
-      id: 'whyJoin',
-      question: 'Why do you want to work at our company?',
-      answer: "I have long admired your company's innovative approach to solving complex problems and your strong company culture. I believe my values align with your mission.",
-      type: 'textarea',
-      placeholder: 'Tell us why you want to join our team',
-      section: 'screening',
-      required: true
-    },
-    {
-      id: 'challengingProject',
-      question: 'Describe a challenging project you worked on.',
-      answer: 'I led a team of 5 developers to rebuild our payment processing system that reduced transaction errors by 45% and improved processing speed by 30%. The project was completed on time and under budget.',
-      type: 'textarea',
-      placeholder: 'Describe your experience',
-      section: 'screening',
-      required: true
-    },
-    {
-      id: 'workEnvironment',
-      question: 'What is your preferred work environment?',
-      answer: 'Hybrid',
-      type: 'select',
-      options: ['Remote', 'In-office', 'Hybrid'],
-      section: 'custom',
-      required: true
-    },
-    {
-      id: 'referredBy',
-      question: 'How did you hear about this position?',
-      answer: 'LinkedIn',
-      type: 'text',
-      placeholder: 'LinkedIn, job board, referral, etc.',
-      section: 'custom',
-      required: false
-    },
-    {
-      id: 'relocation',
-      question: 'Are you willing to relocate?',
-      answer: 'Yes',
-      type: 'radio',
-      options: ['Yes', 'No', 'Maybe'],
-      section: 'custom',
-      required: false
-    },
-    {
-      id: 'salaryExpectations',
-      question: 'What are your salary expectations?',
-      answer: '$120,000 - $140,000',
-      type: 'text',
-      placeholder: 'Enter your salary range',
-      section: 'custom',
-      required: false
-    }
-  ]);
+  const [formQuestions, setFormQuestions] = useState<FormQuestion[]>([]);
 
+  // Load form questions in useEffect
+  useEffect(() => {
+    // This would typically be an API call to fetch form questions
+    // For now, we'll use the mock data
+    const loadFormQuestions = () => {
+      const questions: FormQuestion[] = [
+        {
+          id: 'fullName',
+          question: 'What is your full name?',
+          answer: 'John Doe',
+          type: 'text',
+          placeholder: 'Enter your full name',
+          section: 'personal',
+          required: true
+        },
+        {
+          id: 'email',
+          question: 'What is your email address?',
+          answer: 'johndoe@example.com',
+          type: 'email',
+          placeholder: 'Enter your email address',
+          section: 'personal',
+          required: true
+        },
+        {
+          id: 'phone',
+          question: 'What is your phone number?',
+          answer: '(555) 123-4567',
+          type: 'phone',
+          placeholder: 'Enter your phone number',
+          section: 'personal',
+          required: true
+        },
+        {
+          id: 'currentCompany',
+          question: 'Where do you currently work?',
+          answer: 'Tech Solutions Inc.',
+          type: 'text',
+          placeholder: 'Enter your current company',
+          section: 'personal',
+          required: false
+        },
+        {
+          id: 'currentRole',
+          question: 'What is your current job title?',
+          answer: 'Senior Software Engineer',
+          type: 'text',
+          placeholder: 'Enter your current role',
+          section: 'personal',
+          required: false
+        },
+        {
+          id: 'yearsOfExperience',
+          question: 'How many years of experience do you have?',
+          answer: '5',
+          type: 'text',
+          placeholder: 'Enter years of experience',
+          section: 'personal',
+          required: true
+        },
+        {
+          id: 'desiredSalary',
+          question: 'What is your desired salary?',
+          answer: '$120,000',
+          type: 'text',
+          placeholder: 'Enter desired salary',
+          section: 'personal',
+          required: true
+        },
+        {
+          id: 'availableStartDate',
+          question: 'When can you start?',
+          answer: '2023-12-01',
+          type: 'date',
+          section: 'personal',
+          required: true
+        },
+        {
+          id: 'resume',
+          question: 'Upload your resume',
+          answer: 'john_doe_resume.pdf',
+          type: 'file',
+          placeholder: 'Upload PDF, DOCX, or TXT file',
+          section: 'resume',
+          fileType: 'resume',
+          required: true
+        },
+        {
+          id: 'coverLetter',
+          question: 'Upload your cover letter',
+          answer: 'john_doe_cover_letter.pdf',
+          type: 'file',
+          placeholder: 'Upload PDF, DOCX, or TXT file',
+          section: 'coverLetter',
+          fileType: 'coverLetter',
+          required: false
+        },
+        {
+          id: 'whyJoin',
+          question: 'Why do you want to work at our company?',
+          answer: "I have long admired your company's innovative approach to solving complex problems and your strong company culture. I believe my values align with your mission.",
+          type: 'textarea',
+          placeholder: 'Tell us why you want to join our team',
+          section: 'screening',
+          required: true
+        },
+        {
+          id: 'challengingProject',
+          question: 'Describe a challenging project you worked on.',
+          answer: 'I led a team of 5 developers to rebuild our payment processing system that reduced transaction errors by 45% and improved processing speed by 30%. The project was completed on time and under budget.',
+          type: 'textarea',
+          placeholder: 'Describe your experience',
+          section: 'screening',
+          required: true
+        },
+        {
+          id: 'workEnvironment',
+          question: 'What is your preferred work environment?',
+          answer: 'Hybrid',
+          type: 'select',
+          options: ['Remote', 'In-office', 'Hybrid'],
+          section: 'custom',
+          required: true
+        },
+        {
+          id: 'referredBy',
+          question: 'How did you hear about this position?',
+          answer: 'LinkedIn',
+          type: 'text',
+          placeholder: 'LinkedIn, job board, referral, etc.',
+          section: 'custom',
+          required: false
+        },
+        {
+          id: 'relocation',
+          question: 'Are you willing to relocate?',
+          answer: 'Yes',
+          type: 'radio',
+          options: ['Yes', 'No', 'Maybe'],
+          section: 'custom',
+          required: false
+        },
+        {
+          id: 'salaryExpectations',
+          question: 'What are your salary expectations?',
+          answer: '$120,000 - $140,000',
+          type: 'text',
+          placeholder: 'Enter your salary range',
+          section: 'custom',
+          required: false
+        }
+      ];
+      setAnswers(questions.reduce((acc, q) => ({ ...acc, [q.id]: q.answer }), {}));
+      setFormQuestions(questions);
+    };
+
+    // Load the form questions when component mounts
+    loadFormQuestions();
+  }, [applicationId]); // Include applicationId as dependency for when it changes
+  
   // Store initial form state after first render
   useEffect(() => {
     initialQuestionsRef.current = JSON.parse(JSON.stringify(formQuestions));
@@ -229,8 +244,8 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     fieldRefs.current = refs;
   }, []);
 
-  // Handle input change for any question
-  const handleQuestionChange = (id: string, value: string) => {
+  // Handle input change for any answer
+  const handleAnswerChange = (id: string, value: string) => {
     if (isSaved) {
       // Check if form is being changed after it was saved
       setFormChanged(true);
@@ -242,15 +257,16 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       setValidationErrors(prev => prev.filter(item => item !== id));
     }
 
-    setFormQuestions(prev => 
-      prev.map(q => q.id === id ? { ...q, answer: value } : q)
-    );
+    setAnswers(prev => ({ ...prev, [id]: value }));
+    // setFormQuestions(prev => 
+    //   prev.map(q => q.id === id ? { ...q, answer: value } : q)
+    // );
   };
 
   const validateForm = () => {
     // Check for required fields
     const missingFields = formQuestions
-      .filter(q => q.required && !q.answer)
+      .filter(q => q.required && !answers[q.id])
       .map(q => q.id);
     
     setValidationErrors(missingFields);
@@ -280,7 +296,10 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     // Prepare the state to send to the API
     const applicationData = {
       applicationId,
-      formData: formQuestions
+      formData: formQuestions.map(q => ({
+        ...q,
+        answer: answers[q.id]
+      }))
     };
     
     // Log the data being sent (for debugging)
@@ -320,7 +339,10 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
     // Prepare the state to send to the API
     const applicationData = {
       applicationId,
-      formData: formQuestions,
+      formData: formQuestions.map(q => ({
+        ...q,
+        answer: answers[q.id]
+      })),
       status: "Applied"
     };
     
@@ -441,57 +463,62 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
         <FormSectionComponent 
           title={getSectionTitle('personal')} 
           questions={personalQuestions} 
-          onQuestionChange={handleQuestionChange} 
+          onAnswerChange={handleAnswerChange} 
+          answers={answers}
           section="personal"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
           onSuccess={showSuccess}
-          isPremium={isPremium}
+          isPro={isPro}
         />
         <FormSectionComponent 
           title={getSectionTitle('resume')} 
           questions={resumeQuestions} 
-          onQuestionChange={handleQuestionChange} 
+          onAnswerChange={handleAnswerChange} 
+          answers={answers}
           section="resume"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
           onSuccess={showSuccess}
-          isPremium={isPremium}
+          isPro={isPro}
         />
         <FormSectionComponent 
           title={getSectionTitle('coverLetter')} 
           questions={coverLetterQuestions} 
-          onQuestionChange={handleQuestionChange} 
+          onAnswerChange={handleAnswerChange} 
+          answers={answers}
           section="coverLetter"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
           onSuccess={showSuccess}
-          isPremium={isPremium}
+          isPro={isPro}
         />
         <FormSectionComponent 
           title={getSectionTitle('screening')} 
           questions={screeningQuestions} 
-          onQuestionChange={handleQuestionChange} 
+          onAnswerChange={handleAnswerChange} 
+          answers={answers}
           section="screening"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
           onSuccess={showSuccess}
-          isPremium={isPremium}
+          isPro={isPro}
         />
         <FormSectionComponent 
           title={getSectionTitle('custom')} 
           questions={customQuestions} 
-          onQuestionChange={handleQuestionChange} 
+          answers={answers}
+          onAnswerChange={handleAnswerChange} 
           section="custom"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={fieldRefs.current}
           onSuccess={showSuccess}
-          isPremium={isPremium}
+          isPro={isPro}
         />
       </div>
     </div>

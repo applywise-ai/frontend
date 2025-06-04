@@ -35,12 +35,13 @@ export type FormQuestion = {
 
 interface QuestionInputProps {
   question: FormQuestion;
+  answer: string;
   onChange: (id: string, value: string) => void;
   onPreview?: (fileType: FileType) => void;
   hasError?: boolean;
   inputRef?: React.RefObject<HTMLDivElement | null>;
   onSuccess?: (message: string) => void;
-  isPremium?: boolean;
+  isPro?: boolean;
 }
 
 // Get appropriate color accent based on section
@@ -55,10 +56,9 @@ function getAccentColorClass(section: FormSection): string {
   }
 }
 
-export function QuestionInput({ question, onChange, onPreview, hasError, inputRef, onSuccess, isPremium }: QuestionInputProps) {
+export function QuestionInput({ question, onChange, onPreview, hasError, inputRef, onSuccess, isPro, answer }: QuestionInputProps) {
   const accentColor = getAccentColorClass(question.section);
   const errorBorderClass = hasError ? 'border-red-500 focus-visible:ring-red-500' : '';
-  
   // AI prompt state - only for screening textarea questions
   const [isAiPromptMode, setIsAiPromptMode] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -78,7 +78,7 @@ export function QuestionInput({ question, onChange, onPreview, hasError, inputRe
   // Handle AI prompt button click - show dialog first
   const handleAiPromptClick = () => {
     // TODO: Call api to check if this is an AI application already
-    if (isPremium) {
+    if (isPro) {
       // Premium users skip credit dialog and go straight to AI prompt
       setIsAiPromptMode(true);
     } else {
@@ -146,7 +146,7 @@ export function QuestionInput({ question, onChange, onPreview, hasError, inputRe
   return (
     <div ref={inputRef}>
       {question.type === 'file' ? (
-        <FileQuestionInput question={question} onChange={onChange} onPreview={onPreview} hasError={hasError} onSuccess={onSuccess} isPremium={isPremium} />
+        <FileQuestionInput question={question} onChange={onChange} onPreview={onPreview} hasError={hasError} onSuccess={onSuccess} isPro={isPro} />
       ) : question.type === 'textarea' ? (
         <div className="space-y-3">
           <div className="relative">
@@ -154,7 +154,7 @@ export function QuestionInput({ question, onChange, onPreview, hasError, inputRe
           key={inputKey}
           id={question.id}
           rows={4}
-              value={isAiPromptMode ? aiPrompt : (question.answer || '')} 
+              value={isAiPromptMode ? aiPrompt : (answer || '')} 
               onChange={(e) => isAiPromptMode ? setAiPrompt(e.target.value) : onChange(question.id, e.target.value)}
               placeholder={isAiPromptMode ? "Optional: Add specific details you'd like to include in your AI-generated response..." : question.placeholder}
               className={`resize-none mt-1 shadow-sm transition duration-200 ${accentColor} ${errorBorderClass} ${isAiPromptMode ? 'pr-12' : shouldShowAiPrompt ? 'pr-12' : ''}`}
@@ -209,7 +209,7 @@ export function QuestionInput({ question, onChange, onPreview, hasError, inputRe
       ) : question.type === 'select' || question.type === 'radio' ? (
         <Select
           key={inputKey}
-          value={question.answer || ''}
+          value={answer || ''}
           onValueChange={(value: string) => onChange(question.id, value)}
         >
           <SelectTrigger className={`w-full mt-1 shadow-sm transition duration-200 border-input ${accentColor} ${errorBorderClass}`}>
@@ -224,7 +224,7 @@ export function QuestionInput({ question, onChange, onPreview, hasError, inputRe
       ) : question.type === 'date' ? (
         <div className="mt-1" key={inputKey}>
           <DatePicker 
-            date={question.answer ? new Date(question.answer) : undefined}
+            date={answer ? new Date(answer) : undefined}
             setDate={(date) => onChange(question.id, date ? date.toISOString().split('T')[0] : '')}
             placeholder={question.placeholder || "Select a date"}
             className={`border-input shadow-sm transition duration-200 ${accentColor} ${errorBorderClass}`}
@@ -232,11 +232,10 @@ export function QuestionInput({ question, onChange, onPreview, hasError, inputRe
         </div>
       ) : (
         <Input 
-          key={inputKey}
           id={question.id}
           type={question.type === 'email' ? 'email' : question.type === 'phone' ? 'tel' : 'text'}
           placeholder={question.placeholder}
-          value={question.answer || ''}
+          value={answer}
           onChange={(e) => onChange(question.id, e.target.value)}
           className={`mt-1 shadow-sm transition duration-200 ${accentColor} ${errorBorderClass}`}
         />

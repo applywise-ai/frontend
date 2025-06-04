@@ -1,28 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import JobSearchBar from '@/app/components/jobs/JobSearchBar';
 import JobCard from '@/app/components/jobs/JobCard';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
+import WelcomeModal from '@/app/components/WelcomeModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Job } from '@/app/types/job';
 import { getBreakpoint } from '@/app/utils/breakpoints';
-import { useRouter } from 'next/navigation';
 
 export default function JobsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sortOption, setSortOption] = useState('none');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [displayedJobsCount, setDisplayedJobsCount] = useState(9); // Show 9 jobs initially
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [savedJobs, setSavedJobs] = useState<Set<number>>(new Set());
   const [loadingJobs] = useState<Set<number>>(new Set());
-  const jobsPerPage = 9; // Updated to match applications page
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [welcomeUserName, setWelcomeUserName] = useState('');
+  const jobsPerLoad = 9; // Load 9 jobs at a time
+  const lastJobRef = useRef<HTMLDivElement>(null);
   
   // Sample job data
   const sampleJobs: Job[] = [
@@ -401,18 +405,48 @@ export default function JobsPage() {
     }
   ];
   
-  // Calculate pagination values
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  // Calculate displayed jobs for infinite scroll
+  const currentJobs = filteredJobs.slice(0, displayedJobsCount);
+  const hasMoreJobs = displayedJobsCount < filteredJobs.length;
   const isDetailsPanelOpen = !!selectedJob
   
-  // Handle page changes
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-    window.scrollTo(0, 0); // Scroll to top when changing pages
+  // Handle loading more jobs
+  const handleLoadMore = () => {
+    if (isLoadingMore || !hasMoreJobs) return;
+    
+    setIsLoadingMore(true);
+    // Simulate API call delay
+    setTimeout(() => {
+      setDisplayedJobsCount(prev => prev + jobsPerLoad);
+      setIsLoadingMore(false);
+    }, 800);
   };
+
+  // Infinite scroll effect
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const lastJob = entries[0];
+        if (lastJob.isIntersecting && hasMoreJobs && !isLoadingMore && !isLoading) {
+          handleLoadMore();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px', // Start loading when 100px away from the last job
+      }
+    );
+
+    if (lastJobRef.current) {
+      observer.observe(lastJobRef.current);
+    }
+
+    return () => {
+      if (lastJobRef.current) {
+        observer.unobserve(lastJobRef.current);
+      }
+    };
+  }, [hasMoreJobs, isLoadingMore, isLoading]);
 
   // Close details panel on large viewport or smaller
   useEffect(() => {
@@ -508,7 +542,7 @@ export default function JobsPage() {
       }
       
       setFilteredJobs(filtered);
-      setCurrentPage(1); // Reset to first page when filters change
+      setDisplayedJobsCount(9); // Reset to show first 9 jobs when filters change
       setIsLoading(false);
     }, 500); // Simulate loading delay
   }, [searchParams, sortOption]);
@@ -542,33 +576,30 @@ export default function JobsPage() {
     });
     // In a real app, you would call an API to unsave the job
   };
-
-  // Add this function before the return statement
-  const getVisiblePages = (currentPage: number, totalPages: number) => {
-    const delta = 2; // Number of pages to show on each side of current page
-    const range = [];
-    const rangeWithDots = [];
-    let l;
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-        range.push(i);
-      }
+  
+  // Check for welcome parameters on component mount
+  useEffect(() => {
+    const welcome = searchParams.get('welcome');
+    const firstName = searchParams.get('firstName');
+    
+    if (welcome === 'true') {
+      setWelcomeUserName(firstName || 'there');
+      
+      // Add a small delay to let the page load and give users a moment to see the jobs page
+      setTimeout(() => {
+        setShowWelcomeModal(true);
+      }, 800);
+      
+      // Clean up URL parameters after showing modal
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('welcome');
+      newUrl.searchParams.delete('firstName');
+      window.history.replaceState({}, '', newUrl.toString());
     }
+  }, [searchParams]);
 
-    for (const i of range) {
-      if (l) {
-        if (i - l === 2) {
-          rangeWithDots.push(l + 1);
-        } else if (i - l !== 1) {
-          rangeWithDots.push('...');
-        }
-      }
-      rangeWithDots.push(i);
-      l = i;
-    }
-
-    return rangeWithDots;
+  const handleWelcomeModalClose = () => {
+    setShowWelcomeModal(false);
   };
 
   return (
@@ -654,90 +685,55 @@ export default function JobsPage() {
                 ))
               ) : currentJobs.length > 0 ? (
                 <>
-                  {currentJobs.map((job) => (
-                    <JobCard
+                  {currentJobs.map((job, index) => (
+                    <div
                       key={job.id}
-                      title={job.title}
-                      company={job.company}
-                      logo={job.logo}
-                      location={job.location}
-                      salary={job.salary}
-                      jobType={job.jobType}
-                      postedDate={job.postedDate}
-                      description={job.description}
-                      isVerified={job.isVerified}
-                      isSponsored={job.isSponsored}
-                      providesSponsorship={job.providesSponsorship}
-                      experienceLevel={job.experienceLevel}
-                      specialization={job.specialization}
-                      onViewDetails={() => handleViewDetails(job)}
-                      isSelected={selectedJob?.id === job.id}
-                      isAnySelected={!!selectedJob}
-                      isSaved={savedJobs.has(job.id)}
-                      onUnsave={() => handleUnsaveJob(job.id)}
-                      isLoading={loadingJobs.has(job.id)}
-                      id={job.id}
-                    />
+                      ref={index === currentJobs.length - 1 ? lastJobRef : null}
+                    >
+                      <JobCard
+                        title={job.title}
+                        company={job.company}
+                        logo={job.logo}
+                        location={job.location}
+                        salary={job.salary}
+                        jobType={job.jobType}
+                        postedDate={job.postedDate}
+                        description={job.description}
+                        isVerified={job.isVerified}
+                        isSponsored={job.isSponsored}
+                        providesSponsorship={job.providesSponsorship}
+                        experienceLevel={job.experienceLevel}
+                        specialization={job.specialization}
+                        onViewDetails={() => handleViewDetails(job)}
+                        isSelected={selectedJob?.id === job.id}
+                        isAnySelected={!!selectedJob}
+                        isSaved={savedJobs.has(job.id)}
+                        onUnsave={() => handleUnsaveJob(job.id)}
+                        isLoading={loadingJobs.has(job.id)}
+                        id={job.id}
+                      />
+                    </div>
                   ))}
                   
-                  {/* Modern Pagination */}
-                  {!isLoading && filteredJobs.length > 0 && totalPages > 0 && (
-                    <div className="mt-12 flex justify-center pb-6">
-                      <nav className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-xl p-2 border border-white/30" aria-label="Pagination">
-                        <button
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className={`relative inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                            currentPage === 1
-                              ? 'text-gray-300 cursor-not-allowed' 
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
-                          }`}
-                          aria-label="Previous page"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-
-                        {getVisiblePages(currentPage, totalPages).map((pageNum, idx) => (
-                          pageNum === '...' ? (
-                            <span
-                              key={`ellipsis-${idx}`}
-                              className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500"
-                            >
-                              ...
-                            </span>
-                          ) : (
-                            <button
-                              key={`page-${pageNum}`}
-                              onClick={() => handlePageChange(Number(pageNum))}
-                              className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg min-w-[2.5rem] justify-center transition-all duration-200 ${
-                                currentPage === pageNum
-                                  ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
-                              }`}
-                              aria-current={currentPage === pageNum ? 'page' : undefined}
-                            >
-                              {pageNum}
-                            </button>
-                          )
-                        ))}
-
-                        <button
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className={`relative inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                            currentPage === totalPages
-                              ? 'text-gray-300 cursor-not-allowed' 
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
-                          }`}
-                          aria-label="Next page"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                      </nav>
+                  {/* Loading indicator when loading more jobs */}
+                  {isLoadingMore && (
+                    <div className="mt-8 pb-8 flex justify-center">
+                      <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/60 backdrop-blur-sm rounded-xl border border-white/30">
+                        <div className="w-5 h-5 border-2 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                        <span className="text-sm text-gray-600 font-medium">Loading more jobs...</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Show total count when all jobs are loaded */}
+                  {!hasMoreJobs && filteredJobs.length > jobsPerLoad && (
+                    <div className="mt-8 pb-8 text-center">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-white/30">
+                        <div className="w-2 h-2 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full"></div>
+                        <span className="text-sm text-gray-600 font-medium">
+                          Showing all {filteredJobs.length} jobs
+                        </span>
+                      </div>
                     </div>
                   )}
                 </>
@@ -779,6 +775,14 @@ export default function JobsPage() {
           )}
         </div>
       </div>
+
+      {showWelcomeModal && (
+        <WelcomeModal
+          isOpen={showWelcomeModal}
+          onClose={handleWelcomeModalClose}
+          userName={welcomeUserName}
+        />
+      )}
     </div>
   );
 }

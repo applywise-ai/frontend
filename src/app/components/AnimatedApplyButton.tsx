@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Loader2, CheckCircle2, LucideIcon } from 'lucide-react';
 import ReviewApplicationModal from './ReviewApplicationModal';
-import ProfileCompletionAlert, { ProfileCompletionState } from './ProfileCompletionAlert';
+import ProfileCompletionAlert, { ProfileCompletionState } from './profile/ProfileCompletionAlert';
 import {
   Dialog,
   DialogContent,

@@ -176,7 +176,7 @@ function ReviewsCarousel() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % reviews.length);
-    }, 8000); // Change review every 8 seconds
+    }, 5000); // Change review every 5 seconds
 
     return () => clearInterval(interval);
   }, []);

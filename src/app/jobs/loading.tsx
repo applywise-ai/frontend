@@ -13,7 +13,7 @@ export default function Loading() {
             {/* Search and Filters */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
               <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
-              <JobSearchBarSkeleton detailsOpen={true} />
+              <JobSearchBarSkeleton />
             </div>
             
             {/* Job Listing Header */}

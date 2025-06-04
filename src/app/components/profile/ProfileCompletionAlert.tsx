@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle2, User } from 'lucide-react';
-import { Button } from './ui/button';
-import { DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
+import { Button } from '../ui/button';
+import { DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { useRouter } from 'next/navigation';
 
 export type ProfileCompletionState = 'complete' | 'partial' | 'incomplete';

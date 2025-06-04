@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag, Sparkles, GraduationCap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, DollarSign, MapPin, Briefcase, Bookmark, BadgeCheck, Heart, ThumbsUp, ThumbsDown, Tag, Sparkles, GraduationCap, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Job } from '@/app/types/job';
+import { ROLE_LEVEL_OPTIONS } from '@/app/types/job';
 import { useRouter } from 'next/navigation';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getAvatarColor } from '@/app/utils/avatar';
 import SubscriptionCard from '@/app/components/SubscriptionCard';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 export default function ForYou() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -18,6 +20,13 @@ export default function ForYou() {
   const [aiAppliesLeft] = useState(5); // This would come from user data/context
   const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const notification = useNotification();
+  
+  // Get experience level label from ROLE_LEVEL_OPTIONS
+  const getExperienceLevelLabel = (experienceLevel: string) => {
+    const option = ROLE_LEVEL_OPTIONS.find(level => level.value === experienceLevel);
+    return option?.label || experienceLevel;
+  };
   
   // Fetch personalized job recommendations
   useEffect(() => {
@@ -159,10 +168,20 @@ export default function ForYou() {
   
   // Toggle save job state
   const toggleSaveJob = (jobId: number | string) => {
+    const wasAlreadySaved = isSaved[jobId];
+    
     setIsSaved(prev => ({
       ...prev,
       [jobId]: !prev[jobId]
     }));
+    
+    // Show success notification
+    if (wasAlreadySaved) {
+      notification.showSuccess('Job removed from saved jobs!');
+    } else {
+      notification.showSuccess('Job saved successfully!');
+    }
+    
     // In a real app, you would call an API to save/unsave the job
   };
   
@@ -369,11 +388,17 @@ export default function ForYou() {
                                   <div>
                                     <div className="text-xs text-gray-500 font-medium">Experience</div>
                                     <div className="font-semibold text-sm text-gray-900">
-                                      {job.experienceLevel === 'senior' ? 'Senior (5-8 years)' : 
-                                       job.experienceLevel === 'mid' ? 'Mid-level (2-5 years)' : 
-                                       job.experienceLevel === 'entry' ? 'Entry-level (0-2 years)' : 
-                                       job.experienceLevel}
+                                      {getExperienceLevelLabel(job.experienceLevel)}
                                     </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <div className={`bg-gradient-to-br ${job.providesSponsorship ? 'from-emerald-100 to-emerald-200' : 'from-gray-100 to-gray-200'} rounded-lg p-2 shadow-sm`}>
+                                    <Globe className={`h-4 w-4 ${job.providesSponsorship ? 'text-emerald-700' : 'text-gray-700'}`} />
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-gray-500 font-medium">Visa Sponsorship</div>
+                                    <div className="font-semibold text-sm text-gray-900">{job.providesSponsorship ? 'Available' : 'Not Available'}</div>
                                   </div>
                                 </div>
                               </div>

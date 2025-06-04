@@ -7,13 +7,14 @@ import { User, FileText, CheckSquare, ListFilter, FileSpreadsheet } from 'lucide
 interface FormSectionProps {
   title: string;
   questions: FormQuestion[];
-  onQuestionChange: (id: string, value: string) => void;
+  onAnswerChange: (id: string, value: string) => void;
+  answers: {[key: string]: string};
   section: FormSectionType;
   onPreview?: (fileType: FileType) => void;
   validationErrors?: string[];
   fieldRefs?: {[key: string]: React.RefObject<HTMLDivElement | null>};
   onSuccess?: (message: string) => void;
-  isPremium?: boolean;
+  isPro?: boolean;
 }
 
 // Get section style based on section type
@@ -70,7 +71,7 @@ function getSectionStyle(section?: FormSectionType) {
   }
 }
 
-export function FormSection({ title, questions, onQuestionChange, section, onPreview, validationErrors, fieldRefs, onSuccess, isPremium }: FormSectionProps) {
+export function FormSection({ title, questions, onAnswerChange, section, onPreview, validationErrors, fieldRefs, onSuccess, isPro, answers }: FormSectionProps) {
   // Get section styling
   const style = getSectionStyle(section);
 
@@ -97,12 +98,13 @@ export function FormSection({ title, questions, onQuestionChange, section, onPre
               </QuestionLabel>
               <QuestionInput
                 question={question}
-                onChange={onQuestionChange}
+                answer={answers[question.id]}
+                onChange={onAnswerChange}
                 onPreview={onPreview}
                 hasError={validationErrors?.includes(question.id)}
                 inputRef={fieldRefs?.[question.id]}
                 onSuccess={onSuccess}
-                isPremium={isPremium}
+                isPro={isPro}
               />
             </div>
           ))}

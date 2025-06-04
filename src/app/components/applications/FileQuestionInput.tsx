@@ -11,7 +11,7 @@ interface FileQuestionInputProps {
   onPreview?: (fileType: FileType) => void;
   hasError?: boolean;
   onSuccess?: (message: string) => void;
-  isPremium?: boolean;
+  isPro?: boolean;
 }
 
 // Get appropriate color accent based on section
@@ -26,7 +26,7 @@ function getAccentColorClass(section: FormSection): string {
   }
 }
 
-export function FileQuestionInput({ question, onChange, onPreview, hasError, onSuccess, isPremium }: FileQuestionInputProps) {
+export function FileQuestionInput({ question, onChange, onPreview, hasError, onSuccess, isPro }: FileQuestionInputProps) {
   const accentColor = getAccentColorClass(question.section);
   const errorBorderClass = hasError ? 'border-red-500 focus-visible:ring-red-500' : '';
   const [fileName, setFileName] = useState<string>(question.answer || '');
@@ -38,9 +38,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
   const [isGenerating, setIsGenerating] = useState(false);
   
   // Check if this is a cover letter file input that should have AI generation
-  const shouldShowAiGenerate = isPremium && question.section === 'coverLetter' && question.fileType === 'coverLetter';
-  
-  console.log(shouldShowAiGenerate)
+  const shouldShowAiGenerate = isPro && question.section === 'coverLetter' && question.fileType === 'coverLetter';
   
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

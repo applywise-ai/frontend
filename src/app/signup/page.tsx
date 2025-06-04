@@ -68,8 +68,12 @@ export default function SignUp() {
       // Here you would typically store additional user data (firstName, lastName) in a database
       // For example, using Firestore or another database
       
-      // Successful registration
-      router.push('/jobs');
+      // Successful registration - redirect to jobs page with welcome parameter
+      const welcomeParams = new URLSearchParams({
+        welcome: 'true',
+        firstName: formData.firstName || 'there'
+      });
+      router.push(`/jobs?${welcomeParams.toString()}`);
     }
   };
 
@@ -84,8 +88,16 @@ export default function SignUp() {
       setError(result.message);
       setLoading(false);
     } else {
-      // Successful registration
-      router.push('/jobs');
+      // Successful registration - extract user's name from Google profile
+      const user = result.user;
+      const displayName = user.displayName || '';
+      const firstName = displayName.split(' ')[0] || 'there'; // Get first name from display name
+      
+      const welcomeParams = new URLSearchParams({
+        welcome: 'true',
+        firstName: firstName
+      });
+      router.push(`/jobs?${welcomeParams.toString()}`);
     }
   };
 

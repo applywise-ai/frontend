@@ -119,7 +119,7 @@ export default function ProfilePage() {
       ...section
     }));
   };
-  
+
   // Fetch user profile data
   useEffect(() => {
     const fetchProfile = async () => {
