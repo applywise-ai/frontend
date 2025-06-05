@@ -7,6 +7,16 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
 const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests per window
 
+// Protected routes that require authentication
+const PROTECTED_ROUTES = [
+  '/jobs',
+  '/profile',
+  '/applications',
+  '/settings',
+  '/for-you',
+  '/help'
+];
+
 function getRateLimitKey(request: NextRequest): string {
   // Use IP address for rate limiting
   const forwarded = request.headers.get('x-forwarded-for');
@@ -33,6 +43,10 @@ function isRateLimited(key: string): boolean {
 
   record.count++;
   return false;
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTES.some(route => pathname.startsWith(route));
 }
 
 export function middleware(request: NextRequest) {
@@ -73,6 +87,21 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
+  // Check if the route is protected
+  if (isProtectedRoute(pathname)) {
+    // Note: We can't check Firebase auth in middleware since it runs on the edge
+    // The actual auth check is handled by the ProtectedPage component on the client side
+    // This middleware serves as documentation and could be extended for server-side auth
+    
+    // Add security headers for protected routes
+    const response = NextResponse.next();
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-XSS-Protection', '1; mode=block');
+    
+    return response;
+  }
+
   return NextResponse.next();
 }
 
@@ -80,5 +109,11 @@ export const config = {
   matcher: [
     '/api/create-checkout-session/:path*',
     '/api/webhooks/stripe/:path*',
+    '/jobs/:path*',
+    '/profile/:path*',
+    '/applications/:path*',
+    '/settings/:path*',
+    '/for-you/:path*',
+    '/help/:path*'
   ],
 };

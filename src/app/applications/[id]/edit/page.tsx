@@ -15,13 +15,14 @@ import { ApplicationPreview } from '@/app/components/applications/ApplicationPre
 import { ActionButtons } from '@/app/components/applications/ActionButtons';
 import { ApplicationPreviewHeader } from '@/app/components/applications/ApplicationPreviewHeader';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 
 // Define a type for unwrapped params
 type ParamsType = {
   id: string;
 };
 
-export default function EditJobApplicationPage({ params }: { params: ParamsType }) {
+function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -641,4 +642,12 @@ export default function EditJobApplicationPage({ params }: { params: ParamsType 
       </div>
     </div>
   );
-} 
+}
+
+export default function EditJobApplicationPage({ params }: { params: ParamsType }) {
+  return (
+    <ProtectedPage>
+      <EditJobApplicationPageContent params={params} />
+    </ProtectedPage>
+  );
+}

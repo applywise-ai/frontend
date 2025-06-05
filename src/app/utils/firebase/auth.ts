@@ -16,8 +16,9 @@ import {
   confirmPasswordReset,
   verifyPasswordResetCode
 } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
-import { auth } from './config';
+import { auth, db } from './config';
 
 // Define a type for the error response
 export type AuthErrorResponse = {
@@ -107,11 +108,24 @@ class FirebaseAuthService {
    * Register a new user with email and password
    * @param email - User's email
    * @param password - User's password
+   * @param fullName - User's full name
    * @returns Promise with UserCredential or AuthErrorResponse
    */
-  async register(email: string, password: string): Promise<UserCredential | AuthErrorResponse> {
+  async register(email: string, password: string, fullName: string): Promise<UserCredential | AuthErrorResponse> {
     try {
-      return await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        profile: {
+          fullName: fullName,
+          email: email
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      return userCredential;
     } catch (error: unknown) {
       return this.handleAuthError(error);
     }
@@ -137,7 +151,23 @@ class FirebaseAuthService {
    */
   async googleAuth(): Promise<UserCredential | AuthErrorResponse> {
     try {
-      return await signInWithPopup(auth, this.googleProvider);
+      const userCredential = await signInWithPopup(auth, this.googleProvider);
+      
+      // Check if this is a new user and create document if needed
+      if (userCredential.user) {
+        // For Google sign-in, we'll create/update the user document
+        // Using merge: true to avoid overwriting existing data
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          profile: {
+            fullName: userCredential.user.displayName || 'Google User',
+            email: userCredential.user.email || ''
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+      
+      return userCredential;
     } catch (error: unknown) {
       return this.handleAuthError(error);
     }

@@ -6,8 +6,6 @@ import { authService } from '@/app/utils/firebase';
 import Link from 'next/link';
 import { 
   Zap,
-  BarChart2, 
-  Users, 
   ArrowRight,
   CheckCircle2,
   Sparkles,
@@ -17,7 +15,6 @@ import {
   FileText,
   Calendar,
   Target,
-  Clock,
   TrendingUp,
   Star,
   Play,
@@ -29,8 +26,6 @@ import {
   Lightbulb,
   Timer
 } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import WelcomeModal from '@/app/components/WelcomeModal';
@@ -41,6 +36,34 @@ export default function Home() {
   const [activeFeature, setActiveFeature] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
+  // Define testimonials array before using it in useEffect
+  const testimonials = [
+    {
+      name: "Sarah Chen",
+      role: "Software Engineer",
+      company: "Google",
+      content: "ApplyWise helped me land my dream job at Google. The AI applications were so personalized, I got responses from 80% of companies I applied to.",
+      rating: 5,
+      avatar: "SC"
+    },
+    {
+      name: "Marcus Johnson",
+      role: "Product Manager",
+      company: "Microsoft",
+      content: "I went from 2 interviews in 6 months to 15 interviews in 3 weeks. The AI cover letters were game-changing.",
+      rating: 5,
+      avatar: "MJ"
+    },
+    {
+      name: "Emily Rodriguez",
+      role: "Data Scientist",
+      company: "Netflix",
+      content: "The time I saved with ApplyWise allowed me to focus on interview prep. Best investment in my career!",
+      rating: 5,
+      avatar: "ER"
+    }
+  ];
 
   useEffect(() => {
     // Check if user is already logged in
@@ -67,7 +90,7 @@ export default function Home() {
       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [testimonials.length]);
 
   const features = [
     {
@@ -97,33 +120,6 @@ export default function Home() {
       description: "Set it and forget it. Our system applies to your top matches automatically while you sleep.",
       demo: "Coming soon: Apply to 20+ jobs daily on autopilot",
       color: "from-orange-500 to-red-600"
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: "Sarah Chen",
-      role: "Software Engineer",
-      company: "Google",
-      content: "ApplyWise helped me land my dream job at Google. The AI applications were so personalized, I got responses from 80% of companies I applied to.",
-      rating: 5,
-      avatar: "SC"
-    },
-    {
-      name: "Marcus Johnson",
-      role: "Product Manager",
-      company: "Microsoft",
-      content: "I went from 2 interviews in 6 months to 15 interviews in 3 weeks. The AI cover letters were game-changing.",
-      rating: 5,
-      avatar: "MJ"
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "Data Scientist",
-      company: "Netflix",
-      content: "The time I saved with ApplyWise allowed me to focus on interview prep. Best investment in my career!",
-      rating: 5,
-      avatar: "ER"
     }
   ];
 
@@ -290,7 +286,7 @@ export default function Home() {
                   </div>
                   <div className="text-gray-400 text-xs sm:text-sm">ApplyWise AI Demo</div>
                 </div>
-                
+
                 {/* Dynamic Demo Content */}
                 <div className="space-y-4">
                   {activeFeature === 0 && (
@@ -302,7 +298,7 @@ export default function Home() {
                       </div>
                       <div className="bg-teal-500/10 border border-teal-500/20 rounded-lg p-4">
                         <div className="text-teal-400 text-sm mb-2">AI Response Generation</div>
-                        <div className="text-white text-sm">"I have 4 years of React and TypeScript experience, with extensive Next.js and GraphQL expertise..."</div>
+                        <div className="text-white text-sm">&ldquo;I have 4 years of React and TypeScript experience, with extensive Next.js and GraphQL expertise...&rdquo;</div>
                       </div>
                       <div className="flex items-center gap-2 text-green-400 text-sm">
                         <CheckCircle2 className="h-4 w-4" />
@@ -315,8 +311,8 @@ export default function Home() {
                     <div className="space-y-4">
                       <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
                         <div className="text-purple-400 text-sm mb-2">Cover Letter Preview</div>
-                        <div className="text-white text-sm">"Dear Hiring Manager,</div>
-                        <div className="text-white text-sm">I am excited to apply for the Senior Developer position at TechCorp. My 5 years of experience in React and passion for innovative solutions make me an ideal candidate..."</div>
+                        <div className="text-white text-sm">&ldquo;Dear Hiring Manager,</div>
+                        <div className="text-white text-sm">I am excited to apply for the Senior Developer position at TechCorp. My 5 years of experience in React and passion for innovative solutions make me an ideal candidate...&rdquo;</div>
                       </div>
                       <div className="flex items-center gap-2 text-green-400 text-sm">
                         <CheckCircle2 className="h-4 w-4" />

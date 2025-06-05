@@ -6,6 +6,7 @@ import { Input } from '@/app/components/ui/input';
 import { Textarea } from '@/app/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import React, { useState } from 'react';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 
 // General HelpModal component
 type HelpModalProps = {
@@ -58,7 +59,7 @@ function HelpModal({ open, onOpenChange, title, formState, onChange, onSubmit, t
   );
 }
 
-export default function HelpPage() {
+function HelpPageContent() {
   const [bugReport, setBugReport] = useState({ title: '', description: '' });
   const [featureSuggestion, setFeatureSuggestion] = useState({ title: '', description: '' });
   const [bugModalOpen, setBugModalOpen] = useState(false);
@@ -190,5 +191,13 @@ export default function HelpPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function HelpPage() {
+  return (
+    <ProtectedPage>
+      <HelpPageContent />
+    </ProtectedPage>
   );
 } 

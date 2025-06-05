@@ -10,8 +10,9 @@ import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getAvatarColor } from '@/app/utils/avatar';
 import SubscriptionCard from '@/app/components/SubscriptionCard';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 
-export default function ForYou() {
+function ForYouContent() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -570,5 +571,13 @@ export default function ForYou() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ForYou() {
+  return (
+    <ProtectedPage>
+      <ForYouContent />
+    </ProtectedPage>
   );
 } 

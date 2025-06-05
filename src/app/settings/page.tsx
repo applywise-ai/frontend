@@ -21,8 +21,9 @@ import {
 } from '@/app/components/ui/dialog';
 import { useNotification } from '@/app/contexts/NotificationContext';
 import MembershipPanel from '@/app/components/settings/MembershipPanel';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -446,5 +447,13 @@ export default function SettingsPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <ProtectedPage>
+      <SettingsPageContent />
+    </ProtectedPage>
   );
 } 

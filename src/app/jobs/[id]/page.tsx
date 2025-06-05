@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Job } from '@/app/types/job';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
 import Link from 'next/link';
 
-export default function JobDetailsPage() {
+function JobDetailPageContent() {
   const params = useParams();
   const router = useRouter();
   const [job, setJob] = useState<Job | null>(null);
@@ -184,5 +185,13 @@ export default function JobDetailsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function JobDetailPage() {
+  return (
+    <ProtectedPage>
+      <JobDetailPageContent />
+    </ProtectedPage>
   );
 } 

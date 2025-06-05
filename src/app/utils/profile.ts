@@ -32,7 +32,6 @@ export const fullyCompleteFields = [
   FieldName.TWITTER,
   FieldName.GITHUB,
   FieldName.PORTFOLIO,
-  FieldName.OTHER,
   // Demographics
   FieldName.GENDER,
   FieldName.SEXUALITY,
@@ -61,13 +60,11 @@ export const isFieldFilled = (profile: UserProfile, field: string): boolean => {
 
   // Check if at least one social link is filled out
   if (field === FieldName.LINKEDIN || field === FieldName.TWITTER || 
-      field === FieldName.GITHUB || field === FieldName.PORTFOLIO || 
-      field === FieldName.OTHER) {
+      field === FieldName.GITHUB || field === FieldName.PORTFOLIO) {
     return Boolean(profile[FieldName.LINKEDIN]) || 
            Boolean(profile[FieldName.TWITTER]) || 
            Boolean(profile[FieldName.GITHUB]) || 
-           Boolean(profile[FieldName.PORTFOLIO]) || 
-           Boolean(profile[FieldName.OTHER]);
+           Boolean(profile[FieldName.PORTFOLIO])
   }
 
   return Boolean(profile[field as keyof UserProfile]);
@@ -143,7 +140,7 @@ export const getNextSectionToFill = (profile: UserProfile, profileState: Profile
       return { name: 'Job Preferences', id: 'preferences' };
     }
     if (!profile[FieldName.LINKEDIN] && !profile[FieldName.TWITTER] && !profile[FieldName.GITHUB] &&
-        !profile[FieldName.PORTFOLIO] && !profile[FieldName.OTHER]) {
+        !profile[FieldName.PORTFOLIO]) {
       return { name: 'Social Links', id: 'social' };
     }
     if (!profile[FieldName.GENDER] || !profile[FieldName.RACE]?.length) {

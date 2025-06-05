@@ -7,11 +7,12 @@ import { Application } from '@/app/types/application';
 import { ApplicationService } from '@/app/utils/applicationService';
 import ApplicationCard from '@/app/components/applications/ApplicationCard';
 import ApplicationFilters from '@/app/components/applications/ApplicationFilters';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import Link from 'next/link';
 import { Input } from '@/app/components/ui/input';
 import { useNotification } from '@/app/contexts/NotificationContext';
 
-export default function ApplicationsPage() {
+function ApplicationsPageContent() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -375,5 +376,13 @@ export default function ApplicationsPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function ApplicationsPage() {
+  return (
+    <ProtectedPage>
+      <ApplicationsPageContent />
+    </ProtectedPage>
   );
 } 

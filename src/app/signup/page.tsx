@@ -58,16 +58,16 @@ export default function SignUp() {
     setLoading(true);
     setError(null);
     
-    const result = await authService.register(formData.email, formData.password);
+    // Combine first and last name for fullName
+    const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+    
+    const result = await authService.register(formData.email, formData.password, fullName);
     
     if ('error' in result) {
       // Handle error response
       setError(result.message);
       setLoading(false);
     } else {
-      // Here you would typically store additional user data (firstName, lastName) in a database
-      // For example, using Firestore or another database
-      
       // Successful registration - redirect to jobs page with welcome parameter
       const welcomeParams = new URLSearchParams({
         welcome: 'true',

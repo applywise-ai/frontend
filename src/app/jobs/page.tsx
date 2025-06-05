@@ -6,11 +6,12 @@ import JobSearchBar from '@/app/components/jobs/JobSearchBar';
 import JobCard from '@/app/components/jobs/JobCard';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
 import WelcomeModal from '@/app/components/WelcomeModal';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Job } from '@/app/types/job';
 import { getBreakpoint } from '@/app/utils/breakpoints';
 
-export default function JobsPage() {
+function JobsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sortOption, setSortOption] = useState('none');
@@ -784,5 +785,13 @@ export default function JobsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <ProtectedPage>
+      <JobsPageContent />
+    </ProtectedPage>
   );
 }

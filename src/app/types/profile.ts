@@ -32,7 +32,6 @@ export enum FieldName {
   TWITTER = 'twitter',
   GITHUB = 'github',
   PORTFOLIO = 'portfolio',
-  OTHER = 'other',
   
   // Demographics
   GENDER = 'gender',
@@ -132,7 +131,6 @@ export interface UserProfile {
   [FieldName.TWITTER]?: string;
   [FieldName.GITHUB]?: string;
   [FieldName.PORTFOLIO]?: string;
-  [FieldName.OTHER]?: string;
   
   // Demographics
   [FieldName.GENDER]?: string;

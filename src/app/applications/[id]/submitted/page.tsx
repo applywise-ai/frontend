@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ApplicationSubmittedContent from '@/app/components/applications/ApplicationSubmittedContent';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 
 // Define a type for unwrapped params
 type ParamsType = {
   id: string;
 };
 
-export default function ApplicationSubmittedPage({ params }: { params: ParamsType }) {
+function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
@@ -57,5 +58,13 @@ export default function ApplicationSubmittedPage({ params }: { params: ParamsTyp
         variant="card"
       />
     </div>
+  );
+}
+
+export default function ApplicationSubmittedPage({ params }: { params: ParamsType }) {
+  return (
+    <ProtectedPage>
+      <ApplicationSubmittedPageContent params={params} />
+    </ProtectedPage>
   );
 } 

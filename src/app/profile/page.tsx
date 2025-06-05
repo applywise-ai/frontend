@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { UserProfile, FieldName } from '@/app/types/profile';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
+import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { 
   User, 
   Link as LinkIcon, 
@@ -23,7 +24,7 @@ import { Progress } from '@/app/components/ui/progress';
 import { getProfileCompletionState, ProfileCompletionState, calculateCompletionPercentage, getNextSectionToFill } from '@/app/utils/profile';
 import * as PC from '@/app/components/profile';
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const [profile, setProfile] = useState<UserProfile>({
     [FieldName.FULL_NAME]: '',
     [FieldName.EMAIL]: '',
@@ -139,7 +140,6 @@ export default function ProfilePage() {
             [FieldName.TWITTER]: '@johndoe',
             [FieldName.GITHUB]: 'https://github.com/johndoe',
             [FieldName.PORTFOLIO]: 'https://example.com/portfolio',
-            [FieldName.OTHER]: 'mylink.com',
             [FieldName.GENDER]: 'Man',
             [FieldName.VETERAN]: false,
             [FieldName.SEXUALITY]: ['Heterosexual'],
@@ -516,4 +516,12 @@ const getSectionTitle = (id: string) => {
     case 'projects': return 'Projects';
     default: return id;
   }
-}; 
+};
+
+export default function ProfilePage() {
+  return (
+    <ProtectedPage>
+      <ProfilePageContent />
+    </ProtectedPage>
+  );
+} 
