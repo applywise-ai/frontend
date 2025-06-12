@@ -11,6 +11,12 @@ import { useState, useEffect } from "react";
 import { isDashboardPage, shouldHideNavbar } from "./utils/navigation";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { GlobalNotification } from "./components/ui/GlobalNotification";
+import { ProfileProvider } from "./contexts/ProfileContext";
+import { ApplicationsProvider } from "./contexts/ApplicationsContext";
+import { JobsProvider } from "./contexts/JobsContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ReviewApplicationModalProvider } from "./contexts/ReviewApplicationModalContext";
+import { RecommenderProvider } from "./contexts/RecommenderContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,14 +65,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-50 ${noScrollPage ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col`}
       >
-        <NotificationProvider>
-          <Navbar isLoading={layoutLoading} />
-          <GlobalNotification />
-          <main className={`${isAuthPage ? '' : 'pt-16'} ${noScrollPage ? 'flex-1 overflow-hidden' : 'flex-grow'}`}>
-            {children}
-          </main>
-          {isAuthPage || noScrollPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
-        </NotificationProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <ProfileProvider>
+              <JobsProvider>
+                <ApplicationsProvider>
+                  <RecommenderProvider>
+                    <ReviewApplicationModalProvider>
+                      <Navbar isLoading={layoutLoading} />
+                      <GlobalNotification />
+                      <main className={`${isAuthPage ? '' : 'pt-16'} ${noScrollPage ? 'flex-1 overflow-hidden' : 'flex-grow'}`}>
+                        {children}
+                      </main>
+                      {isAuthPage || noScrollPage ? null : isDashboard ? <DashboardFooter /> : <Footer />}
+                    </ReviewApplicationModalProvider>
+                  </RecommenderProvider>
+                </ApplicationsProvider>
+              </JobsProvider>
+            </ProfileProvider>
+          </NotificationProvider>
+        </AuthProvider>
       </body>
     </html>
   );

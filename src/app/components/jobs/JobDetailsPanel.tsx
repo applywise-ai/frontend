@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BadgeCheck, X, ExternalLink, Bookmark, DollarSign, MapPin, Briefcase, Clock, Globe, GraduationCap, Link as LinkIcon } from 'lucide-react';
 import JobDetailsPanelSkeleton from '@/app/components/loading/JobDetailsPanelSkeleton';
 import { Job } from '@/app/types/job';
@@ -8,29 +8,50 @@ import { ROLE_LEVEL_OPTIONS } from '@/app/types/job';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getAvatarColor } from '@/app/utils/avatar';
 import SubscriptionCard from '@/app/components/SubscriptionCard';
-import { useNotification } from '@/app/contexts/NotificationContext';
+import SubscriptionModal from '@/app/components/SubscriptionModal';
+import { useApplications } from '@/app/contexts/ApplicationsContext';
+import { formatJobPostedDate } from '@/app/utils/job';
 
 interface JobDetailsPanelProps {
   job: Job | null;
-  onClose: () => void;
+  onClose?: () => void;
   isLoading?: boolean;
   fullPage?: boolean;
+  hasApplied?: boolean;
 }
 
-export default function JobDetailsPanel({ job, onClose, isLoading = false, fullPage = false }: JobDetailsPanelProps) {
-  const [isSaved, setIsSaved] = useState(false);
-  const [aiAppliesLeft] = useState(5); // This would come from user data/context
-  const { showSuccess } = useNotification();
+export default function JobDetailsPanel({ job, onClose, isLoading = false, fullPage = false, hasApplied = false }: JobDetailsPanelProps) {
+  const { toggleSave, isJobSaved } = useApplications();
   
-  const handleSaveToggle = () => {
-    const newSavedState = !isSaved;
-    setIsSaved(newSavedState);
-    
-    // Show success notification
-    if (newSavedState) {
-      showSuccess('Job saved successfully!');
-    } else {
-      showSuccess('Job removed from saved jobs!');
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  
+  // Check if job is saved when job changes
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      if (job?.id) {
+        try {
+          const saved = await isJobSaved(job.id.toString());
+          setIsSaved(saved);
+        } catch (error) {
+          console.error('Error checking job saved status:', error);
+        }
+      }
+    };
+
+    checkSavedStatus();
+  }, [job?.id, isJobSaved]);
+  
+  const handleSaveToggle = async () => {
+    setIsSaveLoading(true);
+    try {
+      await toggleSave(job?.id.toString() || '', isSaved);
+      setIsSaved(!isSaved);
+    } catch (error) {
+      console.error('Error toggling save status:', error);
+    } finally {
+      setIsSaveLoading(false);
     }
   };
   
@@ -69,12 +90,11 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
           {/* Action buttons - show in header on large screens when fullPage */}
           {fullPage && (
             <div className="hidden lg:flex space-x-3">
-              <AnimatedApplyButton 
-                onClick={() => {
-                  // Handle quick apply
-                }}
-                applicationId={job.id.toString()}
-              />
+              {!hasApplied && (
+                <AnimatedApplyButton 
+                  jobId={job.id.toString()}
+                />
+              )}
               
               <a 
                 href={job.jobUrl || "#"} 
@@ -86,17 +106,19 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                 <ExternalLink className="h-5 w-5" />
                 <span className="sr-only">View original job posting</span>
               </a>
-              
+              {!hasApplied && (
               <button
                 onClick={handleSaveToggle}
-                className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                disabled={isSaveLoading}
+                className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={isSaved ? "Unsave job" : "Save job"}
               >
-                <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
+                <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
               </button>
+              )}
             </div>
           )}
-          {!fullPage && (
+          {!fullPage && onClose && (
             <button 
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -112,13 +134,12 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
         {/* Apply and Save Buttons - show below header on small screens when fullPage, always show in sidebar */}
         {(!fullPage || (fullPage && 'lg:hidden')) && (
           <div className={`flex space-x-3 ${fullPage ? 'lg:hidden' : ''}`}>
-            <AnimatedApplyButton 
-              onClick={() => {
-                // Handle quick apply
-              }}
-              className="flex-1"
-              applicationId={job.id.toString()}
-            />
+            {!hasApplied && (
+              <AnimatedApplyButton 
+                className="flex-1"
+                jobId={job.id.toString()}
+              />
+            )}
             
             <a 
               href={job.jobUrl || "#"} 
@@ -130,21 +151,24 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
               <ExternalLink className="h-5 w-5" />
               <span className="sr-only">View original job posting</span>
             </a>
-            
+            {!hasApplied && (
             <button
               onClick={handleSaveToggle}
-              className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              disabled={isSaveLoading}
+              className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label={isSaved ? "Unsave job" : "Save job"}
             >
-              <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'}`} />
+              <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
             </button>
+            )}
           </div>
         )}
         
         {/* AI Applies Card */}
         <SubscriptionCard
-          aiAppliesLeft={aiAppliesLeft}
-          applicationId={job.id.toString()}
+          onUpgrade={() => setShowSubscriptionModal(true)}
+          jobId={job.id.toString()}
+          hasApplied={hasApplied}
         />
         
         {/* Key Details and Company Info - Side by side on large screens when fullPage */}
@@ -190,7 +214,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 font-medium">Posted</div>
-                    <div className="font-semibold text-sm text-gray-900">{job.postedDate}</div>
+                    <div className="font-semibold text-sm text-gray-900">{formatJobPostedDate(job.postedDate)}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -310,6 +334,12 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
           </div>
         </div>
       </div>
+      
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+      />
     </div>
   );
 } 

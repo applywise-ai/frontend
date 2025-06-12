@@ -2,11 +2,11 @@ import { Loader2, FileText, Download } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
+import { Answer } from '@/app/types/application';
 
 interface ApplicationPreviewProps {
   isLoading: boolean;
-  resumeFile?: string;
-  coverLetterFile?: string;
+  answers: Record<string, Answer>;
   activeTab?: string;
   setActiveTab?: (tab: string) => void;
 }
@@ -15,14 +15,31 @@ interface ApplicationPreviewProps {
 
 export function ApplicationPreview({ 
   isLoading, 
-  resumeFile = '', 
-  coverLetterFile = '',
+  answers,
   activeTab = 'application',
   setActiveTab
 }: ApplicationPreviewProps) {
+  
+  // Extract file URLs from answers
+  const getFileUrl = (questionId: string, fileType: 'resume' | 'coverLetter'): string => {
+    const answer = answers[questionId];
+    if (typeof answer === 'object' && answer !== null) {
+      if (fileType === 'resume') {
+        return (answer.resumeUrl as string) || '';
+      } else if (fileType === 'coverLetter') {
+        return (answer.coverLetterUrl as string) || '';
+      }
+    }
+    return '';
+  };
+
+  // Get file URLs
+  const resumeUrl = getFileUrl('resume', 'resume');
+  const coverLetterUrl = getFileUrl('coverLetter', 'coverLetter');
+
   // Check if a file is a PDF
   const isPdf = (file: string) => {
-    return file.toLowerCase().endsWith('.pdf');
+    return file.toLowerCase().includes('.pdf') || file.toLowerCase().endsWith('.pdf');
   };
 
   // Render document preview based on file type
@@ -35,7 +52,6 @@ export function ApplicationPreview({
           src={file}
           className="w-full h-[92vh] border-0"
           title="Document Preview"
-          // style={{ height: '100%' }}
         />
       );
     } else {
@@ -124,10 +140,10 @@ export function ApplicationPreview({
               
               <TabsContent value="resume" className="flex-1 m-0 p-0">
                 <div className="px-6 py-6 h-full">
-                  {resumeFile ? (
+                  {resumeUrl ? (
                     <div className="flex flex-col h-full">
                       <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 h-full overflow-auto relative">
-                        {renderDocumentPreview('/images/sample_resume.pdf')}
+                        {renderDocumentPreview(resumeUrl)}
                       </div>
                     </div>
                   ) : (
@@ -146,10 +162,10 @@ export function ApplicationPreview({
               
               <TabsContent value="coverLetter" className="flex-1 m-0 p-0 overflow-auto">
                 <div className="px-6 py-6 h-full">
-                  {coverLetterFile ? (
+                  {coverLetterUrl ? (
                     <div className="flex flex-col h-full">
                       <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 h-full overflow-auto relative">
-                        {renderDocumentPreview('/images/sample_cover_letter.pdf')}
+                        {renderDocumentPreview(coverLetterUrl)}
                       </div>
                     </div>
                   ) : (

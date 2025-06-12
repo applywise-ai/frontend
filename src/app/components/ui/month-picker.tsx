@@ -80,7 +80,11 @@ export function MonthPicker({
           {date instanceof Date && !isNaN(date.getTime()) ? format(date, "MMMM yyyy") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-3 max-h-[300px] overflow-y-auto" align="start">
+      <PopoverContent 
+        className="w-[280px] p-3 max-h-[300px] overflow-y-auto pointer-events-auto" 
+        align="start"
+        style={{ zIndex: 10000 }}
+      >
         {!yearSelected ? (
           <div>
             <div className="grid grid-cols-4 gap-2">
@@ -88,7 +92,7 @@ export function MonthPicker({
                 <Button
                   key={year}
                   variant={selectedYear === String(year) ? "default" : "ghost"}
-                  className="h-8 text-sm whitespace-nowrap"
+                  className="h-8 text-sm whitespace-nowrap pointer-events-auto"
                   onClick={() => handleYearChange(String(year))}
                 >
                   {year}
@@ -102,7 +106,7 @@ export function MonthPicker({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2"
+                className="h-6 px-2 pointer-events-auto"
                 onClick={handleBack}
               >
                 ← Back
@@ -115,7 +119,7 @@ export function MonthPicker({
                 <Button
                   key={month}
                   variant={selectedMonth === month ? "default" : "ghost"}
-                  className="h-8 text-sm"
+                  className="h-8 text-sm pointer-events-auto"
                   onClick={() => handleMonthChange(month)}
                 >
                   {month.slice(0, 3)}

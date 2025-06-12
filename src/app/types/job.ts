@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 /**
  * Job interface representing a job posting in the application
  */
@@ -10,7 +12,7 @@ export interface Job {
   salary: string;
   salaryValue: number; // Numeric value for filtering
   jobType: string;
-  postedDate: string;
+  postedDate: string | Timestamp;
   description: string;
   isVerified?: boolean;
   isSponsored?: boolean;
@@ -20,10 +22,11 @@ export interface Job {
   responsibilities?: string[];
   requirements?: string[];
   jobUrl?: string;
-  matchPercentage?: number; // For personalized recommendations
+  score?: number; // For personalized recommendations
   tags?: string[]; // Tags for job categorization
   shortResponsibilities?: string; // Concise summary of responsibilities
   shortQualifications?: string; // Concise summary of qualifications
+  expired?: boolean; // Whether the job posting has expired
 } 
 
 // Job Types
@@ -149,3 +152,14 @@ export const JOB_TYPE_OPTIONS = [
   ] as const;
   
   export type DegreeType = typeof DEGREE_OPTIONS[number]['value'];
+
+  // Job Filters Interface
+  export interface JobFilters {
+    query?: string;
+    locations?: string[];
+    specializations?: string[];
+    experienceLevels?: string[];
+    minSalary?: number;
+    sponsorship?: 'yes' | 'no' | 'any';
+    sortBy?: 'recent' | 'salary-high' | 'salary-low';
+  }

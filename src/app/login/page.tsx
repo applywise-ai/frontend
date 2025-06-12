@@ -7,7 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
-import { authService } from '@/app/utils/firebase';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/app/components/loading/LoadingScreen';
 
@@ -18,29 +18,17 @@ export default function Login() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { isAuthenticated, isLoading: authLoading, login } = useAuth();
   const router = useRouter();
 
-  // Check if user is already logged in
+  // Redirect if user is already logged in
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const user = await authService.isLoggedIn();
-        if (user) {
+    if (!authLoading && isAuthenticated) {
           router.push('/jobs');
-          return;
-        }
-        setIsCheckingAuth(false);
-      } catch (error) {
-        console.error('Error checking authentication status:', error);
-        setIsCheckingAuth(false);
-      }
-    };
+    }
+  }, [authLoading, isAuthenticated, router]);
 
-    checkAuth();
-  }, [router]);
-
-  if (isCheckingAuth) {
+  if (authLoading) {
     return <LoadingScreen />;
   }
 
@@ -56,15 +44,12 @@ export default function Login() {
     setLoading(true);
     setError(null);
     
-    const result = await authService.login(formData.email, formData.password);
-    
-    if ('error' in result) {
-      // Handle error response
-      setError(result.message);
-      setLoading(false);
-    } else {
-      // Successful login
+    try {
+      await login(formData.email, formData.password);
       router.push('/jobs');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Login failed');
+      setLoading(false);
     }
   };
 
@@ -72,15 +57,21 @@ export default function Login() {
     setLoading(true);
     setError(null);
     
+    try {
+      // For now, we'll import authService directly for Google auth
+      // TODO: Add Google auth to AuthContext
+      const { authService } = await import('@/app/utils/firebase');
     const result = await authService.googleAuth();
     
     if ('error' in result) {
-      // Handle error response
       setError(result.message);
       setLoading(false);
     } else {
-      // Successful login
       router.push('/jobs');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Google sign-in failed');
+      setLoading(false);
     }
   };
 

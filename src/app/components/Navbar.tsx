@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { authService } from '@/app/utils/firebase';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { getInitials } from '@/app/utils/avatar';
 import NavbarSkeleton from './loading/NavbarSkeleton';
 import { isDashboardPage, shouldHideNavbar } from '@/app/utils/navigation';
 import { Button } from '@/app/components/ui/button';
@@ -16,18 +17,24 @@ interface NavbarProps {
 
 const Navbar = ({ isLoading = false }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   
+  // Get auth data
+  const { user, isAuthenticated: isLoggedIn, isLoading: authLoading, logout } = useAuth();
+  
   // Check if current page is a dashboard page or should hide navbar
   const isCurrentDashboardPage = isDashboardPage(pathname);
   const hideNavbar = shouldHideNavbar(pathname);
+  
+  // Get user's display name and avatar initial from Firebase Auth
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const firstName = displayName.split(' ')[0] || 'User';
+  const avatarInitial = getInitials(displayName);
   
   // Memoize the scroll handler to prevent recreating it on each render
   const handleScroll = useCallback(() => {
@@ -44,18 +51,6 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
     
     // Add event listener
     window.addEventListener('scroll', handleScroll);
-    
-    // Check if user is logged in
-    const checkAuth = async () => {
-      try {
-        const user = await authService.isLoggedIn();
-        setIsLoggedIn(!!user);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    
-    checkAuth();
     
     // Cleanup function
     return () => {
@@ -97,13 +92,12 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
   }
 
   // Show skeleton while loading
-  if (isLoading || authLoading) {
+  if (isLoading || authLoading ) {
     return <NavbarSkeleton />;
   }
 
   const handleLogout = async () => {
-    await authService.logout();
-    window.location.href = '/';
+    await logout();
   };
 
   // Check if current page is jobs page
@@ -128,7 +122,8 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                   src={isLoggedIn ? "/images/logo_dark_transparent.png" : "/images/logo_transparent.png"}
                   alt="Logo"
                   width={160}
-                  height={40}
+                  height={0}
+                  style={{ height: "auto" }}
                   className="object-contain pt-1"
                   priority
                 />
@@ -189,6 +184,8 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                   </svg>
                   <span>Profile</span>
                 </Link>
+
+
               </div>
             )}
           </div>
@@ -231,12 +228,12 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                     className="hidden md:flex items-center h-16 px-2 focus:outline-none group"
                   >
-                    {/* Modern initial avatar, smaller and dark blue */}
+                    {/* Dynamic avatar with user's initial */}
                     <div className="h-8 w-8 rounded-full bg-[#1e293b] flex items-center justify-center border-2 border-white shadow mr-2 select-none">
-                      <span className="text-white font-bold text-base">K</span>
+                      <span className="text-white font-bold text-base">{avatarInitial}</span>
                     </div>
-                    {/* User name, smaller */}
-                    <span className="font-semibold text-gray-800 text-base mr-0.5">Kaiz</span>
+                    {/* User's actual name */}
+                    <span className="font-semibold text-gray-800 text-base mr-0.5">{firstName}</span>
                     {/* Chevron arrow, smaller */}
                     <svg
                       className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}

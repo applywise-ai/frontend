@@ -1,5 +1,6 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { FormQuestion, FormSection as FormSectionType, FileType } from './QuestionInput';
+import { FormQuestion, FormSectionType, FileType, Answer } from '@/app/types/application';
 import { QuestionLabel } from './QuestionLabel';
 import { QuestionInput } from './QuestionInput';
 import { User, FileText, CheckSquare, ListFilter, FileSpreadsheet } from 'lucide-react';
@@ -7,14 +8,14 @@ import { User, FileText, CheckSquare, ListFilter, FileSpreadsheet } from 'lucide
 interface FormSectionProps {
   title: string;
   questions: FormQuestion[];
-  onAnswerChange: (id: string, value: string) => void;
-  answers: {[key: string]: string};
+  onAnswerChange: (id: string, value: Answer) => void;
+  answers: {[key: string]: Answer};
   section: FormSectionType;
   onPreview?: (fileType: FileType) => void;
   validationErrors?: string[];
   fieldRefs?: {[key: string]: React.RefObject<HTMLDivElement | null>};
   onSuccess?: (message: string) => void;
-  isPro?: boolean;
+  applicationId?: string;
 }
 
 // Get section style based on section type
@@ -71,7 +72,12 @@ function getSectionStyle(section?: FormSectionType) {
   }
 }
 
-export function FormSection({ title, questions, onAnswerChange, section, onPreview, validationErrors, fieldRefs, onSuccess, isPro, answers }: FormSectionProps) {
+export const FormSection = React.memo(function FormSection(props: FormSectionProps) {
+  const {
+    title, questions, onAnswerChange, section, onPreview,
+    validationErrors, fieldRefs, onSuccess, applicationId
+  } = props;
+
   // Get section styling
   const style = getSectionStyle(section);
 
@@ -97,14 +103,15 @@ export function FormSection({ title, questions, onAnswerChange, section, onPrevi
                 {question.question}
               </QuestionLabel>
               <QuestionInput
+                key={`${section}-${question.id}`}
                 question={question}
-                answer={answers[question.id]}
+                answer={props.answers[question.id]}
                 onChange={onAnswerChange}
                 onPreview={onPreview}
                 hasError={validationErrors?.includes(question.id)}
                 inputRef={fieldRefs?.[question.id]}
                 onSuccess={onSuccess}
-                isPro={isPro}
+                applicationId={applicationId}
               />
             </div>
           ))}
@@ -112,4 +119,4 @@ export function FormSection({ title, questions, onAnswerChange, section, onPrevi
       </CardContent>
     </Card>
   );
-} 
+});

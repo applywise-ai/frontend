@@ -7,7 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
-import { authService } from '@/app/utils/firebase';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/app/components/loading/LoadingScreen';
 
@@ -20,29 +20,17 @@ export default function SignUp() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Check if user is already logged in
+  // Redirect if user is already logged in
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const user = await authService.isLoggedIn();
-        if (user) {
+    if (!authLoading && isAuthenticated) {
           router.push('/jobs');
-          return;
-        }
-        setIsCheckingAuth(false);
-      } catch (error) {
-        console.error('Error checking authentication status:', error);
-        setIsCheckingAuth(false);
-      }
-    };
+    }
+  }, [authLoading, isAuthenticated, router]);
 
-    checkAuth();
-  }, [router]);
-
-  if (isCheckingAuth) {
+  if (authLoading) {
     return <LoadingScreen />;
   }
 
@@ -58,13 +46,15 @@ export default function SignUp() {
     setLoading(true);
     setError(null);
     
+    try {
     // Combine first and last name for fullName
     const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
     
+      // TODO: Add register method to AuthContext
+      const { authService } = await import('@/app/utils/firebase');
     const result = await authService.register(formData.email, formData.password, fullName);
     
     if ('error' in result) {
-      // Handle error response
       setError(result.message);
       setLoading(false);
     } else {
@@ -74,6 +64,10 @@ export default function SignUp() {
         firstName: formData.firstName || 'there'
       });
       router.push(`/jobs?${welcomeParams.toString()}`);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Registration failed');
+      setLoading(false);
     }
   };
 
@@ -81,10 +75,12 @@ export default function SignUp() {
     setLoading(true);
     setError(null);
     
+    try {
+      // TODO: Add Google auth to AuthContext
+      const { authService } = await import('@/app/utils/firebase');
     const result = await authService.googleAuth();
     
     if ('error' in result) {
-      // Handle error response
       setError(result.message);
       setLoading(false);
     } else {
@@ -98,6 +94,10 @@ export default function SignUp() {
         firstName: firstName
       });
       router.push(`/jobs?${welcomeParams.toString()}`);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Google sign-up failed');
+      setLoading(false);
     }
   };
 

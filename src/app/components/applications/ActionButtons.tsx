@@ -1,47 +1,42 @@
 import { Button } from '@/app/components/ui/button';
-import { Check, Trash2, Save } from 'lucide-react';
+import { Check, Save } from 'lucide-react';
+import DeleteApplicationDialog from '@/app/components/applications/DeleteApplicationDialog';
 
 interface ActionButtonsProps {
-  onCancel: () => void;
   onSaveSubmit: () => void;
   isLoading: boolean;
   isDeleting?: boolean;
   isSaved: boolean;
   formChanged: boolean;
+  applicationId?: string;
+  jobTitle?: string;
+  companyName?: string;
 }
 
 export function ActionButtons({
-  onCancel,
   onSaveSubmit,
   isLoading,
-  isDeleting = false,
   isSaved,
-  formChanged
+  formChanged,
+  applicationId,
+  jobTitle,
+  companyName
 }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          onClick={onCancel}
-          disabled={isDeleting}
-          className="rounded-md px-3 sm:px-3.5 py-2 sm:py-0 border-red-300 hover:bg-red-50 hover:text-red-800 text-red-700 flex items-center text-xs sm:text-sm"
-        >
-          {isDeleting ? (
-            <>
-              <div className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 border-2 border-red-400 border-t-transparent rounded-full"></div>
-              Deleting...
-            </>
-          ) : (
-            <>
-              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-              Delete
-            </>
-          )}
-        </Button>
+        {applicationId && (
+          <DeleteApplicationDialog
+            applicationId={applicationId}
+            jobTitle={jobTitle}
+            companyName={companyName}
+            buttonText="Delete"
+            size="md"
+          />
+        )}
         
         <Button 
           onClick={onSaveSubmit}
-          disabled={isLoading || isDeleting}
+          disabled={isLoading}
           className="rounded-md px-3 sm:px-3.5 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center text-xs sm:text-sm"
         >
           {isLoading ? (

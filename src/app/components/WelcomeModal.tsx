@@ -4,19 +4,27 @@ import React, { useState } from 'react';
 import { Dialog, DialogContentWithoutCloseButton, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { useProfile } from '@/app/contexts/ProfileContext';
+import { FieldName } from '@/app/types/profile';
 import { Sparkles, ArrowRight, Play, Clock, Users, TrendingUp } from 'lucide-react';
 
 interface WelcomeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userName?: string;
   mode?: 'welcome' | 'demo';
 }
 
-export default function WelcomeModal({ isOpen, onClose, userName = 'there', mode = 'welcome' }: WelcomeModalProps) {
+export default function WelcomeModal({ isOpen, onClose, mode = 'welcome' }: WelcomeModalProps) {
   const router = useRouter();
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Get profile data
+  const { profile } = useProfile();
+  
+  // Get user's first name from profile
+  const displayName = profile?.[FieldName.FULL_NAME] || 'there';
+  const firstName = displayName.split(' ')[0] || 'there';
 
   const handleGetStarted = () => {
     setIsNavigating(true);
@@ -64,7 +72,7 @@ export default function WelcomeModal({ isOpen, onClose, userName = 'there', mode
               {isDemoMode ? (
                 'See How ApplyWise Works'
               ) : (
-                `Welcome to Applywise, ${userName}! 🎉`
+                `Welcome to Applywise, ${firstName}! 🎉`
               )}
             </h1>
             <p className="text-blue-100 text-base sm:text-lg">

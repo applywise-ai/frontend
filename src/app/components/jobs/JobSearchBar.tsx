@@ -29,6 +29,24 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false, i
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(true);
   
+  // Helper function to safely update URL parameters
+  const updateUrlParams = (updates: Record<string, string | string[] | null>) => {
+    // Get current URL parameters
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === 'any' || value === '' || (Array.isArray(value) && value.length === 0)) {
+        params.delete(key);
+      } else if (Array.isArray(value)) {
+        params.set(key, value.join(','));
+      } else {
+        params.set(key, value);
+      }
+    });
+    router.replace(`/jobs?${params.toString()}`);
+  };
+  
   // Define filter options
   const salaryRanges = [
     { value: 'any', label: 'Any Salary' },
@@ -52,11 +70,11 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false, i
   useEffect(() => {
     const query = searchParams.get('query') || '';
     const salary = searchParams.get('salary') || 'any';
-    const locs = searchParams.get('locations')?.split(',') || [];
-    const specs = searchParams.get('specializations')?.split(',') || [];
-    const exps = searchParams.get('experienceLevels')?.split(',') || [];
+    const locs = searchParams.get('locations')?.split(',').filter(Boolean) || [];
+    const specs = searchParams.get('specializations')?.split(',').filter(Boolean) || [];
+    const exps = searchParams.get('experienceLevels')?.split(',').filter(Boolean) || [];
     const sponsor = searchParams.get('sponsorship') || 'any';
-    
+  
     setSearchQuery(query);
     setMinSalary(salary);
     setLocations(locs);
@@ -92,56 +110,31 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false, i
   // Handle filter changes with immediate update
   const handleSalaryChange = (value: string) => {
     setMinSalary(value);
-    setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value !== 'any') params.set('salary', value);
-      else params.delete('salary');
-      router.replace(`/jobs?${params.toString()}`);
-    }, 0);
+    updateUrlParams({ salary: value });
   };
   
   const handleLocationsChange = (values: string[]) => {
     setLocations(values);
-    setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (values.length > 0) params.set('locations', values.join(','));
-      else params.delete('locations');
-      router.replace(`/jobs?${params.toString()}`);
-    }, 0);
+    updateUrlParams({ locations: values });
   };
   
   const handleExperienceLevelsChange = (values: string[]) => {
     setExperienceLevels(values);
-    setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (values.length > 0) params.set('experienceLevels', values.join(','));
-      else params.delete('experienceLevels');
-      router.replace(`/jobs?${params.toString()}`);
-    }, 0);
+    updateUrlParams({ experienceLevels: values });
   };
   
   // Toggle sponsorship filter
   const toggleSponsorshipFilter = () => {
     const newValue = sponsorship === 'yes' ? 'any' : 'yes';
     setSponsorship(newValue);
-    
-    setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (newValue !== 'any') params.set('sponsorship', newValue);
-      else params.delete('sponsorship');
-      router.replace(`/jobs?${params.toString()}`);
-    }, 0);
+    updateUrlParams({ sponsorship: newValue });
   };
   
   // Handle search submission - search only when button is clicked
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchQuery) params.set('query', searchQuery);
-    else params.delete('query');
-    
-    router.replace(`/jobs?${params.toString()}`);
+    updateUrlParams({ query: searchQuery });
   };
   
   // Handle text input changes without automatic search
@@ -153,20 +146,13 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false, i
   // Clear search input
   const clearSearch = () => {
     setSearchQuery('');
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('query');
-    router.replace(`/jobs?${params.toString()}`);
+    updateUrlParams({ query: null });
   };
   
   // Add handler for specializations
   const handleSpecializationsChange = (values: string[]) => {
     setSpecializations(values);
-    setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (values.length > 0) params.set('specializations', values.join(','));
-      else params.delete('specializations');
-      router.replace(`/jobs?${params.toString()}`);
-    }, 0);
+    updateUrlParams({ specializations: values });
   };
   
   // Clear all filters
@@ -178,51 +164,38 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false, i
     setExperienceLevels([]);
     setSponsorship('any');
     setActiveFilters([]);
-    router.replace('/jobs');
+    updateUrlParams({ query: null, salary: null, locations: null, specializations: null, experienceLevels: null, sponsorship: null });
   };
   
   // Remove a specific filter
   const removeFilter = (filter: string) => {
     if (salaryRanges.some(r => r.label === filter)) {
       setMinSalary('any');
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('salary');
-      router.replace(`/jobs?${params.toString()}`);
+      updateUrlParams({ salary: null });
     } else if (INDUSTRY_SPECIALIZATION_OPTIONS.some(r => r.label === filter)) {
       const newSpecs = specializations.filter(spec => {
         const option = INDUSTRY_SPECIALIZATION_OPTIONS.find(r => r.value === spec);
         return option?.label !== filter;
       });
       setSpecializations(newSpecs);
-      const params = new URLSearchParams(searchParams.toString());
-      if (newSpecs.length > 0) params.set('specializations', newSpecs.join(','));
-      else params.delete('specializations');
-      router.replace(`/jobs?${params.toString()}`);
+      updateUrlParams({ specializations: newSpecs });
     } else if (LOCATION_TYPE_OPTIONS.some(r => r.label === filter)) {
       const newLocations = locations.filter(loc => {
         const option = LOCATION_TYPE_OPTIONS.find(r => r.value === loc);
         return option?.label !== filter;
       });
       setLocations(newLocations);
-      const params = new URLSearchParams(searchParams.toString());
-      if (newLocations.length > 0) params.set('locations', newLocations.join(','));
-      else params.delete('locations');
-      router.replace(`/jobs?${params.toString()}`);
+      updateUrlParams({ locations: newLocations });
     } else if (ROLE_LEVEL_OPTIONS.some(r => r.label === filter)) {
       const newLevels = experienceLevels.filter(level => {
         const option = ROLE_LEVEL_OPTIONS.find(r => r.value === level);
         return option?.label !== filter;
       });
       setExperienceLevels(newLevels);
-      const params = new URLSearchParams(searchParams.toString());
-      if (newLevels.length > 0) params.set('experienceLevels', newLevels.join(','));
-      else params.delete('experienceLevels');
-      router.replace(`/jobs?${params.toString()}`);
+      updateUrlParams({ experienceLevels: newLevels });
     } else if (filter === 'Provides Visa Sponsorship') {
       setSponsorship('any');
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('sponsorship');
-      router.replace(`/jobs?${params.toString()}`);
+      updateUrlParams({ sponsorship: null });
     }
   };
   
@@ -362,6 +335,7 @@ export default function JobSearchBar({ detailsOpen = false, isLoading = false, i
                   <Globe className="h-4 w-4 text-white" />
                 </div>
                 <Button
+                  type="button"
                   variant="outline"
                   className={`flex h-10 w-full items-center justify-start rounded-md border border-gray-200 bg-white hover:bg-white hover:text-teal-700 hover:border-gray-400 px-3 py-2 text-sm ring-offset-white focus:outline-none transition-all duration-200 ${
                     sponsorship === 'yes' 

@@ -1,8 +1,13 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle2, User } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
+import { Card, CardContent } from '../ui/card';
 import { DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { useRouter } from 'next/navigation';
+import { useProfile } from '@/app/contexts/ProfileContext';
+import { FieldName } from '@/app/types/profile';
 
 export type ProfileCompletionState = 'complete' | 'partial' | 'incomplete';
 
@@ -48,12 +53,31 @@ const ProfileCompletionAlert: FC<ProfileCompletionAlertProps> = ({
   onCompleteProfile,
 }) => {
   const router = useRouter();
+  const { updateProfile } = useProfile();
+  const [ignoreNotification, setIgnoreNotification] = useState(false);
 
   const handleCompleteProfile = () => {
     if (onCompleteProfile) {
       onCompleteProfile();
     } else {
       router.push('/profile');
+    }
+  };
+
+  const handleContinueAnyway = async () => {
+    // Save the ignore preference if checkbox is checked
+    if (ignoreNotification && state === 'partial') {
+      try {
+        await updateProfile({
+          [FieldName.IGNORE_PARTIAL_PROFILE_ALERT]: true
+        });
+      } catch (error) {
+        console.error('Error saving notification preference:', error);
+      }
+    }
+    
+    if (onContinue) {
+      onContinue();
     }
   };
 
@@ -70,6 +94,30 @@ const ProfileCompletionAlert: FC<ProfileCompletionAlertProps> = ({
           </DialogDescription>
         </div>
       </DialogHeader>
+      
+            {state === 'partial' && (
+        <div className="px-6">
+          <Card className="bg-gray-50 border border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="ignore-notification"
+                  checked={ignoreNotification}
+                  onCheckedChange={(checked) => setIgnoreNotification(Boolean(checked))}
+                  className="h-4 w-4 border-2 border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 data-[state=checked]:text-white"
+                />
+                <Label
+                  htmlFor="ignore-notification"
+                  className="text-sm text-gray-700 cursor-pointer font-medium"
+                >
+                  Don&apos;t show this notification again for partial profiles
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       {state !== 'complete' && (
         <DialogFooter className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
           <div className="flex gap-2">
@@ -77,21 +125,19 @@ const ProfileCompletionAlert: FC<ProfileCompletionAlertProps> = ({
               <Button
                 variant="outline"
                 size="lg"
-                className="border-gray-200"
-                onClick={handleCompleteProfile}
+                className="border-gray-200 bg-white hover:bg-gray-50"
+                onClick={handleContinueAnyway}
               >
-                <User className="h-5 w-5 mr-2" />
-                Complete Profile
+                Continue Anyway
               </Button>
             )}
             <Button
               size="lg"
               className="bg-teal-600 hover:bg-teal-700 text-white"
-              onClick={state === 'partial' ? onContinue : handleCompleteProfile}
+              onClick={handleCompleteProfile}
             >
-              {state === 'partial' ? 'Continue Anyway' : (
-                <><User className="h-5 w-5 mr-2" />Complete Profile</>
-              )}
+              <User className="h-5 w-5 mr-2" />
+              {state === 'partial' ? 'Complete Profile' : 'Complete Profile'}
             </Button>
           </div>
         </DialogFooter>

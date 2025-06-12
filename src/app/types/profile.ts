@@ -21,6 +21,7 @@ export enum FieldName {
   // Personal Information
   RESUME = 'resume',
   RESUME_FILENAME = 'resumeFilename',
+  RESUME_URL = 'resumeUrl',
   RESUME_AUTOFILL = 'resumeAutofill',
   FULL_NAME = 'fullName',
   EMAIL = 'email',
@@ -58,6 +59,15 @@ export enum FieldName {
   INDUSTRY_SPECIALIZATIONS = 'industrySpecializations',
   COMPANY_SIZE = 'companySize',
   
+  // Notification Preferences
+  NEW_JOB_MATCHES = 'newJobMatches',
+  AUTO_APPLY_WITHOUT_REVIEW = 'autoApplyWithoutReview',
+  IGNORE_PARTIAL_PROFILE_ALERT = 'ignorePartialProfileAlert',
+  
+  // Subscription
+  IS_PRO_MEMBER = 'isProMember',
+  AI_CREDITS = 'aiCredits',
+  
   // Education
   EDUCATION = 'education',
   SCHOOL = 'school',
@@ -90,6 +100,10 @@ export enum FieldName {
   PROJECT_DESCRIPTION = 'projectDescription',
   PROJECT_LINK = 'projectLink',
   TEMP_PROJECT = 'tempProject',
+  
+  // Job Feedback
+  LIKED_JOBS = 'likedJobs',
+  DISLIKED_JOBS = 'dislikedJobs',
 }
 
 export interface Education {
@@ -120,6 +134,7 @@ export interface UserProfile {
   // Personal Information
   [FieldName.RESUME]?: string;
   [FieldName.RESUME_FILENAME]?: string;
+  [FieldName.RESUME_URL]?: string;
   [FieldName.RESUME_AUTOFILL]?: boolean;
   [FieldName.FULL_NAME]: string;
   [FieldName.EMAIL]: string;
@@ -157,6 +172,15 @@ export interface UserProfile {
   [FieldName.INDUSTRY_SPECIALIZATIONS]?: string[];
   [FieldName.COMPANY_SIZE]?: string[];
   
+  // Notification Preferences
+  [FieldName.NEW_JOB_MATCHES]?: boolean;
+  [FieldName.AUTO_APPLY_WITHOUT_REVIEW]?: boolean;
+  [FieldName.IGNORE_PARTIAL_PROFILE_ALERT]?: boolean;
+  
+  // Subscription
+  [FieldName.IS_PRO_MEMBER]?: boolean;
+  [FieldName.AI_CREDITS]?: number;
+  
   // Education
   [FieldName.EDUCATION]?: Education[];
   [FieldName.TEMP_EDUCATION]?: Education;
@@ -174,6 +198,10 @@ export interface UserProfile {
   // Projects
   [FieldName.PROJECTS]?: Project[];
   [FieldName.TEMP_PROJECT]?: Project;
+  
+  // Job Feedback
+  [FieldName.LIKED_JOBS]?: string[];
+  [FieldName.DISLIKED_JOBS]?: string[];
 }
 
 // Options for select fields
@@ -181,5 +209,5 @@ export const genderOptions = ['Man', 'Woman', 'Non-binary', 'Prefer not to say']
 export const raceOptions = ['White', 'Black', 'East Asian', 'South Asian', 'Southeast Asian', 'Middle Eastern', 'Indigenous', 'Pacific Islander', 'Other', 'Prefer not to say'];
 export const sexualityOptions = ['Heterosexual', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Other', 'Prefer not to say'];
 export const noticePeriodOptions = ['Immediately', '2 weeks', '4 weeks', '8 weeks', '3 months', 'More than 3 months'];
-export const sourceOptions = ['LinkedIn', 'Indeed', 'Company Website', 'Referral', 'Job Board', 'University/College', 'Other'];
+export const sourceOptions = ['LinkedIn', 'Indeed', 'Company Website', 'Referral', 'Job Board', 'University/College', 'Applywise', 'Other'];
 

@@ -9,6 +9,7 @@ import {
   User,
   updateEmail,
   updatePassword,
+  updateProfile,
   deleteUser,
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -16,9 +17,9 @@ import {
   confirmPasswordReset,
   verifyPasswordResetCode
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
-import { auth, db } from './config';
+import { auth } from './config';
+import profileService from './profile';
 
 // Define a type for the error response
 export type AuthErrorResponse = {
@@ -115,14 +116,10 @@ class FirebaseAuthService {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Create user document in Firestore
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        profile: {
-          fullName: fullName,
-          email: email
-        },
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+      // Create user profile in Firestore using profile service
+      await profileService.createProfile(userCredential.user, {
+        fullName: fullName,
+        email: email
       });
       
       return userCredential;
@@ -153,18 +150,9 @@ class FirebaseAuthService {
     try {
       const userCredential = await signInWithPopup(auth, this.googleProvider);
       
-      // Check if this is a new user and create document if needed
+      // Initialize profile for new users
       if (userCredential.user) {
-        // For Google sign-in, we'll create/update the user document
-        // Using merge: true to avoid overwriting existing data
-        await setDoc(doc(db, 'users', userCredential.user.uid), {
-          profile: {
-            fullName: userCredential.user.displayName || 'Google User',
-            email: userCredential.user.email || ''
-          },
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }, { merge: true });
+        await profileService.initializeProfile(userCredential.user);
       }
       
       return userCredential;
@@ -217,21 +205,42 @@ class FirebaseAuthService {
 
   /**
    * Reauthenticate the user with their credentials
-   * @param password - Current password
+   * @param password - Current password (only for email/password users)
    * @returns Promise with UserCredential or AuthErrorResponse
    */
-  async reauthenticate(password: string): Promise<UserCredential | AuthErrorResponse> {
+  async reauthenticate(password?: string): Promise<UserCredential | AuthErrorResponse> {
     try {
       const user = auth.currentUser;
-      if (!user || !user.email) {
+      if (!user) {
         return {
           error: true,
           message: 'No authenticated user found'
         };
       }
 
-      const credential = EmailAuthProvider.credential(user.email, password);
-      return await reauthenticateWithCredential(user, credential);
+      // Check if user signed in with Google
+      const isGoogleUser = user.providerData.some(provider => provider.providerId === 'google.com');
+      
+      if (isGoogleUser) {
+        // For Google users, reauthenticate with Google popup
+        try {
+          const result = await signInWithPopup(auth, this.googleProvider);
+          return result;
+        } catch (error: unknown) {
+          return this.handleAuthError(error);
+        }
+      } else {
+        // For email/password users
+        if (!user.email || !password) {
+          return {
+            error: true,
+            message: 'Email and password are required for reauthentication'
+          };
+        }
+
+        const credential = EmailAuthProvider.credential(user.email, password);
+        return await reauthenticateWithCredential(user, credential);
+      }
     } catch (error: unknown) {
       return this.handleAuthError(error);
     }
@@ -269,11 +278,32 @@ class FirebaseAuthService {
       if (!user) {
         return {
           error: true,
-          message: 'No authenticated user found'
+          message: 'No user is currently logged in'
         };
       }
-
+      
       await updatePassword(user, newPassword);
+    } catch (error: unknown) {
+      return this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Update user display name
+   * @param displayName - New display name
+   * @returns Promise<void | AuthErrorResponse>
+   */
+  async updateDisplayName(displayName: string): Promise<void | AuthErrorResponse> {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        return {
+          error: true,
+          message: 'No user is currently logged in'
+        };
+      }
+      
+      await updateProfile(user, { displayName });
     } catch (error: unknown) {
       return this.handleAuthError(error);
     }

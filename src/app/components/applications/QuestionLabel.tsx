@@ -14,13 +14,13 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { Label } from '@/app/components/ui/label';
-import { FormQuestion, FormSection } from './QuestionInput';
+import { FormQuestion, FormSectionType   } from '@/app/types/application';
 import { ReactNode } from 'react';
 
 interface QuestionLabelProps {
   htmlFor: string;
   required?: boolean;
-  section?: FormSection;
+  section?: FormSectionType;
   children: ReactNode;
 }
 
@@ -55,7 +55,7 @@ export function LegacyQuestionLabel({ question }: { question: FormQuestion }) {
 }
 
 // Function to get the appropriate icon based on question ID or type
-function getQuestionIcon(id: string, section?: FormSection) {
+function getQuestionIcon(id: string, section?: FormSectionType) {
   const iconColor = getIconColorBySection(section || 'personal');
   
   // First check specific field IDs
@@ -81,7 +81,7 @@ function getQuestionIcon(id: string, section?: FormSection) {
 }
 
 // Helper to get icon color based on question section
-function getIconColorBySection(section: FormSection): string {
+function getIconColorBySection(section: FormSectionType): string {
   switch (section) {
     case 'personal': return 'text-blue-600';
     case 'resume': return 'text-green-600';

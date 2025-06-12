@@ -36,7 +36,7 @@ export default function EditSectionModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white max-h-[90vh] p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-2xl bg-white max-h-[90vh] p-0 flex flex-col overflow-hidden" aria-describedby={undefined}>
         <div className="p-6 pb-4 border-b border-gray-100">
           <DialogHeader>
             <DialogTitle className="text-base sm:text-xl">{title}</DialogTitle>

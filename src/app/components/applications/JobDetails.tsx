@@ -1,4 +1,6 @@
 import { Building, MapPin, DollarSign, Calendar } from 'lucide-react';
+import { formatJobPostedDate } from '@/app/utils/job';
+import { Timestamp } from 'firebase/firestore';
 
 interface JobDetailsProps {
   title: string;
@@ -6,8 +8,31 @@ interface JobDetailsProps {
   location: string;
   salary: string;
   status: string;
-  postedDate?: string;
+  postedDate?: string | Timestamp;
   daysAgo?: number;
+}
+
+// Generate a consistent color based on company name
+function getCompanyColor(company: string): string {
+  const colors = [
+    'bg-blue-500',
+    'bg-green-500', 
+    'bg-purple-500',
+    'bg-red-500',
+    'bg-yellow-500',
+    'bg-indigo-500',
+    'bg-pink-500',
+    'bg-teal-500',
+    'bg-orange-500',
+    'bg-cyan-500'
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < company.length; i++) {
+    hash = company.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
 }
 
 export function JobDetails({
@@ -15,14 +40,18 @@ export function JobDetails({
   company,
   location,
   salary,
+  postedDate,
   daysAgo = 14
 }: JobDetailsProps) {
+  const companyInitial = company.charAt(0).toUpperCase();
+  const companyColor = getCompanyColor(company);
+  
   return (
     <div className="bg-white rounded-md">
       <div className="space-y-4">
         <div className="flex items-center">
-          <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-            <Building className="h-5 w-5 text-blue-600" />
+          <div className={`flex-shrink-0 w-10 h-10 ${companyColor} rounded-full flex items-center justify-center mr-3`}>
+            <span className="text-white font-semibold text-sm">{companyInitial}</span>
           </div>
           <div>
             <h3 className="font-semibold text-md sm:text-lg text-gray-900 leading-tight">{title}</h3>
@@ -58,7 +87,8 @@ export function JobDetails({
             <div>
               <div className="text-xs text-gray-500">Posted</div>
               <div className="font-medium text-gray-800 text-sm">
-                {daysAgo === 0 ? 'Today' : 
+                {postedDate ? formatJobPostedDate(postedDate) : 
+                 daysAgo === 0 ? 'Today' : 
                  daysAgo === 1 ? 'Yesterday' : 
                  `${daysAgo} days ago`}
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Briefcase, FileText } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
@@ -8,55 +8,83 @@ import Link from 'next/link';
 import { getBreakpoint } from '@/app/utils/breakpoints';
 
 // Import our components
-import { FormQuestion, FormSection, FileType } from '@/app/components/applications/QuestionInput';
+import { FormSectionType, FileType } from '@/app/types/application';
 import { FormSection as FormSectionComponent } from '@/app/components/applications/FormSection';
 import { JobDetails } from '@/app/components/applications/JobDetails';
 import { ApplicationPreview } from '@/app/components/applications/ApplicationPreview';
 import { ActionButtons } from '@/app/components/applications/ActionButtons';
 import { ApplicationPreviewHeader } from '@/app/components/applications/ApplicationPreviewHeader';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import { ApplicationWithJob, useApplications } from '@/app/contexts/ApplicationsContext';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
+import { navigateAndForget } from '@/app/utils/navigation';
 
 // Define a type for unwrapped params
 type ParamsType = {
   id: string;
 };
 
+type Answer = string | Record<string, string | number | boolean | null>;
+
 function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   const router = useRouter();
+  // UI-only state
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaved, setIsSaved] = useState(true);
   const [loadingPreview, setLoadingPreview] = useState(true);
   const [activeTab, setActiveTab] = useState("form");
   const [previewTab, setPreviewTab] = useState<"application" | "resume" | "coverLetter">("application");
-  const [formChanged, setFormChanged] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const initialQuestionsRef = useRef<FormQuestion[]>([]);
+  const [formChanged, setFormChanged] = useState(false);
+  // Remove localAnswers - let individual inputs manage their own state
   const fieldRefs = useRef<{[key: string]: React.RefObject<HTMLDivElement | null>}>({});
+  const currentAnswers = useRef<Record<string, Answer>>({});
   
   // Global notification hook
   const { showSuccess } = useNotification();
+  const { 
+    applications, 
+    updateApplication,
+    submitApplication 
+  } = useApplications();
   
   // Use React.use() to unwrap params before accessing properties
   const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
   const applicationId = unwrappedParams.id;
   
-  // Job details for sidebar - now a state variable
-  const [jobDetails, setJobDetails] = useState({
-    title: "Senior Software Engineer",
-    company: "TechNova Solutions",
-    location: "San Francisco, CA (Remote)",
-    salary: "$120K - $160K",
-    status: "Draft",
-    daysAgo: 14,
-    jobType: "Full-time"
-  });
+  // Application and job data from context
+  const [application, setApplication] = useState<ApplicationWithJob | null>(null);
   
-  // Mock user premium status (replace with actual user data)
-  const [isPro] = useState(false); // This would come from user context/API
+
   
+  // Load application data from context
+  useEffect(() => {
+    const loadApplicationData = async () => {
+      if (!applicationId) return;
+      
+      try {
+        const appWithJob = applications?.find(app => app.id === applicationId);
+        if (appWithJob) {
+          setApplication(appWithJob);
+          // Initialize current answers ref from application data
+          const initialAnswers: Record<string, Answer> = {};
+          appWithJob.formQuestions.forEach(q => {
+            initialAnswers[q.id] = q.answer || '';
+          });
+          // Only initialize current answers if they haven't been set yet (first load)
+          const hasExistingAnswers = Object.keys(currentAnswers.current).length > 0;
+          if (!hasExistingAnswers) {
+            currentAnswers.current = initialAnswers;
+            setFormChanged(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading application:', error);
+      }
+    };
+
+    loadApplicationData();
+  }, [applicationId, applications]);
+
   // Load the preview when component mounts
   useEffect(() => {
     // Simulate loading the preview
@@ -66,208 +94,46 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     
     return () => clearTimeout(timer);
   }, []);
-  
-  // Format all form fields as questions
-  // This would typically come from the backend API
-  const [formQuestions, setFormQuestions] = useState<FormQuestion[]>([]);
 
-  // Load form questions in useEffect
-  useEffect(() => {
-    // This would typically be an API call to fetch form questions
-    // For now, we'll use the mock data
-    const loadFormQuestions = () => {
-      const questions: FormQuestion[] = [
-        {
-          id: 'fullName',
-          question: 'What is your full name?',
-          answer: 'John Doe',
-          type: 'text',
-          placeholder: 'Enter your full name',
-          section: 'personal',
-          required: true
-        },
-        {
-          id: 'email',
-          question: 'What is your email address?',
-          answer: 'johndoe@example.com',
-          type: 'email',
-          placeholder: 'Enter your email address',
-          section: 'personal',
-          required: true
-        },
-        {
-          id: 'phone',
-          question: 'What is your phone number?',
-          answer: '(555) 123-4567',
-          type: 'phone',
-          placeholder: 'Enter your phone number',
-          section: 'personal',
-          required: true
-        },
-        {
-          id: 'currentCompany',
-          question: 'Where do you currently work?',
-          answer: 'Tech Solutions Inc.',
-          type: 'text',
-          placeholder: 'Enter your current company',
-          section: 'personal',
-          required: false
-        },
-        {
-          id: 'currentRole',
-          question: 'What is your current job title?',
-          answer: 'Senior Software Engineer',
-          type: 'text',
-          placeholder: 'Enter your current role',
-          section: 'personal',
-          required: false
-        },
-        {
-          id: 'yearsOfExperience',
-          question: 'How many years of experience do you have?',
-          answer: '5',
-          type: 'text',
-          placeholder: 'Enter years of experience',
-          section: 'personal',
-          required: true
-        },
-        {
-          id: 'desiredSalary',
-          question: 'What is your desired salary?',
-          answer: '$120,000',
-          type: 'text',
-          placeholder: 'Enter desired salary',
-          section: 'personal',
-          required: true
-        },
-        {
-          id: 'availableStartDate',
-          question: 'When can you start?',
-          answer: '2023-12-01',
-          type: 'date',
-          section: 'personal',
-          required: true
-        },
-        {
-          id: 'resume',
-          question: 'Upload your resume',
-          answer: 'john_doe_resume.pdf',
-          type: 'file',
-          placeholder: 'Upload PDF, DOCX, or TXT file',
-          section: 'resume',
-          fileType: 'resume',
-          required: true
-        },
-        {
-          id: 'coverLetter',
-          question: 'Upload your cover letter',
-          answer: 'john_doe_cover_letter.pdf',
-          type: 'file',
-          placeholder: 'Upload PDF, DOCX, or TXT file',
-          section: 'coverLetter',
-          fileType: 'coverLetter',
-          required: false
-        },
-        {
-          id: 'whyJoin',
-          question: 'Why do you want to work at our company?',
-          answer: "I have long admired your company's innovative approach to solving complex problems and your strong company culture. I believe my values align with your mission.",
-          type: 'textarea',
-          placeholder: 'Tell us why you want to join our team',
-          section: 'screening',
-          required: true
-        },
-        {
-          id: 'challengingProject',
-          question: 'Describe a challenging project you worked on.',
-          answer: 'I led a team of 5 developers to rebuild our payment processing system that reduced transaction errors by 45% and improved processing speed by 30%. The project was completed on time and under budget.',
-          type: 'textarea',
-          placeholder: 'Describe your experience',
-          section: 'screening',
-          required: true
-        },
-        {
-          id: 'workEnvironment',
-          question: 'What is your preferred work environment?',
-          answer: 'Hybrid',
-          type: 'select',
-          options: ['Remote', 'In-office', 'Hybrid'],
-          section: 'custom',
-          required: true
-        },
-        {
-          id: 'referredBy',
-          question: 'How did you hear about this position?',
-          answer: 'LinkedIn',
-          type: 'text',
-          placeholder: 'LinkedIn, job board, referral, etc.',
-          section: 'custom',
-          required: false
-        },
-        {
-          id: 'relocation',
-          question: 'Are you willing to relocate?',
-          answer: 'Yes',
-          type: 'radio',
-          options: ['Yes', 'No', 'Maybe'],
-          section: 'custom',
-          required: false
-        },
-        {
-          id: 'salaryExpectations',
-          question: 'What are your salary expectations?',
-          answer: '$120,000 - $140,000',
-          type: 'text',
-          placeholder: 'Enter your salary range',
-          section: 'custom',
-          required: false
-        }
-      ];
-      setAnswers(questions.reduce((acc, q) => ({ ...acc, [q.id]: q.answer }), {}));
-      setFormQuestions(questions);
-    };
+  // Get form questions directly from application - memoized to prevent useEffect dependency issues
+  const formQuestions = useMemo(() => {
+    return application?.formQuestions || [];
+  }, [application?.formQuestions]);
 
-    // Load the form questions when component mounts
-    loadFormQuestions();
-  }, [applicationId]); // Include applicationId as dependency for when it changes
-  
-  // Store initial form state after first render
-  useEffect(() => {
-    initialQuestionsRef.current = JSON.parse(JSON.stringify(formQuestions));
-  }, [formQuestions]);
-  
   // Initialize refs for fields
   useEffect(() => {
-    const refs: {[key: string]: React.RefObject<HTMLDivElement | null>} = {};
-    formQuestions.forEach(q => {
-      refs[q.id] = React.createRef<HTMLDivElement | null>();
-    });
-    fieldRefs.current = refs;
-  }, []);
-
-  // Handle input change for any answer
-  const handleAnswerChange = (id: string, value: string) => {
-    if (isSaved) {
-      // Check if form is being changed after it was saved
-      setFormChanged(true);
-      setIsSaved(false);
+    if (formQuestions.length > 0) {
+      const refs: {[key: string]: React.RefObject<HTMLDivElement | null>} = {};
+      formQuestions.forEach(q => {
+        refs[q.id] = React.createRef<HTMLDivElement | null>();
+      });
+      fieldRefs.current = refs;
     }
+  }, [formQuestions]);
 
+  // Memoize fieldRefs.current to prevent new object creation on every render
+  const memoizedFieldRefs = useMemo(() => fieldRefs.current, []);
+
+  // Handle input change for any answer - update ref without causing re-render
+  const handleAnswerChange = useCallback((id: string, value: Answer) => {
     // Clear validation error for this field if it exists
-    if (validationErrors.includes(id)) {
-      setValidationErrors(prev => prev.filter(item => item !== id));
+    setValidationErrors(prev => prev.includes(id) ? prev.filter(item => item !== id) : prev);
+
+    // Update current answers ref (doesn't cause re-render)
+    currentAnswers.current[id] = value;
+  
+    // Mark form as changed only if it is not a file changed
+    if (id !== 'resume' && id !== 'coverLetter') {
+      setFormChanged(true);
     }
-
-    setAnswers(prev => ({ ...prev, [id]: value }));
-    // setFormQuestions(prev => 
-    //   prev.map(q => q.id === id ? { ...q, answer: value } : q)
-    // );
-  };
-
-  const validateForm = () => {
-    // Check for required fields
+  }, []);
+  
+  const validateForm = useCallback(() => {
+    if (!formQuestions.length) return false;
+    
+    // Check for required fields using current answers ref
     const missingFields = formQuestions
-      .filter(q => q.required && !answers[q.id])
+      .filter(q => q.required && !currentAnswers.current[q.id])
       .map(q => q.id);
     
     setValidationErrors(missingFields);
@@ -276,59 +142,67 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
       // Scroll to the first error field
       const firstErrorId = missingFields[0];
       const errorRef = fieldRefs.current[firstErrorId];
-      
+    
       if (errorRef && errorRef.current) {
         errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Focus the element after scrolling
+        setTimeout(() => {
+          // Try to find and focus the first input/textarea/select within the ref
+          const focusableElement = errorRef.current?.querySelector(
+            'input, textarea, select, [tabindex]:not([tabindex="-1"])'
+          ) as HTMLElement;
+          
+          if (focusableElement) {
+            focusableElement.focus();
+          }
+        }, 1000); // Wait for scroll animation to complete
       }
       
       return false;
     }
     
     return true;
-  };
+  }, [formQuestions]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(async () => {
     if (!validateForm()) {
       return;
     }
     
     setIsLoading(true);
     
-    // Prepare the state to send to the API
-    const applicationData = {
-      applicationId,
-      formData: formQuestions.map(q => ({
+    try {
+      // Update the form questions with current answers from ref
+      const updatedFormQuestions = formQuestions.map(q => ({
         ...q,
-        answer: answers[q.id]
-      }))
-    };
-    
-    // Log the data being sent (for debugging)
-    console.log('Saving application data:', applicationData);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Here you would normally send applicationData to your API
-      setIsLoading(false);
-      setIsSaved(true);
-      setFormChanged(false);
+        answer: currentAnswers.current[q.id] || q.answer,
+      })) || [];
       
-      // Store the current state as the new baseline
-      initialQuestionsRef.current = JSON.parse(JSON.stringify(formQuestions));
+      // Update the application using context
+      await updateApplication(applicationId, {
+        formQuestions: updatedFormQuestions
+      });
+      
+      setFormChanged(false);
       
       // Show success notification
       showSuccess('Application saved successfully!');
       
       // Switch to preview tab in mobile view
       setActiveTab('preview');
-    }, 1500);
-  };
+    } catch (error) {
+      console.error('Error saving application:', error);
+      showSuccess('Failed to save application. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [validateForm, formQuestions, updateApplication, applicationId, showSuccess]);
 
-  const handleSubmit = () => {
-    // Don't submit unless the form is saved first
-    if (!isSaved && formChanged) {
-      handleSave();
-      return;
+  const handleSubmit = useCallback(async () => {
+    // Save first if there are unsaved changes
+    if (formChanged) {
+      await handleSave();
     }
     
     if (!validateForm()) {
@@ -337,66 +211,57 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     
     setIsLoading(true);
     
-    // Prepare the state to send to the API
-    const applicationData = {
-      applicationId,
-      formData: formQuestions.map(q => ({
-        ...q,
-        answer: answers[q.id]
-      })),
-      status: "Applied"
-    };
-    
-    // Log the data being sent (for debugging)
-    console.log('Submitting application data:', applicationData);
-    
-    // Update status to Applied
-    setJobDetails(prev => ({
-      ...prev,
-      status: "Applied"
-    }));
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Submit the application using context
+      await submitApplication(applicationId);
+      
       // Show success notification before redirecting
       showSuccess('Application submitted successfully!');
       
-      // Wait a bit for the notification to show, then redirect
-      setTimeout(() => {
-        router.push(`/applications/${applicationId}/submitted`);
-      }, 1000);
-    }, 1500);
-  };
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    
-    try {
-      // Simulate API call to delete the application
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success notification
-      showSuccess('Application deleted successfully!');
-      
-      // Wait a bit for the notification to show, then redirect
-      setTimeout(() => {
-        router.push('/applications');
-      }, 1000);
-    } catch (err) {
-      console.error('Error deleting application:', err);
-      setIsDeleting(false);
+      // Use optimized navigation - don't wait since component will unmount
+      navigateAndForget(router, `/applications/${applicationId}/submitted`);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      showSuccess('Failed to submit application. Please try again.');
+      // Only set loading to false on error since we stay on the same page
+      setIsLoading(false);
     }
-  };
+  }, [formChanged, handleSave, validateForm, submitApplication, applicationId, showSuccess, router]);
 
-  // Filter questions by section
-  const personalQuestions = formQuestions.filter(q => q.section === 'personal');
-  const resumeQuestions = formQuestions.filter(q => q.section === 'resume');
-  const coverLetterQuestions = formQuestions.filter(q => q.section === 'coverLetter');
-  const screeningQuestions = formQuestions.filter(q => q.section === 'screening');
-  const customQuestions = formQuestions.filter(q => q.section === 'custom');
+
+  // Use current answers ref for FormSection compatibility
+  const answers = useMemo(() => {
+    const answerMap: Record<string, Answer> = {};
+    formQuestions.forEach(q => {
+      answerMap[q.id] = currentAnswers.current[q.id] || q.answer || '';
+    });
+    return answerMap;
+  }, [formQuestions]);
+
+  // Memoize question arrays to prevent re-creation on every render
+  const personalQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'personal');
+  }, [formQuestions]);
+  
+  const resumeQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'resume');
+  }, [formQuestions]);
+  
+  const coverLetterQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'coverLetter');
+  }, [formQuestions]);
+  
+  const screeningQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'screening');
+  }, [formQuestions]);
+  
+  const customQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'custom');
+  }, [formQuestions]);
   
   // Get section title based on section name
-  const getSectionTitle = (section: FormSection): string => {
+  // Memoize getSectionTitle to prevent re-creation
+  const getSectionTitle = useCallback((section: FormSectionType): string => {
     switch (section) {
       case 'personal': return 'Personal Information';
       case 'resume': return 'Resume';
@@ -405,10 +270,10 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
       case 'custom': return 'Additional Information';
       default: return 'Other Information';
     }
-  };
+  }, []);
 
-  // Get badge styling based on status
-  const getBadgeStyles = (status: string) => {
+  // Memoize getBadgeStyles to prevent re-creation
+  const getBadgeStyles = useCallback((status: string) => {
     switch (status) {
       case 'Applied':
         return 'bg-blue-50 text-blue-600 border-blue-200';
@@ -422,10 +287,10 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
       default:
         return 'bg-amber-50 text-amber-600 border-amber-200';
     }
-  };
+  }, []);
 
-  // Function to handle file preview requests
-  const handleFilePreview = (fileType: FileType) => {
+  // Memoize handleFilePreview to prevent re-creation
+  const handleFilePreview = useCallback((fileType: FileType) => {
     if (fileType === 'resume' || fileType === 'coverLetter') {
       // Set appropriate preview tab
       setPreviewTab(fileType);
@@ -435,9 +300,9 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
         setActiveTab('preview');
       }
     }
-  };
+  }, []);
 
-  // Form content component to avoid repetition
+  // Form content component
   const FormContent = () => (
     <div className="flex flex-col gap-6 pb-12">
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
@@ -450,18 +315,28 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           </div>
           <Badge 
             variant="outline" 
-            className={getBadgeStyles(jobDetails.status)}
+            className={getBadgeStyles(application?.status || 'Draft')}
           >
-            {jobDetails.status}
+            {application?.status || 'Draft'}
           </Badge>
         </div>
         <div className="px-6 py-5">
-          <JobDetails {...jobDetails} />
+          {application?.job && (
+            <JobDetails 
+              title={application?.job.title || ''}
+              company={application?.job.company || ''}
+              location={application?.job.location || ''}
+              salary={application?.job.salary || ''}
+              status={application?.status || 'Draft'}
+              postedDate={application?.job.postedDate}
+            />
+          )}
         </div>
       </div>
       
       <div className="space-y-6">
         <FormSectionComponent 
+          key="personal"
           title={getSectionTitle('personal')} 
           questions={personalQuestions} 
           onAnswerChange={handleAnswerChange} 
@@ -469,11 +344,12 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           section="personal"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
-          fieldRefs={fieldRefs.current}
+          fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
-          isPro={isPro}
+          applicationId={applicationId}
         />
         <FormSectionComponent 
+          key="resume"
           title={getSectionTitle('resume')} 
           questions={resumeQuestions} 
           onAnswerChange={handleAnswerChange} 
@@ -481,11 +357,12 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           section="resume"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
-          fieldRefs={fieldRefs.current}
+          fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
-          isPro={isPro}
+          applicationId={applicationId}
         />
         <FormSectionComponent 
+          key="coverLetter"
           title={getSectionTitle('coverLetter')} 
           questions={coverLetterQuestions} 
           onAnswerChange={handleAnswerChange} 
@@ -493,11 +370,12 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           section="coverLetter"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
-          fieldRefs={fieldRefs.current}
+          fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
-          isPro={isPro}
+          applicationId={applicationId}
         />
         <FormSectionComponent 
+          key="screening"
           title={getSectionTitle('screening')} 
           questions={screeningQuestions} 
           onAnswerChange={handleAnswerChange} 
@@ -505,53 +383,55 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           section="screening"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
-          fieldRefs={fieldRefs.current}
+          fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
-          isPro={isPro}
+          applicationId={applicationId}
         />
         <FormSectionComponent 
+          key="custom"
           title={getSectionTitle('custom')} 
           questions={customQuestions} 
-          answers={answers}
           onAnswerChange={handleAnswerChange} 
+          answers={answers}
           section="custom"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
-          fieldRefs={fieldRefs.current}
+          fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
-          isPro={isPro}
+          applicationId={applicationId}
         />
       </div>
     </div>
   );
 
-  // Preview content component
-  const PreviewContent = ({ showHeader = true }: { showHeader?: boolean }) => (
+  // Preview content component - memoized to prevent unnecessary re-renders
+  const PreviewContent = useCallback(({ showHeader = true }: { showHeader?: boolean }) => (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden h-full flex flex-col shadow-sm">
       <div className="flex-grow overflow-auto">
         <div className="flex-grow overflow-auto">
           {showHeader && (
             <ApplicationPreviewHeader
               activeTab={previewTab}
-              onCancel={handleDelete}
-              onSaveSubmit={isSaved && !formChanged ? handleSubmit : handleSave}
+              onSaveSubmit={!formChanged ? handleSubmit : handleSave}
               isLoading={isLoading}
-              isDeleting={isDeleting}
-              isSaved={isSaved}
+              isSaved={!formChanged}
               formChanged={formChanged}
+              answers={answers}
+              applicationId={applicationId}
+              jobTitle={application?.job?.title}
+              companyName={application?.job?.company}
             />
           )}
           <ApplicationPreview 
             isLoading={loadingPreview}
-            resumeFile={formQuestions.find(q => q.id === 'resume')?.answer || ''}
-            coverLetterFile={formQuestions.find(q => q.id === 'coverLetter')?.answer || ''}
+            answers={answers}
             activeTab={previewTab}
             setActiveTab={(tab) => setPreviewTab(tab as "application" | "resume" | "coverLetter")}
           />
         </div>
       </div>
     </div>
-  );
+  ), [previewTab, formChanged, handleSubmit, handleSave, isLoading, loadingPreview, answers]);
 
   return (
     <div className="fixed top-16 bottom-0 left-0 right-0 bg-gray-50">
@@ -566,12 +446,13 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           </div>
           
           <ActionButtons
-            onCancel={handleDelete}
-            onSaveSubmit={isSaved && !formChanged ? handleSubmit : handleSave}
+            onSaveSubmit={!formChanged ? handleSubmit : handleSave}
             isLoading={isLoading}
-            isDeleting={isDeleting}
-            isSaved={isSaved}
+            isSaved={!formChanged}
             formChanged={formChanged}
+            applicationId={applicationId}
+            jobTitle={application?.job?.title}
+            companyName={application?.job?.company}
           />
         </div>
 
@@ -613,7 +494,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           <div className="h-[calc(100%-3.5rem)] overflow-hidden">
             {activeTab === 'form' ? (
               <div className="h-full overflow-y-auto">
-                <FormContent />
+                {FormContent()}
               </div>
             ) : (
               <div className="h-[calc(100vh-10rem)] overflow-hidden">
@@ -628,7 +509,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           {/* Left column - form */}
           <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 6rem)" }}>
             <div className="pr-3">
-              <FormContent />
+              {FormContent()}
             </div>
           </div>
           

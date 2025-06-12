@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Briefcase, AlertCircle, PlusCircle, Search } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Application } from '@/app/types/application';
-import { ApplicationService } from '@/app/utils/applicationService';
+import { useApplications } from '@/app/contexts/ApplicationsContext';
 import ApplicationCard from '@/app/components/applications/ApplicationCard';
 import ApplicationFilters from '@/app/components/applications/ApplicationFilters';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
@@ -13,60 +13,24 @@ import { Input } from '@/app/components/ui/input';
 import { useNotification } from '@/app/contexts/NotificationContext';
 
 function ApplicationsPageContent() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    applications,
+    isLoading,
+    error,
+    updateApplicationStatus,
+    unsaveJob,
+  } = useApplications();
+  
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const applicationsPerPage = 9;
   const { showSuccess } = useNotification();
   
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        setIsLoading(true);
-        const data = await ApplicationService.getAllApplications();
-        setApplications(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching applications:', err);
-        setError('Failed to load applications. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchApplications();
-  }, []);
-  
-  // Handle deleting an application
-  const handleDeleteApplication = async (id: string) => {
-    try {
-      const success = await ApplicationService.deleteApplication(id);
-      if (success) {
-        // Remove the application from state
-        setApplications(applications.filter(app => app.id !== id));
-        showSuccess('Application deleted successfully!');
-      }
-    } catch (err) {
-      console.error('Error deleting application:', err);
-      // Could add error notification here
-    }
-  };
-  
   // Handle status change
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      // Call the service to update the status
-      const updatedApplication = await ApplicationService.updateApplicationStatus(id, newStatus as Application['status']);
-      
-      // Update the application in state
-      setApplications(applications.map(app => 
-        app.id === id ? updatedApplication : app
-      ));
-      
-      // Show success notification
+      await updateApplicationStatus(id, newStatus as Application['status']);
       showSuccess(`Application status updated to ${newStatus}!`);
     } catch (err) {
       console.error('Error updating application status:', err);
@@ -74,25 +38,30 @@ function ApplicationsPageContent() {
     }
   };
   
-  // Handle applying to a saved job
-  // const handleApply = async (id: string) => {
-    // TODO: Update to draft when the modal closes
-    // try {
-    //   // Update the application status to "Draft"
-    //   const updatedApplication = await ApplicationService.updateApplicationStatus(id, 'Draft');
-      
-    //   // Update the application in state
-    //   setApplications(applications.map(app => 
-    //     app.id === id ? updatedApplication : app
-    //   ));
-    // } catch (err) {
-    //   console.error('Error applying to job:', err);
-    //   // Could add a toast notification here
-    // }
-  // };
+  // Handle removing a saved job
+  const handleRemoveSaved = async (id: string) => {
+    try {
+      // Find the application to get the jobId
+      const application = applications?.find(app => app.id === id);
+      if (!application) {
+        console.error('Application not found');
+        return;
+      }
+
+      const success = await unsaveJob(application.jobId);
+      if (success) {
+        showSuccess('Job removed from saved jobs!');
+      }
+    } catch (err) {
+      console.error('Error removing saved job:', err);
+      // Could add error notification here
+    }
+  };
   
   // Filter applications based on active filter and search query
   const filteredApplications = useMemo(() => {
+    if (!applications) return [];
+    
     let filtered = applications;
     
     // Apply status filter
@@ -102,13 +71,16 @@ function ApplicationsPageContent() {
       );
     }
     
-    // Apply search filter
+    // Apply search filter (now supports job title, company, and job ID)
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(app => 
-        app.jobTitle.toLowerCase().includes(query) ||
-        app.company.toLowerCase().includes(query)
-    );
+      filtered = filtered.filter((app) => {
+        return (
+          app.jobId.toLowerCase().includes(query) ||
+          (app.job?.title?.toLowerCase().includes(query)) ||
+          (app.job?.company?.toLowerCase().includes(query))
+        );
+      });
     }
     
     return filtered;
@@ -127,6 +99,17 @@ function ApplicationsPageContent() {
   
   // Calculate counts for filter badges
   const filterCounts = useMemo(() => {
+    if (!applications) {
+      return {
+        all: 0,
+        draft: 0,
+        applied: 0,
+        saved: 0,
+        interviewing: 0,
+        rejected: 0
+      };
+    }
+    
     return {
       all: applications.length,
       draft: applications.filter(app => app.status === 'Draft').length,
@@ -218,7 +201,7 @@ function ApplicationsPageContent() {
   }
   
   // Empty state
-  if (applications.length === 0) {
+  if (!applications || applications.length === 0) {
     return (
       <div className="w-full p-4 md:p-8">
         <div className="flex justify-between items-center mb-8">
@@ -274,10 +257,11 @@ function ApplicationsPageContent() {
             </div>
             <Input
               type="text"
-              placeholder="Search by job title or company..."
+              placeholder={isLoading ? "Loading job details..." : "Search by job title, company, or job ID..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full h-11 text-base bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+              disabled={isLoading}
             />
       </div>
       
@@ -304,9 +288,8 @@ function ApplicationsPageContent() {
               <ApplicationCard 
                 key={application.id}
                 application={application}
-                onDelete={handleDeleteApplication}
                 onStatusChange={handleStatusChange}
-                // onApply={handleApply}
+                onRemoveSaved={handleRemoveSaved}
               />
             ))}
           </div>

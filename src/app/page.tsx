@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/app/utils/firebase';
+import { useAuth } from '@/app/contexts/AuthContext';
 import Link from 'next/link';
 import { 
   Zap,
@@ -32,7 +32,7 @@ import WelcomeModal from '@/app/components/WelcomeModal';
 
 export default function Home() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeFeature, setActiveFeature] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -66,23 +66,11 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkAuth = async () => {
-      try {
-        const user = await authService.isLoggedIn();
-        if (user) {
-          // Redirect to jobs page if already authenticated
+    // Redirect if user is already logged in
+    if (!isLoading && isAuthenticated) {
           router.push('/jobs');
         }
-      } catch (error) {
-        console.error('Error checking authentication status:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+  }, [isLoading, isAuthenticated, router]);
 
   // Auto-rotate testimonials
   useEffect(() => {
@@ -438,7 +426,7 @@ export default function Home() {
             Start Free, Upgrade When Ready
           </h2>
           <p className="text-gray-400 text-lg sm:text-xl mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
-            Get started with 5 free AI applications. See the results, then unlock unlimited power.
+            Get started with limited AI applications. See the results, then unlock unlimited power.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
@@ -450,7 +438,7 @@ export default function Home() {
                 <ul className="space-y-2 sm:space-y-3 text-left">
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-                    5 AI applications
+                    Limited AI applications
                   </li>
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
@@ -519,7 +507,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-gradient-to-r from-blue-500/10 to-teal-500/10 text-blue-400 mb-6 sm:mb-8 border border-blue-500/20">
             <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="text-xs sm:text-sm font-medium">Join the Beta - Limited Early Access</span>
+            <span className="text-xs sm:text-sm font-medium">Get that job you deserve</span>
           </div>
           
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
@@ -547,7 +535,7 @@ export default function Home() {
           </div>
           
           <div className="mt-8 sm:mt-12 text-gray-500 text-xs sm:text-sm">
-            No credit card required • 5 free AI applications • Upgrade anytime
+            No credit card required • Limited AI applications • Upgrade anytime
           </div>
         </div>
       </section>

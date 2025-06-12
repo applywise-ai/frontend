@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { UserProfile, FieldName } from '@/app/types/profile';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { 
   User, 
   Link as LinkIcon, 
@@ -23,25 +23,10 @@ import {
 import { Progress } from '@/app/components/ui/progress';
 import { getProfileCompletionState, ProfileCompletionState, calculateCompletionPercentage, getNextSectionToFill } from '@/app/utils/profile';
 import * as PC from '@/app/components/profile';
+import { ProfilePageSkeleton } from '@/app/components/loading/ProfilePageSkeleton';
 
 function ProfilePageContent() {
-  const [profile, setProfile] = useState<UserProfile>({
-    [FieldName.FULL_NAME]: '',
-    [FieldName.EMAIL]: '',
-    [FieldName.PHONE_NUMBER]: '',
-    [FieldName.EDUCATION]: [],
-    [FieldName.SKILLS]: [],
-    [FieldName.TEMP_EDUCATION]: {
-      [FieldName.SCHOOL]: '',
-      [FieldName.DEGREE]: '',
-      [FieldName.FIELD_OF_STUDY]: '',
-      [FieldName.EDUCATION_FROM]: '',
-      [FieldName.EDUCATION_TO]: '',
-      [FieldName.EDUCATION_GPA]: ''
-    }
-  });
-  
-  const [isLoading, setIsLoading] = useState(true);
+  const { profile, isLoading, updateProfile } = useProfile();
   const [activeSection, setActiveSection] = useState('personal');
   const [profileState, setProfileState] = useState<ProfileCompletionState>('incomplete');
   
@@ -114,90 +99,26 @@ function ProfilePageContent() {
     }
   };
   
-  const updateProfile = (section: Partial<UserProfile>) => {
-    setProfile(prev => ({
-      ...prev,
-      ...section
-    }));
-  };
-
-  // Fetch user profile data
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setIsLoading(true);
-      try {
-        // In a real app, you would fetch this from an API
-        // For now, we'll simulate an API call with mock data
-        setTimeout(() => {
-          const mockProfile: UserProfile = {
-            [FieldName.RESUME_FILENAME]: 'Kaiz_Nanji_New_Grad_Resume_V4.pdf',
-            [FieldName.RESUME]: '/Users/kaiznanji/Documents/RESUMES/2025/Kaiz_Nanji_New_Grad_Resume_V4.pdf',
-            [FieldName.FULL_NAME]: 'Kaiz Nanji',
-            [FieldName.EMAIL]: 'k4nanji@uwaterloo.ca',
-            [FieldName.PHONE_NUMBER]: '4168784499',
-            [FieldName.CURRENT_LOCATION]: 'Toronto, ON',
-            [FieldName.LINKEDIN]: 'https://www.linkedin.com/in/john-doe',
-            [FieldName.TWITTER]: '@johndoe',
-            [FieldName.GITHUB]: 'https://github.com/johndoe',
-            [FieldName.PORTFOLIO]: 'https://example.com/portfolio',
-            [FieldName.GENDER]: 'Man',
-            [FieldName.VETERAN]: false,
-            [FieldName.SEXUALITY]: ['Heterosexual'],
-            [FieldName.ELIGIBLE_CANADA]: true,
-            [FieldName.TRANS]: false,
-            [FieldName.RACE]: ['East Asian'],
-            [FieldName.NOTICE_PERIOD]: '8 weeks',
-            [FieldName.EXPECTED_SALARY]: 110000,
-            [FieldName.HISPANIC]: false,
-            [FieldName.DISABILITY]: false,
-            [FieldName.ELIGIBLE_US]: false,
-            [FieldName.US_SPONSORHIP]: true,
-            [FieldName.OVER_18]: true,
-            [FieldName.SOURCE]: 'LinkedIn',
-            [FieldName.CA_SPONSORHIP]: false,
-            [FieldName.EDUCATION]: [
-              {
-                [FieldName.SCHOOL]: 'University of Waterloo',
-                [FieldName.DEGREE]: "bachelor",
-                [FieldName.FIELD_OF_STUDY]: 'Computer Science',
-                [FieldName.EDUCATION_FROM]: "09/2020",
-                [FieldName.EDUCATION_TO]: "04/2025",
-              }
-            ],
-            [FieldName.SKILLS]: ['Python', 'Java', 'JavaScript']
-          };
-          
-          setProfile(mockProfile);
-          setIsLoading(false);
-        }, 800);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        setIsLoading(false);
-      }
-    };
-    
-    fetchProfile();
-  }, []);
-
   // Calculate profile completion state
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && profile) {
       setProfileState(getProfileCompletionState(profile));
     }
   }, [profile, isLoading]);
 
-  const nextSection = getNextSectionToFill(profile, profileState);
+  const nextSection = profile ? getNextSectionToFill(profile, profileState) : null;
 
   if (isLoading) {
+    return <ProfilePageSkeleton />;
+  }
+
+  if (!profile) {
     return (
       <div className="bg-gray-50 min-h-screen pb-16">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
-            <div className="flex space-x-8">
-              <div className="w-64 h-64 bg-gray-200 rounded"></div>
-              <div className="flex-1 h-96 bg-gray-200 rounded"></div>
-            </div>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h1>
+            <p className="text-gray-600">Unable to load your profile. Please try refreshing the page.</p>
           </div>
         </div>
       </div>

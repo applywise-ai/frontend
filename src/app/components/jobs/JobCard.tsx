@@ -8,64 +8,50 @@ import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getBreakpoint } from '@/app/utils/breakpoints';
 import { getAvatarColor } from '@/app/utils/avatar';
 import { INDUSTRY_SPECIALIZATION_OPTIONS } from '@/app/types/job';
-import { useNotification } from '@/app/contexts/NotificationContext';
+import { useApplications } from '@/app/contexts/ApplicationsContext';
+import { formatJobPostedDate } from '@/app/utils/job';
+import { Job } from '@/app/types/job';
 
 interface JobCardProps {
-  title: string;
-  company: string;
-  logo: string;
-  location: string;
-  salary: string;
-  jobType: string;
-  postedDate: string;
-  description: string;
-  isSponsored?: boolean;
-  isVerified?: boolean;
-  providesSponsorship?: boolean;
-  experienceLevel?: string;
-  specialization?: string;
+  job: Job;
   compact?: boolean;
   onViewDetails?: () => void;
   isSelected?: boolean;
   isAnySelected?: boolean;
-  isSaved?: boolean;
   onUnsave?: () => void;
   isLoading?: boolean;
-  id?: number | string;
 }
 
 export default function JobCard({
-  title,
-  company,
-  logo,
-  location,
-  salary,
-  jobType,
-  postedDate,
-  description,
-  isSponsored = false,
-  isVerified = false,
-  providesSponsorship,
-  experienceLevel,
-  specialization,
+  job,
   compact = false,
   onViewDetails,
   isSelected = false,
   isAnySelected = false,
-  isSaved = false,
-  onUnsave,
   isLoading = false,
-  id
 }: JobCardProps) {
-  const [isLocalSaved, setIsLocalSaved] = useState(isSaved);
   const [isMobile, setIsMobile] = useState(false);
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
   const router = useRouter();
-  const { showSuccess } = useNotification();
-  
-  // Update local state when prop changes
-  useEffect(() => {
-    setIsLocalSaved(isSaved);
-  }, [isSaved]);
+  const { toggleSave } = useApplications();
+
+  // Extract job properties
+  const {
+    id,
+    title,
+    company,
+    logo,
+    location,
+    salary,
+    jobType,
+    postedDate,
+    description,
+    isSponsored = false,
+    isVerified = false,
+    providesSponsorship,
+    experienceLevel,
+    specialization,
+  } = job;
   
   // Check if the viewport is mobile
   useEffect(() => {
@@ -82,6 +68,8 @@ export default function JobCard({
     // Cleanup
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
+
+
   
   // If loading, return skeleton
   if (isLoading) {
@@ -91,24 +79,20 @@ export default function JobCard({
   // Show minimal data when any job is selected
   const showMinimal = isAnySelected;
 
-  const handleSaveToggle = (e: React.MouseEvent) => {
+  const handleSaveToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click event
     
-    if (isSaved && onUnsave) {
-      // If this is a saved job with an unsave handler, use that
-      onUnsave();
-      showSuccess('Job removed from saved jobs!');
-    } else {
-      // Otherwise, just toggle the local state
-      const newSavedState = !isLocalSaved;
-      setIsLocalSaved(newSavedState);
-      
-      // Show notification
-      if (newSavedState) {
-        showSuccess(`Job saved successfully!`);
-      } else {
-        showSuccess('Job removed from saved jobs!');
-      }
+    if (!id) return;
+    
+    setIsSaveLoading(true);
+    try {
+      // Job is not saved (filtered out from jobs page), so we're saving it
+      await toggleSave(id.toString(), false);
+      // TODO: Filter out job from jobs page after clicking save
+    } catch (error) {
+      console.error('Error toggling save status:', error);
+    } finally {
+      setIsSaveLoading(false);
     }
   };
 
@@ -201,10 +185,11 @@ export default function JobCard({
                   {!showMinimal && (
                     <button
                       onClick={handleSaveToggle}
-                      className="hidden sm:flex flex-shrink-0 p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all duration-200 ml-4"
-                      aria-label={isLocalSaved ? "Unsave job" : "Save job"}
+                      disabled={isSaveLoading}
+                      className="hidden sm:flex flex-shrink-0 p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all duration-200 ml-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="Save job"
                     >
-                      <Bookmark className={`h-6 w-6 ${isLocalSaved ? 'fill-teal-600 text-teal-600' : 'fill-transparent'}`} />
+                      <Bookmark className={`h-6 w-6 fill-transparent ${isSaveLoading ? 'animate-pulse' : ''}`} />
                     </button>
                   )}
                 </div>
@@ -222,7 +207,7 @@ export default function JobCard({
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-3 w-3" />
-                      <span className="whitespace-nowrap">{postedDate}</span>
+                      <span className="whitespace-nowrap">{formatJobPostedDate(postedDate)}</span>
                     </div>
                   </div>
                 )}
@@ -267,12 +252,9 @@ export default function JobCard({
             <div className="hidden sm:flex flex-col space-y-2 flex-shrink-0">
               <div onClick={(e) => e.stopPropagation()}>
                 <AnimatedApplyButton 
-                  onClick={() => {
-                    // Handle apply click
-                  }}
                   size="sm"
                   className="w-40 lg:w-52"
-                  applicationId={id?.toString()}
+                  jobId={id?.toString()}
                 />
               </div>
               <button 
@@ -296,10 +278,11 @@ export default function JobCard({
           {!showMinimal && (
             <button
               onClick={handleSaveToggle}
-              className="sm:hidden flex-shrink-0 p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all duration-200"
-              aria-label={isLocalSaved ? "Unsave job" : "Save job"}
+              disabled={isSaveLoading}
+              className="sm:hidden flex-shrink-0 p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Save job"
             >
-              <Bookmark className={`h-5 w-5 ${isLocalSaved ? 'fill-teal-600 text-teal-600' : 'fill-transparent'}`} />
+              <Bookmark className={`h-5 w-5 fill-transparent ${isSaveLoading ? 'animate-pulse' : ''}`} />
             </button>
           )}
         </div>
@@ -329,7 +312,7 @@ export default function JobCard({
               <div className="p-1 bg-gray-100 rounded-lg">
                 <Clock className="h-3.5 w-3.5 text-gray-500" />
               </div>
-              <span className="truncate">{postedDate}</span>
+              <span className="truncate">{formatJobPostedDate(postedDate)}</span>
             </div>
           </div>
         )}
@@ -360,12 +343,9 @@ export default function JobCard({
             </button>
             <div onClick={(e) => e.stopPropagation()}>
               <AnimatedApplyButton 
-                onClick={() => {
-                  // Handle apply click
-                }}
                 size="sm"
                 className="w-full h-10"
-                applicationId={id?.toString()}
+                jobId={id?.toString()}
               />
             </div>
           </div>

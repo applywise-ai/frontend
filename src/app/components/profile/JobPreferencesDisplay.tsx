@@ -41,6 +41,27 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
           </div>
         </div>
         
+        {/* Expected Annual Salary - Always show */}
+        {profile[FieldName.EXPECTED_SALARY] ? (
+          <div className="flex items-start">
+            <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
+              <p className="text-sm text-gray-500">
+                ${formatSalary(profile[FieldName.EXPECTED_SALARY])} USD
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start">
+            <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
+              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
+            </div>
+          </div>
+        )}
+        
         {/* Industry Specializations - Always show */}
         <div className="flex items-start">
           <Building className="h-5 w-5 text-gray-500 mr-3 mt-1" />
@@ -79,44 +100,6 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
           </div>
         </div>
 
-        {profile[FieldName.EXPECTED_SALARY] ? (
-          <div className="flex items-start">
-            <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
-              <p className="text-sm text-gray-500">
-                ${formatSalary(profile[FieldName.EXPECTED_SALARY])} USD
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start">
-            <DollarSign className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">Expected Annual Salary</p>
-              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
-            </div>
-          </div>
-        )}
-
-        {profile[FieldName.NOTICE_PERIOD] ? (
-          <div className="flex items-start">
-            <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">Notice Period</p>
-              <p className="text-sm text-gray-500">{profile[FieldName.NOTICE_PERIOD]}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start">
-            <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">Notice Period</p>
-              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
-            </div>
-          </div>
-        )}
-
         {/* Job Types - Always show */}
         <div className="flex items-start">
           <Briefcase className="h-5 w-5 text-gray-500 mr-3 mt-1" />
@@ -154,6 +137,25 @@ export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplay
             )}
           </div>
         </div>
+        
+        {/* Notice Period - Always show */}
+        {profile[FieldName.NOTICE_PERIOD] ? (
+          <div className="flex items-start">
+            <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Notice Period</p>
+              <p className="text-sm text-gray-500">{profile[FieldName.NOTICE_PERIOD]}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start">
+            <Clock className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Notice Period</p>
+              <p className="text-sm text-yellow-500 font-normal italic">Not specified</p>
+            </div>
+          </div>
+        )}
         
         {/* Source (How did you hear about us) */}
         {profile[FieldName.SOURCE] && (

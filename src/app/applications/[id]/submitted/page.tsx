@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ApplicationSubmittedContent from '@/app/components/applications/ApplicationSubmittedContent';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
+import { useApplications } from '@/app/contexts/ApplicationsContext';
+import { useGetJob } from '@/app/hooks/useGetJob';
+import { Application } from '@/app/types/application';
 
 // Define a type for unwrapped params
 type ParamsType = {
@@ -12,20 +15,37 @@ type ParamsType = {
 
 function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   
   // Use React.use() to unwrap params before accessing properties
   const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
   const applicationId = unwrappedParams.id;
   
-  // Simulate loading state
+  // Use hooks to fetch application and job details
+  const { applications, isLoading: applicationsLoading } = useApplications();
+  const [application, setApplication] = useState<Application | null>(null);
+  
+  // Use the job hook with the jobId
+  const { job, loading: jobLoading } = useGetJob(application?.jobId || null);
+  
+  // Fetch application details to get jobId - only when user is authenticated
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    const fetchApplicationJobId = async () => {
+      if (!applicationId || applicationsLoading) return;
+      
+      try {
+        const appData = await applications?.find(app => app.id === applicationId);
+        if (appData) {
+          setApplication(appData);
+        }
+      } catch (error) {
+        console.error('Error fetching application:', error);
+      }
+    };
     
-    return () => clearTimeout(timer);
-  }, []);
+    fetchApplicationJobId();
+  }, [applicationId, applications, applicationsLoading]);
+
+
   
   const handleViewApplications = () => {
     router.push('/applications');
@@ -35,7 +55,7 @@ function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
     router.push('/jobs');
   };
   
-  if (isLoading) {
+  if (applicationsLoading || jobLoading || !application?.jobId) {
     return (
       <div className="container max-w-4xl mx-auto py-6 sm:py-8 px-4 flex items-center justify-center min-h-[60vh]">
         <div className="animate-pulse space-y-4 w-full">
@@ -50,10 +70,10 @@ function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
   return (
     <div className="container max-w-4xl mx-auto py-6 sm:py-8 px-4">
       <ApplicationSubmittedContent
-        applicationId={applicationId}
-        jobTitle="Senior Software Engineer"
-        companyName="TechNova Solutions"
+        jobTitle={job?.title || 'Job Position'}
+        companyName={job?.company || 'Company'}
         onViewApplications={handleViewApplications}
+        submittedAt={application?.lastUpdated}
         onBrowseJobs={handleBrowseJobs}
         variant="card"
       />

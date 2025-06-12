@@ -6,6 +6,9 @@ import { FileText, Upload, Eye, AlertCircle, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Label } from '@/app/components/ui/label';
 import { useState } from 'react';
+import { storageService } from '@/app/utils/firebase';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { useNotification } from '@/app/contexts/NotificationContext';
 
 interface ResumeDisplayProps {
   profile: UserProfile;
@@ -15,7 +18,9 @@ interface ResumeDisplayProps {
 export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const hasResume = Boolean(profile[FieldName.RESUME]);
+  const { showSuccess } = useNotification();
+  const { user } = useAuth();
+  const hasResume = Boolean(profile[FieldName.RESUME_URL] || profile[FieldName.RESUME]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,10 +30,29 @@ export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayP
     setUploadError(null);
 
     try {
-      // Simulate API call to parse resume
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock parsed profile data
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Delete old resume if it exists
+      if (profile[FieldName.RESUME]) {
+        await storageService.deleteResume(profile[FieldName.RESUME]);
+      }
+
+      // Upload file to Firebase Storage
+      const uploadResult = await storageService.uploadResume(user.uid, file);
+
+      // Update profile with new resume file
+      updateProfile({
+        [FieldName.RESUME_FILENAME]: uploadResult.filename,
+        [FieldName.RESUME_URL]: uploadResult.url,
+        [FieldName.RESUME]: uploadResult.path // Store the storage path for future reference
+      });
+
+      // Show success notification
+      showSuccess(`Resume uploaded successfully!`);
+
+      // Mock parsed profile data (you can integrate with a real resume parsing service later)
       const parsedProfile = {
         [FieldName.FULL_NAME]: 'Kaiz Nanji',
         [FieldName.EMAIL]: 'k4nanji@uwaterloo.ca',
@@ -57,18 +81,14 @@ export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayP
         [FieldName.SKILLS]: ['Python', 'Java', 'JavaScript', 'React', 'TypeScript']
       };
 
-      // Update profile with new resume file
-      updateProfile({
-        [FieldName.RESUME_FILENAME]: file.name,
-        [FieldName.RESUME]: URL.createObjectURL(file)
-      });
-
       // If autofill is enabled, update the profile with parsed data
       if (profile[FieldName.RESUME_AUTOFILL]) {
         updateProfile(parsedProfile);
+        // Show additional notification for autofill
+        showSuccess('Profile sections have been automatically populated from your resume!');
       }
     } catch (error) {
-      setUploadError('Failed to upload resume. Please try again.');
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload resume. Please try again.');
       console.error('Error uploading resume:', error);
     } finally {
       setIsUploading(false);
@@ -76,8 +96,9 @@ export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayP
   };
 
   const handlePreview = () => {
-    if (profile[FieldName.RESUME]) {
-      window.open(profile[FieldName.RESUME], '_blank');
+    const resumeUrl = profile[FieldName.RESUME_URL] || profile[FieldName.RESUME];
+    if (resumeUrl) {
+      window.open(resumeUrl, '_blank');
     }
   };
 

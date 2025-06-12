@@ -20,8 +20,11 @@ import {
   DialogTrigger 
 } from '@/app/components/ui/dialog';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import { useProfile } from '@/app/contexts/ProfileContext';
+import { FieldName } from '@/app/types/profile';
 import MembershipPanel from '@/app/components/settings/MembershipPanel';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
+import { SettingsPageSkeleton } from '@/app/components/loading/SettingsPageSkeleton';
 
 function SettingsPageContent() {
   const router = useRouter();
@@ -31,8 +34,8 @@ function SettingsPageContent() {
   const [passwordError, setPasswordError] = useState('');
   const [deleteAccountError, setDeleteAccountError] = useState('');
   
-  // Mock user subscription status - replace with actual data
-  const isPro = false; // Change to true to test pro member view
+  // Profile hook for notification preferences
+  const { profile, updateProfile, isLoading: profileLoading, deleteUser } = useProfile();
   
   // Form states
   const [email, setEmail] = useState('');
@@ -41,10 +44,6 @@ function SettingsPageContent() {
   const [passwordCurrentPassword, setPasswordCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // Notification preferences
-  const [newJobMatches, setNewJobMatches] = useState(true);
-  const [autoApplyWithoutReview, setAutoApplyWithoutReview] = useState(false);
   
   // Dialog states
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
@@ -67,10 +66,6 @@ function SettingsPageContent() {
         setEmail(currentUser.email || '');
         setDisplayName(currentUser.displayName || '');
         
-        // Here you would also fetch user preferences from your database
-        // For now we'll use mock data
-        // setIsSubscribed(false); // Mock data - replace with actual subscription status
-        
         setLoading(false);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -92,7 +87,10 @@ function SettingsPageContent() {
         return;
       }
       
-      if (!accountCurrentPassword) {
+      // Check if user signed in with Google
+      const isGoogleUser = user.providerData.some(provider => provider.providerId === 'google.com');
+      
+      if (!isGoogleUser && !accountCurrentPassword) {
         setAccountError('Please enter your current password to confirm this change');
         return;
       }
@@ -111,8 +109,12 @@ function SettingsPageContent() {
         return;
       }
       
-      // Here you would also update the display name in your database
-      // For now, we're just handling the Firebase auth update
+      // Update display name in auth service
+      const displayNameResult = await authService.updateDisplayName(displayName);
+      if (displayNameResult && 'error' in displayNameResult) {
+        setAccountError(displayNameResult.message);
+        return;
+      }
       
       showSuccess('Account information updated successfully!');
       setAccountCurrentPassword('');
@@ -176,19 +178,26 @@ function SettingsPageContent() {
     try {
       setDeleteAccountError('');
       
-      if (!deleteAccountPassword) {
+      // Check if user signed in with Google
+      const isGoogleUser = user?.providerData.some(provider => provider.providerId === 'google.com');
+      
+      // For email/password users, require password input
+      if (!isGoogleUser && !deleteAccountPassword) {
         setDeleteAccountError('Please enter your password to confirm account deletion');
         return;
       }
       
-      // Re-authenticate user first
+      // Re-authenticate user (Google users will get popup, email users need password)
       const reAuthResult = await authService.reauthenticate(deleteAccountPassword);
       if ('error' in reAuthResult) {
         setDeleteAccountError(reAuthResult.message);
         return;
       }
       
-      // Delete account
+      // Delete user profile and applications from Firestore
+      await deleteUser();
+      
+      // Delete Firebase Auth account
       const deleteResult = await authService.deleteAccount();
       if (deleteResult && 'error' in deleteResult) {
         setDeleteAccountError(deleteResult.message);
@@ -203,12 +212,8 @@ function SettingsPageContent() {
     }
   };
   
-  if (loading) {
-    return (
-      <div className="container mx-auto py-10 flex justify-center items-center min-h-[60vh]">
-        <div className="animate-pulse">Loading settings...</div>
-      </div>
-    );
+  if (loading || profileLoading) {
+    return <SettingsPageSkeleton />;
   }
   
   return (
@@ -233,9 +238,9 @@ function SettingsPageContent() {
               </div>
               <Switch
                 id="new-job-matches"
-                checked={newJobMatches}
+                checked={profile?.[FieldName.NEW_JOB_MATCHES] || false}
                 onCheckedChange={(checked) => {
-                  setNewJobMatches(checked);
+                  updateProfile({ [FieldName.NEW_JOB_MATCHES]: checked });
                   showSuccess(checked ? 'Email notifications enabled!' : 'Email notifications disabled!');
                 }}
               />
@@ -248,9 +253,9 @@ function SettingsPageContent() {
               </div>
               <Switch
                 id="auto-apply"
-                checked={autoApplyWithoutReview}
+                checked={profile?.[FieldName.AUTO_APPLY_WITHOUT_REVIEW] || false}
                 onCheckedChange={(checked) => {
-                  setAutoApplyWithoutReview(checked);
+                  updateProfile({ [FieldName.AUTO_APPLY_WITHOUT_REVIEW]: checked });
                   showSuccess(checked ? 'Auto apply enabled!' : 'Auto apply disabled!');
                 }}
               />
@@ -321,75 +326,79 @@ function SettingsPageContent() {
               <Label htmlFor="email">Email Address</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="account-password">Current Password</Label>
-              <Input 
-                id="account-password" 
-                type="password" 
-                value={accountCurrentPassword} 
-                onChange={(e) => setAccountCurrentPassword(e.target.value)}
-                placeholder="Enter current password to confirm changes" 
-              />
-            </div>
+            {user && !user.providerData.some(provider => provider.providerId === 'google.com') && (
+              <div className="space-y-1">
+                <Label htmlFor="account-password">Current Password</Label>
+                <Input 
+                  id="account-password" 
+                  type="password" 
+                  value={accountCurrentPassword} 
+                  onChange={(e) => setAccountCurrentPassword(e.target.value)}
+                  placeholder="Enter current password to confirm changes" 
+                />
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button onClick={handleUpdateEmail} className="bg-teal-600 hover:bg-teal-700">Save Changes</Button>
           </CardFooter>
         </Card>
         
-        {/* Password Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center text-base sm:text-2xl">
-              <KeyRound className="mr-2 h-5 w-5" />
-              Password
-            </CardTitle>
-            <CardDescription>
-              Update your password
-            </CardDescription>
-            {passwordError && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mt-2 text-sm">
-                <AlertCircle className="h-4 w-4 text-red-400" />
-                <span>{passwordError}</span>
+        {/* Password Security - Only show for email/password users */}
+        {user && !user.providerData.some(provider => provider.providerId === 'google.com') && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-base sm:text-2xl">
+                <KeyRound className="mr-2 h-5 w-5" />
+                Password
+              </CardTitle>
+              <CardDescription>
+                Update your password
+              </CardDescription>
+              {passwordError && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mt-2 text-sm">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <span>{passwordError}</span>
+                </div>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <Label htmlFor="current-password">Current Password</Label>
+                <Input 
+                  id="current-password" 
+                  type="password" 
+                  value={passwordCurrentPassword}
+                  onChange={(e) => setPasswordCurrentPassword(e.target.value)}
+                />
               </div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input 
-                id="current-password" 
-                type="password" 
-                value={passwordCurrentPassword}
-                onChange={(e) => setPasswordCurrentPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input 
-                id="new-password" 
-                type="password" 
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input 
-                id="confirm-password" 
-                type="password" 
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button onClick={handleUpdatePassword} className="bg-teal-600 hover:bg-teal-700">Update Password</Button>
-          </CardFooter>
-        </Card>
+              <div className="space-y-1">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input 
+                  id="new-password" 
+                  type="password" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input 
+                  id="confirm-password" 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button onClick={handleUpdatePassword} className="bg-teal-600 hover:bg-teal-700">Update Password</Button>
+            </CardFooter>
+          </Card>
+        )}
 
         {/* Membership Panel - Above Delete Account */}
-        <MembershipPanel isPro={isPro} />
+        <MembershipPanel />
         
         {/* Delete Account - At the bottom */}
         <Card className="border-red-100">
@@ -415,15 +424,23 @@ function SettingsPageContent() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                  <p className="text-sm text-gray-500">
-                    Please enter your password to confirm:
-                  </p>
-                  <Input 
-                    type="password" 
-                    placeholder="Enter your password"
-                    value={deleteAccountPassword}
-                    onChange={(e) => setDeleteAccountPassword(e.target.value)}
-                  />
+                  {user && !user.providerData.some(provider => provider.providerId === 'google.com') ? (
+                    <>
+                      <p className="text-sm text-gray-500">
+                        Please enter your password to confirm:
+                      </p>
+                      <Input 
+                        type="password" 
+                        placeholder="Enter your password"
+                        value={deleteAccountPassword}
+                        onChange={(e) => setDeleteAccountPassword(e.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      You will be asked to sign in with Google again to confirm this action.
+                    </p>
+                  )}
                   {deleteAccountError && (
                     <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
                       <AlertCircle className="h-4 w-4 text-red-400" />
@@ -438,7 +455,10 @@ function SettingsPageContent() {
                     setDeleteAccountPassword('');
                   }}>Cancel</Button>
                   <Button variant="destructive" onClick={handleDeleteAccount}>
-                    Delete Account
+                    {user && user.providerData.some(provider => provider.providerId === 'google.com') 
+                      ? 'Confirm & Delete Account' 
+                      : 'Delete Account'
+                    }
                   </Button>
                 </DialogFooter>
               </DialogContent>

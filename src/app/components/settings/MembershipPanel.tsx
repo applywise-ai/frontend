@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
@@ -22,13 +22,17 @@ import {
   X
 } from 'lucide-react';
 import SubscriptionModal from '@/app/components/SubscriptionModal';
+import { useProfile } from '@/app/contexts/ProfileContext';
+import { FieldName } from '@/app/types/profile';
 
 interface MembershipPanelProps {
-  isPro: boolean;
   className?: string;
 }
 
-export default function MembershipPanel({ isPro, className = '' }: MembershipPanelProps) {
+export default function MembershipPanel({ className = '' }: MembershipPanelProps) {
+  const { profile } = useProfile();
+  const isPro = profile?.[FieldName.IS_PRO_MEMBER] || false;
+  
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [showManageSubscription, setShowManageSubscription] = useState(false);
 

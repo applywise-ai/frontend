@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card
 interface ApplicationSubmittedContentProps {
   jobTitle?: string;
   companyName?: string;
-  applicationId?: string;
+  submittedAt?: string;
   onViewApplications: () => void;
   onBrowseJobs: () => void;
   variant?: 'card' | 'plain';
@@ -14,12 +14,24 @@ interface ApplicationSubmittedContentProps {
 export default function ApplicationSubmittedContent({
   jobTitle = 'Senior Software Engineer',
   companyName = 'TechNova Solutions',
-  applicationId = '123',
+  submittedAt,
   onViewApplications,
   onBrowseJobs,
   variant = 'card',
 }: ApplicationSubmittedContentProps) {
-  const appliedDate = new Date();
+  const submittedDate = submittedAt ? new Date(submittedAt) : new Date();
+  
+  const formatDateTime = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
   
   const content = (
     <>
@@ -62,12 +74,9 @@ export default function ApplicationSubmittedContent({
         </div>
       </div>
       
-      <div className="pt-1 pb-3 text-xs sm:text-sm text-gray-500">
-        <p>
-          Application ID: <span className="font-mono">{applicationId}</span>
-        </p>
-        <p>
-          Applied on: {appliedDate.toLocaleDateString()} at {appliedDate.toLocaleTimeString()}
+      <div className="pt-1 sm:pt-2">
+        <p className="text-xs sm:text-sm text-gray-500">
+          Submitted: {formatDateTime(submittedDate)}
         </p>
       </div>
       
@@ -135,16 +144,13 @@ export default function ApplicationSubmittedContent({
             </div>
           </div>
           
-          <div className="pt-3 sm:pt-4">
+          <div className="pt-1 sm:pt-2">
             <p className="text-xs sm:text-sm text-gray-500">
-              Application ID: <span className="font-mono">{applicationId}</span>
-            </p>
-            <p className="text-xs sm:text-sm text-gray-500">
-              Submitted on: {appliedDate.toLocaleDateString()} at {appliedDate.toLocaleTimeString()}
+              Submitted: {formatDateTime(submittedDate)}
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-row gap-4 justify-center pt-4 sm:pt-6">
+        <CardFooter className="flex flex-row gap-4 justify-center pt-2 sm:pt-3">
           <Button
             variant="outline" 
             onClick={onViewApplications}
