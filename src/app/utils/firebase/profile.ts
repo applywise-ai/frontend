@@ -45,6 +45,11 @@ class ProfileService {
         email: user.email || '',
         phoneNumber: '',
         skills: [],
+        // Default boolean fields
+        hispanic: false,
+        disability: false,
+        trans: false,
+        veteran: false,
         // Default notification preferences
         newJobMatches: false,
         autoApplyWithoutReview: false,

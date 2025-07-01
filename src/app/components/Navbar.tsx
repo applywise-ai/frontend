@@ -48,7 +48,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
     if (hideNavbar) {
       return; // Early return if navbar should be hidden
     }
-    
+
     // Add event listener
     window.addEventListener('scroll', handleScroll);
     
@@ -56,7 +56,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [handleScroll, hideNavbar]); // Stable dependency array
+  }, [handleScroll, hideNavbar, user]); // Stable dependency array
 
   // Close the dropdown when clicking outside
   useEffect(() => {

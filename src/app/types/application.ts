@@ -34,11 +34,11 @@ export interface Application {
   appliedDate?: string;
   lastUpdated: string;
   createdAt: string;
-  // File references
-  resumeUrl?: string;
-  resumeFilename?: string;
-  coverLetterUrl?: string;
-  coverLetterFilename?: string;
+  // // File references
+  // resumeUrl?: string;
+  // resumeFilename?: string;
+  // coverLetterUrl?: string;
+  // coverLetterFilename?: string;
 }
 
 // Firestore-specific application interface

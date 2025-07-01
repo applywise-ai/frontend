@@ -21,7 +21,9 @@ import { navigateAndForget } from '@/app/utils/navigation';
 
 // Define a type for unwrapped params
 type ParamsType = {
-  id: string;
+  params: {
+    id: string;
+  };
 };
 
 type Answer = string | Record<string, string | number | boolean | null>;
