@@ -2,16 +2,19 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { UserProfile } from '@/app/types/profile';
-import { profileService } from '@/app/utils/firebase';
+import { profileService } from '@/app/services/firebase';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { emptyEducation, emptyEmployment, emptyProject } from '@/app/utils/profile';
+import { FieldName } from '@/app/types/profile';
 
 interface ProfileContextType {
-  profile: UserProfile | null;
+  profile: UserProfile;
   isLoading: boolean;
   error: string | null;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  refreshProfile: () => Promise<void>;
-  saveProfile: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>, save?: boolean) => Promise<void>;
+  refreshProfile: () => void;
+  saveProfile: (updatedProfile?: UserProfile) => Promise<void>;
+  addInstance: (id: string) => void;
   deleteUser: () => Promise<void>;
   updateJobFeedback: (jobId: string, liked: boolean) => Promise<void>;
   getJobFeedback: (jobId: string) => boolean | null;
@@ -24,7 +27,8 @@ interface ProfileProviderProps {
 }
 
 export function ProfileProvider({ children }: ProfileProviderProps) {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [originalProfile, setOriginalProfile] = useState<UserProfile>({} as UserProfile);
+  const [profile, setProfile] = useState<UserProfile>({} as UserProfile);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
@@ -32,8 +36,8 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
   // Reset profile when user changes
   useEffect(() => {
     if (!isAuthenticated) {
-      setProfile(null);
-          setIsLoading(false);
+      setProfile({} as UserProfile);
+      setIsLoading(false);
       setError(null);
       }
   }, [isAuthenticated]);
@@ -48,7 +52,7 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
     setError(null);
 
     try {
-        console.log('ProfileProvider: Loading profile for user:', user.uid);
+      console.log('ProfileProvider: Loading profile for user:', user.uid);
       let userProfile = await profileService.getProfile(user.uid);
       
       // If no profile exists, create one with basic info
@@ -63,6 +67,7 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
         const { createdAt, updatedAt, ...cleanProfile } = userProfile;
 
         setProfile(cleanProfile as UserProfile);
+        setOriginalProfile(cleanProfile as UserProfile)
       }
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -78,8 +83,33 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
     }
   }, [user, loadProfile]);
 
+  const addInstance = useCallback((id: string) => {
+    if (!user || !profile) {
+      throw new Error('User not authenticated or profile not loaded');
+    }
+
+    const idToEmptyInstance = {
+      [FieldName.EMPLOYMENT]: emptyEmployment,
+      [FieldName.EDUCATION]: emptyEducation,
+      [FieldName.PROJECT]: emptyProject
+    };
+
+    try {
+      const emptyInstance = idToEmptyInstance[id];
+      if (!emptyInstance) {
+        throw Error('Unable to add instance, incorrect instance id provided!')
+      }
+      console.log(profile, id)
+      updateProfile({ [id]: [...profile[id], emptyInstance] })
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError('Failed to update profile');
+      throw err;
+    }
+  }, [profile, user]);
+
   // Update profile locally and in Firestore
-  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
+  const updateProfile = useCallback(async (updates: Partial<UserProfile>, save?: boolean) => {
     if (!user || !profile) {
       throw new Error('User not authenticated or profile not loaded');
     }
@@ -88,31 +118,36 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
       // Update local state immediately for better UX
       const updatedProfile = { ...profile, ...updates };
       setProfile(updatedProfile);
-
-      // Update in Firestore
-      await profileService.updateProfile(user.uid, updates);
+      if (save) {
+        saveProfile(updatedProfile);
+      }
     } catch (err) {
       console.error('Error updating profile:', err);
       setError('Failed to update profile');
       // Revert local changes on error
-      await loadProfile();
+      setProfile(originalProfile)
       throw err;
     }
-  }, [user, profile, loadProfile]);
+  }, [user, profile, originalProfile]);
 
   // Refresh profile from Firestore
-  const refreshProfile = useCallback(async () => {
-    await loadProfile();
-  }, [loadProfile]);
+  const refreshProfile = useCallback(() => {
+    setProfile(originalProfile)
+  }, [originalProfile]);
 
   // Save current profile state to Firestore
-  const saveProfile = useCallback(async () => {
+  const saveProfile = useCallback(async (updatedProfile?: UserProfile) => {
     if (!user || !profile) {
       throw new Error('User not authenticated or profile not loaded');
     }
 
     try {
-      await profileService.updateProfile(user.uid, profile);
+      if (updatedProfile) {
+        await profileService.updateProfile(user.uid, updatedProfile);
+      } else {
+        await profileService.updateProfile(user.uid, profile);
+      }
+      setOriginalProfile(updatedProfile ? updatedProfile : profile);
     } catch (err) {
       console.error('Error saving profile:', err);
       setError('Failed to save profile');
@@ -128,7 +163,7 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
 
     try {
       await profileService.deleteUser(user.uid);
-      setProfile(null);
+      setProfile({} as UserProfile);
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user');
@@ -175,6 +210,7 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
     profile,
     isLoading,
     error,
+    addInstance,
     updateProfile,
     refreshProfile,
     saveProfile,

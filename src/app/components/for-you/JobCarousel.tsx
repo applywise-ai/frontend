@@ -51,8 +51,8 @@ export default function JobCarousel({
                 score={jobWithScore.score}
                 index={index}
                 totalJobs={jobs.length}
-                onShowSubscriptionModal={onShowSubscriptionModal}
                 onAutoAdvance={handleAutoAdvance}
+                onShowSubscriptionModal={onShowSubscriptionModal}
               />
             ))}
           </div>

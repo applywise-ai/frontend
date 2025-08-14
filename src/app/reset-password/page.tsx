@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
-import { authService } from '@/app/utils/firebase';
+import { authService } from '@/app/services/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function ResetPassword() {

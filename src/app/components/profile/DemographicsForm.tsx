@@ -7,13 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { InfoIcon, Users, Globe, Heart, ShieldCheck } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Separator } from '@/app/components/ui/separator';
+import { useProfile } from '@/app/contexts/ProfileContext';
 
-interface DemographicsFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
 
-export default function DemographicsForm({ profile, updateProfile }: DemographicsFormProps) {
+export default function DemographicsForm() {
+  const { profile, updateProfile } = useProfile();
+
   const handleSelectChange = (value: string) => {
     updateProfile({ [FieldName.GENDER]: value === 'prefer_not_to_say' ? '' : value });
   };

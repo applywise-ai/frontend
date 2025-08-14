@@ -51,7 +51,7 @@ export default function SignUp() {
     const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
     
       // TODO: Add register method to AuthContext
-      const { authService } = await import('@/app/utils/firebase');
+      const { authService } = await import('@/app/services/firebase');
     const result = await authService.register(formData.email, formData.password, fullName);
     
     if ('error' in result) {
@@ -77,7 +77,7 @@ export default function SignUp() {
     
     try {
       // TODO: Add Google auth to AuthContext
-      const { authService } = await import('@/app/utils/firebase');
+      const { authService } = await import('@/app/services/firebase');
     const result = await authService.googleAuth();
     
     if ('error' in result) {

@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { getBreakpoint } from '@/app/utils/breakpoints';
 
 // Import our components
-import { FormSectionType, FileType } from '@/app/types/application';
+import { FormSectionType, FormQuestion } from '@/app/types/application';
 import { FormSection as FormSectionComponent } from '@/app/components/applications/FormSection';
 import { JobDetails } from '@/app/components/applications/JobDetails';
 import { ApplicationPreview } from '@/app/components/applications/ApplicationPreview';
@@ -18,6 +18,7 @@ import { useNotification } from '@/app/contexts/NotificationContext';
 import { ApplicationWithJob, useApplications } from '@/app/contexts/ApplicationsContext';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { navigateAndForget } from '@/app/utils/navigation';
+import { EditApplicationPageSkeleton } from '@/app/components/loading/EditApplicationPageSkeleton';
 
 // Define a type for unwrapped params
 type ParamsType = {
@@ -26,25 +27,23 @@ type ParamsType = {
   };
 };
 
-type Answer = string | Record<string, string | number | boolean | null>;
-
 function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   const router = useRouter();
   // UI-only state
   const [isLoading, setIsLoading] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(true);
   const [activeTab, setActiveTab] = useState("form");
-  const [previewTab, setPreviewTab] = useState<"application" | "resume" | "coverLetter">("application");
+  const [previewTab, setPreviewTab] = useState<FormSectionType | 'application'>("application");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [formChanged, setFormChanged] = useState(false);
   // Remove localAnswers - let individual inputs manage their own state
   const fieldRefs = useRef<{[key: string]: React.RefObject<HTMLDivElement | null>}>({});
-  const currentAnswers = useRef<Record<string, Answer>>({});
+  const currentAnswers = useRef<Record<string, FormQuestion>>({});
   
   // Global notification hook
   const { showSuccess } = useNotification();
   const { 
-    applications, 
+    fetchApplication,
     updateApplication,
     submitApplication 
   } = useApplications();
@@ -56,36 +55,31 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   // Application and job data from context
   const [application, setApplication] = useState<ApplicationWithJob | null>(null);
   
-
-  
   // Load application data from context
   useEffect(() => {
     const loadApplicationData = async () => {
       if (!applicationId) return;
-      
       try {
-        const appWithJob = applications?.find(app => app.id === applicationId);
-        if (appWithJob) {
-          setApplication(appWithJob);
-          // Initialize current answers ref from application data
-          const initialAnswers: Record<string, Answer> = {};
-          appWithJob.formQuestions.forEach(q => {
-            initialAnswers[q.id] = q.answer || '';
-          });
-          // Only initialize current answers if they haven't been set yet (first load)
-          const hasExistingAnswers = Object.keys(currentAnswers.current).length > 0;
-          if (!hasExistingAnswers) {
-            currentAnswers.current = initialAnswers;
-            setFormChanged(false);
-          }
+        const appWithJob = await fetchApplication(applicationId);
+        setApplication(appWithJob);
+        // Initialize current answers ref from application data
+        const initialAnswers: Record<string, FormQuestion> = {};
+        appWithJob.formQuestions.forEach(q => {
+          initialAnswers[q.unique_label_id] = q;
+        });
+        console.log('EditJobApplicationPageContent: initialAnswers', initialAnswers);
+        // Only initialize current answers if they haven't been set yet (first load)
+        const hasExistingAnswers = Object.keys(currentAnswers.current).length > 0;
+        if (!hasExistingAnswers) {
+          currentAnswers.current = initialAnswers;
+          setFormChanged(false);
         }
       } catch (error) {
         console.error('Error loading application:', error);
       }
     };
-
     loadApplicationData();
-  }, [applicationId, applications]);
+  }, [applicationId, fetchApplication]);
 
   // Load the preview when component mounts
   useEffect(() => {
@@ -107,7 +101,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     if (formQuestions.length > 0) {
       const refs: {[key: string]: React.RefObject<HTMLDivElement | null>} = {};
       formQuestions.forEach(q => {
-        refs[q.id] = React.createRef<HTMLDivElement | null>();
+        refs[q.unique_label_id] = React.createRef<HTMLDivElement | null>();
       });
       fieldRefs.current = refs;
     }
@@ -117,17 +111,30 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   const memoizedFieldRefs = useMemo(() => fieldRefs.current, []);
 
   // Handle input change for any answer - update ref without causing re-render
-  const handleAnswerChange = useCallback((id: string, value: Answer) => {
+  const handleAnswerChange = useCallback((id: string, value: string | Partial<FormQuestion>) => {
     // Clear validation error for this field if it exists
     setValidationErrors(prev => prev.includes(id) ? prev.filter(item => item !== id) : prev);
 
     // Update current answers ref (doesn't cause re-render)
-    currentAnswers.current[id] = value;
-  
-    // Mark form as changed only if it is not a file changed
-    if (id !== 'resume' && id !== 'coverLetter') {
-      setFormChanged(true);
+    if (typeof value === 'string') {
+      // For simple string values, update the answer field
+      if (currentAnswers.current[id]) {
+        currentAnswers.current[id] = {
+          ...currentAnswers.current[id],
+          answer: value
+        };
+      }
+    } else {
+      // For FormQuestion updates (like file uploads), merge the changes
+      if (currentAnswers.current[id]) {
+        currentAnswers.current[id] = {
+          ...currentAnswers.current[id],
+          ...value
+        };
+      }
     }
+    console.log(currentAnswers.current)
+    setFormChanged(true);
   }, []);
   
   const validateForm = useCallback(() => {
@@ -135,8 +142,8 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     
     // Check for required fields using current answers ref
     const missingFields = formQuestions
-      .filter(q => q.required && !currentAnswers.current[q.id])
-      .map(q => q.id);
+      .filter(q => q.required && !currentAnswers.current[q.unique_label_id])
+      .map(q => q.unique_label_id);
     
     setValidationErrors(missingFields);
     
@@ -176,10 +183,18 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     
     try {
       // Update the form questions with current answers from ref
-      const updatedFormQuestions = formQuestions.map(q => ({
-        ...q,
-        answer: currentAnswers.current[q.id] || q.answer,
-      })) || [];
+      const updatedFormQuestions = formQuestions.map(q => {
+        const currentAnswer = currentAnswers.current[q.unique_label_id];
+        if (currentAnswer) {
+          return {
+            ...q,
+            answer: currentAnswer.answer,
+            file_url: currentAnswer.file_url,
+            file_name: currentAnswer.file_name,
+          };
+        }
+        return q;
+      });
       
       // Update the application using context
       await updateApplication(applicationId, {
@@ -233,9 +248,9 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
 
   // Use current answers ref for FormSection compatibility
   const answers = useMemo(() => {
-    const answerMap: Record<string, Answer> = {};
+    const answerMap: Record<string, FormQuestion> = {};
     formQuestions.forEach(q => {
-      answerMap[q.id] = currentAnswers.current[q.id] || q.answer || '';
+      answerMap[q.unique_label_id] = currentAnswers.current[q.unique_label_id];
     });
     return answerMap;
   }, [formQuestions]);
@@ -245,31 +260,41 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     return formQuestions.filter(q => q.section === 'personal');
   }, [formQuestions]);
   
+  const educationQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'education');
+  }, [formQuestions]);
+  
+  const experienceQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'experience');
+  }, [formQuestions]);
+  
   const resumeQuestions = useMemo(() => {
     return formQuestions.filter(q => q.section === 'resume');
   }, [formQuestions]);
   
   const coverLetterQuestions = useMemo(() => {
-    return formQuestions.filter(q => q.section === 'coverLetter');
+    return formQuestions.filter(q => q.section === 'cover_letter');
   }, [formQuestions]);
   
-  const screeningQuestions = useMemo(() => {
-    return formQuestions.filter(q => q.section === 'screening');
+  const additionalQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'additional');
   }, [formQuestions]);
   
-  const customQuestions = useMemo(() => {
-    return formQuestions.filter(q => q.section === 'custom');
+  const demographicQuestions = useMemo(() => {
+    return formQuestions.filter(q => q.section === 'demographic');
   }, [formQuestions]);
-  
+
   // Get section title based on section name
   // Memoize getSectionTitle to prevent re-creation
   const getSectionTitle = useCallback((section: FormSectionType): string => {
     switch (section) {
       case 'personal': return 'Personal Information';
+      case 'education': return 'Education';
+      case 'experience': return 'Experience';
       case 'resume': return 'Resume';
-      case 'coverLetter': return 'Cover Letter';
-      case 'screening': return 'Screening Questions';
-      case 'custom': return 'Additional Information';
+      case 'cover_letter': return 'Cover Letter';
+      case 'additional': return 'Additional Information';
+      case 'demographic': return 'Demographics';
       default: return 'Other Information';
     }
   }, []);
@@ -285,6 +310,8 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
         return 'bg-green-50 text-green-600 border-green-200';
       case 'Rejected':
         return 'bg-red-50 text-red-600 border-red-200';
+      case 'Not Found':
+        return 'bg-gray-50 text-gray-600 border-gray-200';
       case 'Draft':
       default:
         return 'bg-amber-50 text-amber-600 border-amber-200';
@@ -292,10 +319,18 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   }, []);
 
   // Memoize handleFilePreview to prevent re-creation
-  const handleFilePreview = useCallback((fileType: FileType) => {
-    if (fileType === 'resume' || fileType === 'coverLetter') {
+  const handleFilePreview = useCallback((section?: FormSectionType) => {
+    if (section === 'resume') {
       // Set appropriate preview tab
-      setPreviewTab(fileType);
+      setPreviewTab('resume');
+      
+      // If on mobile, switch to preview tab
+      if (window.innerWidth < getBreakpoint('lg')) {
+        setActiveTab('preview');
+      }
+    } else if (section === 'cover_letter') {
+      // Set appropriate preview tab
+      setPreviewTab('cover_letter');
       
       // If on mobile, switch to preview tab
       if (window.innerWidth < getBreakpoint('lg')) {
@@ -325,12 +360,8 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
         <div className="px-6 py-5">
           {application?.job && (
             <JobDetails 
-              title={application?.job.title || ''}
-              company={application?.job.company || ''}
-              location={application?.job.location || ''}
-              salary={application?.job.salary || ''}
+              job={application.job}
               status={application?.status || 'Draft'}
-              postedDate={application?.job.postedDate}
             />
           )}
         </div>
@@ -349,6 +380,35 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
           applicationId={applicationId}
+          jobId={application?.jobId}
+        />
+        <FormSectionComponent 
+          key="education"
+          title={getSectionTitle('education')} 
+          questions={educationQuestions} 
+          onAnswerChange={handleAnswerChange} 
+          answers={answers}
+          section="education"
+          onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={memoizedFieldRefs}
+          onSuccess={showSuccess}
+          applicationId={applicationId}
+          jobId={application?.jobId}
+        />
+        <FormSectionComponent 
+          key="experience"
+          title={getSectionTitle('experience')} 
+          questions={experienceQuestions} 
+          onAnswerChange={handleAnswerChange} 
+          answers={answers}
+          section="experience"
+          onPreview={handleFilePreview}
+          validationErrors={validationErrors}
+          fieldRefs={memoizedFieldRefs}
+          onSuccess={showSuccess}
+          applicationId={applicationId}
+          jobId={application?.jobId}
         />
         <FormSectionComponent 
           key="resume"
@@ -362,45 +422,49 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
           applicationId={applicationId}
+          jobId={application?.jobId}
         />
         <FormSectionComponent 
-          key="coverLetter"
-          title={getSectionTitle('coverLetter')} 
+          key="cover_letter"
+          title={getSectionTitle('cover_letter')} 
           questions={coverLetterQuestions} 
           onAnswerChange={handleAnswerChange} 
           answers={answers}
-          section="coverLetter"
+          section="cover_letter"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
           applicationId={applicationId}
+          jobId={application?.jobId}
         />
         <FormSectionComponent 
-          key="screening"
-          title={getSectionTitle('screening')} 
-          questions={screeningQuestions} 
+          key="additional"
+          title={getSectionTitle('additional')} 
+          questions={additionalQuestions} 
           onAnswerChange={handleAnswerChange} 
           answers={answers}
-          section="screening"
+          section="additional"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
           applicationId={applicationId}
+          jobId={application?.jobId}
         />
         <FormSectionComponent 
-          key="custom"
-          title={getSectionTitle('custom')} 
-          questions={customQuestions} 
+          key="demographic"
+          title={getSectionTitle('demographic')} 
+          questions={demographicQuestions} 
           onAnswerChange={handleAnswerChange} 
           answers={answers}
-          section="custom"
+          section="demographic"
           onPreview={handleFilePreview}
           validationErrors={validationErrors}
           fieldRefs={memoizedFieldRefs}
           onSuccess={showSuccess}
           applicationId={applicationId}
+          jobId={application?.jobId}
         />
       </div>
     </div>
@@ -418,22 +482,29 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
               isLoading={isLoading}
               isSaved={!formChanged}
               formChanged={formChanged}
-              answers={answers}
+              answers={currentAnswers.current}
               applicationId={applicationId}
               jobTitle={application?.job?.title}
               companyName={application?.job?.company}
+              screenshot={application?.screenshot}
             />
           )}
           <ApplicationPreview 
             isLoading={loadingPreview}
-            answers={answers}
+            answers={currentAnswers.current}
             activeTab={previewTab}
-            setActiveTab={(tab) => setPreviewTab(tab as "application" | "resume" | "coverLetter")}
+            setActiveTab={(tab) => setPreviewTab(tab as "application" | "resume" | "cover_letter")}
+            screenshot={application?.screenshot}
           />
         </div>
       </div>
     </div>
   ), [previewTab, formChanged, handleSubmit, handleSave, isLoading, loadingPreview, answers]);
+
+  // Show loading skeleton while application data is being fetched
+  if (!application) {
+    return <EditApplicationPageSkeleton />;
+  }
 
   return (
     <div className="fixed top-16 bottom-0 left-0 right-0 bg-gray-50">

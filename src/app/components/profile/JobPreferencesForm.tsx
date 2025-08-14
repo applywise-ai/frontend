@@ -17,13 +17,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { InfoIcon, Briefcase, DollarSign, Clock, MapPin, HelpCircle, Building, Layers, Users } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
+import { useProfile } from '@/app/contexts/ProfileContext';
 
-interface JobPreferencesFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
 
-export default function JobPreferencesForm({ profile, updateProfile }: JobPreferencesFormProps) {
+export default function JobPreferencesForm() {
+  const { profile, updateProfile } = useProfile();
+
   // Ensure arrays exist
   const jobTypes = profile[FieldName.JOB_TYPES] as string[] || [];
   const locationPreferences = profile[FieldName.LOCATION_PREFERENCES] as string[] || [];

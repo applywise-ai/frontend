@@ -1,4 +1,4 @@
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
 import { storage } from './config';
 
 export interface UploadResult {
@@ -11,12 +11,12 @@ class StorageService {
   /**
    * Upload a resume file to Firebase Storage
    */
-  async uploadResume(userId: string, file: File): Promise<UploadResult> {
+  async uploadResume(userId: string, file: File, applicationId?: string): Promise<UploadResult> {
     try {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      // Validate file type - only allow PDF
+      const allowedTypes = ['application/pdf'];
       if (!allowedTypes.includes(file.type)) {
-        throw new Error('Invalid file type. Please upload a PDF, DOC, or DOCX file.');
+        throw new Error('Invalid file type. Please upload a PDF file.');
       }
 
       // Validate file size (10MB limit)
@@ -25,10 +25,9 @@ class StorageService {
         throw new Error('File size too large. Please upload a file smaller than 5MB.');
       }
 
-      // Create a unique filename
-      const timestamp = Date.now();
+      // Create the filename based on applicationId
       const fileExtension = file.name.split('.').pop();
-      const filename = `resume_${timestamp}.${fileExtension}`;
+      const filename = applicationId ? `${applicationId}.${fileExtension}` : `resume.${fileExtension}`;
       const filePath = `resumes/${userId}/${filename}`;
 
       // Create storage reference
@@ -40,7 +39,8 @@ class StorageService {
         customMetadata: {
           'originalName': file.name,
           'uploadedBy': userId,
-          'uploadedAt': new Date().toISOString()
+          'uploadedAt': new Date().toISOString(),
+          'applicationId': applicationId || ''
         }
       };
 
@@ -107,12 +107,12 @@ class StorageService {
   /**
    * Upload a cover letter file to Firebase Storage
    */
-  async uploadCoverLetter(userId: string, file: File): Promise<UploadResult> {
+  async uploadCoverLetter(userId: string, file: File, applicationId: string): Promise<UploadResult> {
     try {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      // Validate file type - only allow PDF
+      const allowedTypes = ['application/pdf'];
       if (!allowedTypes.includes(file.type)) {
-        throw new Error('Invalid file type. Please upload a PDF, DOC, or DOCX file.');
+        throw new Error('Invalid file type. Please upload a PDF file.');
       }
 
       // Validate file size (5MB limit)
@@ -121,10 +121,9 @@ class StorageService {
         throw new Error('File size too large. Please upload a file smaller than 5MB.');
       }
 
-      // Create a unique filename
-      const timestamp = Date.now();
+      // Create filename using applicationId
       const fileExtension = file.name.split('.').pop();
-      const filename = `cover_letter_${timestamp}.${fileExtension}`;
+      const filename = `${applicationId}.${fileExtension}`;
       const filePath = `cover-letters/${userId}/${filename}`;
 
       // Create storage reference
@@ -136,7 +135,8 @@ class StorageService {
         customMetadata: {
           'originalName': file.name,
           'uploadedBy': userId,
-          'uploadedAt': new Date().toISOString()
+          'uploadedAt': new Date().toISOString(),
+          'applicationId': applicationId
         }
       };
 
@@ -205,10 +205,10 @@ class StorageService {
    */
   async uploadFile(userId: string, file: File, folder: string): Promise<UploadResult> {
     try {
-      // Validate file size (10MB limit)
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        throw new Error('File size too large. Please upload a file smaller than 10MB.');
+        throw new Error('File size too large. Please upload a file smaller than 5MB.');
       }
 
       // Create a unique filename
@@ -247,9 +247,44 @@ class StorageService {
     try {
       const storageRef = ref(storage, filePath);
       await deleteObject(storageRef);
-    } catch (error) {
-      console.error('Error deleting file:', error);
+    } catch (err) {
+      console.log('Error deleting file:', err);
       // Don't throw error for delete operations as the file might not exist
+    }
+  }
+
+  /**
+   * Get download URL for a file in Firebase Storage
+   * @param folder - The folder name (e.g., 'cover-letters', 'resumes')
+   * @param userId - The user ID
+   * @param applicationId - The application ID
+   * @returns Promise<string | null> - Download URL if file exists, null otherwise
+   */
+  async getDownloadUrl(folder: string, userId: string, applicationId: string): Promise<string | null> {
+    try {
+      // Create the folder path: folder/{userId}/
+      const folderPath = `${folder}/${userId}`;
+      const folderRef = ref(storage, folderPath);
+      
+      // List all files in the folder
+      const result = await listAll(folderRef);
+      
+      // Find the file that contains the applicationId in its name
+      const matchingFile = result.items.find(item => {
+        const fileName = item.name;
+        return fileName.includes(applicationId);
+      });
+      
+      if (matchingFile) {
+        // Get the download URL for the matching file
+        return await getDownloadURL(matchingFile);
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`Error getting download URL for file in ${folder}:`, error);
+      // If there's an error (e.g., folder doesn't exist), return null
+      return null;
     }
   }
 
@@ -268,7 +303,7 @@ class StorageService {
   }
 
   /**
-   * Check if file is a Word document
+   * Check if file is a Word document (deprecated - only PDFs supported)
    */
   isWordDocument(filename: string): boolean {
     const ext = this.getFileExtension(filename);
@@ -284,9 +319,9 @@ class StorageService {
       case 'pdf':
         return 'PDF Document';
       case 'doc':
-        return 'Word Document';
+        return 'Word Document (not supported)';
       case 'docx':
-        return 'Word Document';
+        return 'Word Document (not supported)';
       default:
         return 'Document';
     }

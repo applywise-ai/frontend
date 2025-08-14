@@ -25,6 +25,7 @@ interface DeleteApplicationDialogProps {
   size?: 'sm' | 'md' | 'lg';
   redirectTo?: string;
   buttonText?: string;
+  className?: string;
 }
 
 export default function DeleteApplicationDialog({
@@ -36,6 +37,7 @@ export default function DeleteApplicationDialog({
   size = 'md',
   redirectTo = '/applications',
   buttonText = 'Delete Application',
+  className = '',
 }: DeleteApplicationDialogProps) {
     const router = useRouter();
     const { showSuccess } = useNotification();
@@ -99,7 +101,7 @@ export default function DeleteApplicationDialog({
         return (
         <button
             onClick={() => setOpen(true)}
-            className={`inline-flex items-center justify-center rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 hover:text-red-800 font-medium transition-all duration-200 shadow-sm ${getSizeClasses()}`}
+            className={`inline-flex items-center justify-center rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 hover:text-red-800 font-medium transition-all duration-200 shadow-sm ${getSizeClasses()} ${className}`}
         >
             <Trash2 className={`${getIconSize()}`} />
             {buttonText}

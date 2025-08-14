@@ -76,7 +76,6 @@ export enum FieldName {
   EDUCATION_FROM = 'educationFrom',
   EDUCATION_TO = 'educationTo',
   EDUCATION_GPA = 'educationGpa',
-  TEMP_EDUCATION = 'tempEducation',
   
   // Employment
   EMPLOYMENT = 'employment',
@@ -86,7 +85,6 @@ export enum FieldName {
   EMPLOYMENT_TO = 'employmentTo',
   EMPLOYMENT_DESCRIPTION = 'employmentDescription',
   EMPLOYMENT_LOCATION = 'employmentLocation',
-  TEMP_EMPLOYMENT = 'tempEmployment',
   
   // Skills
   SKILLS = 'skills',
@@ -95,11 +93,10 @@ export enum FieldName {
   SOURCE = 'source',
   
   // Projects
-  PROJECTS = 'projects',
+  PROJECT = 'projects',
   PROJECT_NAME = 'projectName',
   PROJECT_DESCRIPTION = 'projectDescription',
   PROJECT_LINK = 'projectLink',
-  TEMP_PROJECT = 'tempProject',
   
   // Job Feedback
   LIKED_JOBS = 'likedJobs',
@@ -183,11 +180,9 @@ export interface UserProfile {
   
   // Education
   [FieldName.EDUCATION]?: Education[];
-  [FieldName.TEMP_EDUCATION]?: Education;
   
   // Employment
   [FieldName.EMPLOYMENT]?: Employment[];
-  [FieldName.TEMP_EMPLOYMENT]?: Employment;
   
   // Skills
   [FieldName.SKILLS]: string[];
@@ -196,8 +191,7 @@ export interface UserProfile {
   [FieldName.SOURCE]?: string;
   
   // Projects
-  [FieldName.PROJECTS]?: Project[];
-  [FieldName.TEMP_PROJECT]?: Project;
+  [FieldName.PROJECT]?: Project[];
   
   // Job Feedback
   [FieldName.LIKED_JOBS]?: string[];

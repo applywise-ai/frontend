@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Job } from '@/app/types/job';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
-import SubscriptionCard from '@/app/components/SubscriptionCard';
+
 import JobHeader from './JobHeader';
 import JobDetails from './JobDetails';
 import JobTags from './JobTags';
@@ -19,8 +19,8 @@ interface JobCardProps {
   score: number;
   index: number;
   totalJobs: number;
-  onShowSubscriptionModal: () => void;
   onAutoAdvance?: () => void;
+  onShowSubscriptionModal: () => void;
 }
 
 export default function JobCard({
@@ -28,12 +28,11 @@ export default function JobCard({
   score,
   index,
   totalJobs,
-  onShowSubscriptionModal,
-  onAutoAdvance
+  onAutoAdvance,
+  onShowSubscriptionModal
 }: JobCardProps) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
-  console.log(job)
   // View job details
   const viewJobDetails = (jobId: number | string) => {
     setIsNavigating(true);
@@ -77,8 +76,8 @@ export default function JobCard({
             
             {/* Tags, Responsibilities, and Qualifications */}
             <div className="mt-4 grid grid-cols-1 gap-3">
-              {/* Tags */}
-              <JobTags tags={job.tags || []} />
+              {/* Skills */}
+              <JobTags tags={job.skills || []} />
               
               {/* Responsibilities and Qualifications */}
               <JobResponsibilitiesQualifications 
@@ -90,14 +89,7 @@ export default function JobCard({
             {/* Why We Recommended */}
             <JobRecommendationReason job={job} />
             
-            {/* Subscription Card */}
-            <div className="mt-4">
-              <SubscriptionCard
-                onUpgrade={onShowSubscriptionModal}
-                jobId={job.id.toString()}
-                hasApplied={false}
-              />
-            </div>
+
             
             {/* Action Buttons */}
             <div className="mt-5 flex space-x-3">
@@ -122,6 +114,7 @@ export default function JobCard({
               <AnimatedApplyButton 
                 className="flex-1"
                 jobId={job.id.toString()}
+                onShowSubscriptionModal={onShowSubscriptionModal}
               />
             </div>
           </div>

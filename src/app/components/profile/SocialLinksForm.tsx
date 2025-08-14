@@ -1,17 +1,16 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Linkedin, Github, Twitter, Globe, Link as LinkIcon } from 'lucide-react';
 
-interface SocialLinksFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
-
-export default function SocialLinksForm({ profile, updateProfile }: SocialLinksFormProps) {
+export default function SocialLinksForm() {
+  const { profile, updateProfile } = useProfile();
+  
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     updateProfile({ [name]: value });

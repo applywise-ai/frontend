@@ -2,13 +2,15 @@ import { Loader2, FileText, Download } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { Answer } from '@/app/types/application';
+import { FormQuestion } from '@/app/types/application';
+import { getFileUrlBySection } from '@/app/utils/application';
 
 interface ApplicationPreviewProps {
   isLoading: boolean;
-  answers: Record<string, Answer>;
+  answers: Record<string, FormQuestion>;
   activeTab?: string;
   setActiveTab?: (tab: string) => void;
+  screenshot?: string;
 }
 
 // We're now using actual image previews instead of icons
@@ -17,25 +19,13 @@ export function ApplicationPreview({
   isLoading, 
   answers,
   activeTab = 'application',
-  setActiveTab
+  setActiveTab,
+  screenshot
 }: ApplicationPreviewProps) {
-  
-  // Extract file URLs from answers
-  const getFileUrl = (questionId: string, fileType: 'resume' | 'coverLetter'): string => {
-    const answer = answers[questionId];
-    if (typeof answer === 'object' && answer !== null) {
-      if (fileType === 'resume') {
-        return (answer.resumeUrl as string) || '';
-      } else if (fileType === 'coverLetter') {
-        return (answer.coverLetterUrl as string) || '';
-      }
-    }
-    return '';
-  };
-
-  // Get file URLs
-  const resumeUrl = getFileUrl('resume', 'resume');
-  const coverLetterUrl = getFileUrl('coverLetter', 'coverLetter');
+  const currentTime = new Date().getTime();
+  // Get file URLs using utility functions
+  const resumeUrl = getFileUrlBySection(answers, 'resume') + '&t' + currentTime;
+  const coverLetterUrl = getFileUrlBySection(answers, 'cover_letter') + '?t=' + currentTime;
 
   // Check if a file is a PDF
   const isPdf = (file: string) => {
@@ -112,7 +102,7 @@ export function ApplicationPreview({
                   Resume
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="coverLetter" 
+                  value="cover_letter" 
                   className="flex-1 rounded-none text-gray-600 h-full font-medium px-1
                             data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 
                             data-[state=active]:border-indigo-500 data-[state=active]:font-semibold 
@@ -125,15 +115,19 @@ export function ApplicationPreview({
               <TabsContent value="application" className="flex-1 m-0 p-0 overflow-auto">
                 <div className="px-6 py-6 h-full">
                   <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 h-full overflow-auto relative">
-                    <Image
-                      src="/images/sample_job_app_ss.png"
-                      alt="Application Preview"
-                      width={1200}
-                      height={1600}
-                      className="w-full h-auto max-w-full rounded-md shadow-sm"
-                      style={{ objectFit: 'contain' }}
-                      priority
-                    />
+                    {screenshot && (
+                      <Image
+                        src={screenshot}
+                        alt="Application Preview"
+                        width={1200}
+                        height={1600}
+                        className="w-full h-auto max-w-full rounded-md shadow-sm"
+                        style={{ 
+                          objectFit: 'contain', 
+                        }}
+                        priority
+                      />
+                    )}
                   </div>
                 </div>
               </TabsContent>
@@ -160,7 +154,7 @@ export function ApplicationPreview({
                 </div>
               </TabsContent>
               
-              <TabsContent value="coverLetter" className="flex-1 m-0 p-0 overflow-auto">
+              <TabsContent value="cover_letter" className="flex-1 m-0 p-0 overflow-auto">
                 <div className="px-6 py-6 h-full">
                   {coverLetterUrl ? (
                     <div className="flex flex-col h-full">

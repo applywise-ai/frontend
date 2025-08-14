@@ -1,19 +1,14 @@
 'use client';
 
 import { DollarSign, MapPin, Briefcase, Clock, GraduationCap, Globe } from 'lucide-react';
-import { Job, ROLE_LEVEL_OPTIONS } from '@/app/types/job';
-import { formatJobPostedDate } from '@/app/utils/job';
+import { Job } from '@/app/types/job';
+import { formatJobPostedDate, formatSalaryRange, getJobTypeLabel, getExperienceLevelLabel, getLocationLabelFromJob } from '@/app/utils/job';
 
 interface JobDetailsProps {
   job: Job;
 }
 
 export default function JobDetails({ job }: JobDetailsProps) {
-  // Get experience level label from ROLE_LEVEL_OPTIONS
-  const getExperienceLevelLabel = (experienceLevel: string) => {
-    const option = ROLE_LEVEL_OPTIONS.find(level => level.value === experienceLevel);
-    return option?.label || experienceLevel;
-  };
 
   return (
     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -23,7 +18,7 @@ export default function JobDetails({ job }: JobDetailsProps) {
         </div>
         <div>
           <div className="text-xs text-gray-500 font-medium">Salary Range</div>
-          <div className="font-semibold text-sm text-gray-900">{job.salary}</div>
+          <div className="font-semibold text-sm text-gray-900">{formatSalaryRange(job)}</div>
         </div>
       </div>
       
@@ -33,7 +28,7 @@ export default function JobDetails({ job }: JobDetailsProps) {
         </div>
         <div>
           <div className="text-xs text-gray-500 font-medium">Location</div>
-          <div className="font-semibold text-sm text-gray-900">{job.location}</div>
+          <div className="font-semibold text-sm text-gray-900">{getLocationLabelFromJob(job)}</div>
         </div>
       </div>
       
@@ -43,7 +38,7 @@ export default function JobDetails({ job }: JobDetailsProps) {
         </div>
         <div>
           <div className="text-xs text-gray-500 font-medium">Job Type</div>
-          <div className="font-semibold text-sm text-gray-900">{job.jobType}</div>
+          <div className="font-semibold text-sm text-gray-900">{getJobTypeLabel(job.jobType)}</div>
         </div>
       </div>
       
@@ -53,7 +48,7 @@ export default function JobDetails({ job }: JobDetailsProps) {
         </div>
         <div>
           <div className="text-xs text-gray-500 font-medium">Posted</div>
-          <div className="font-semibold text-sm text-gray-900">{formatJobPostedDate(job.postedDate)}</div>
+          <div className="font-semibold text-sm text-gray-900">{job.postedDate ? formatJobPostedDate(job.postedDate) : 'Recently'}</div>
         </div>
       </div>
       

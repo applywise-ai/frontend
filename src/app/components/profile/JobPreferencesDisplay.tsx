@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  UserProfile,
   FieldName,
   JOB_TYPE_OPTIONS, 
   LOCATION_TYPE_OPTIONS, 
@@ -12,12 +11,11 @@ import {
 import { DollarSign, Clock, Info, Briefcase, MapPin, Layers, Building, Users } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { getLabelFromValue } from '@/app/utils/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 
-interface JobPreferencesDisplayProps {
-  profile: UserProfile;
-}
+export default function JobPreferencesDisplay() {
+  const { profile } = useProfile();
 
-export default function JobPreferencesDisplay({ profile }: JobPreferencesDisplayProps) {
   // Format salary with commas
   const formatSalary = (salary: number) => {
     return salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

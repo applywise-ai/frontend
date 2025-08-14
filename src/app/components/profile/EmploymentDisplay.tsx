@@ -1,6 +1,7 @@
 'use client';
 
-import { UserProfile, FieldName, Employment } from '@/app/types/profile';
+import { FieldName, Employment } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Calendar, Building, MapPin, PencilIcon, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { useState } from 'react';
@@ -10,18 +11,16 @@ import { useNotification } from '@/app/contexts/NotificationContext';
 import EmploymentForm from './EmploymentForm';
 import EditSectionModal from './EditSectionModal';
 
-interface EmploymentDisplayProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
-
-export default function EmploymentDisplay({ profile, updateProfile }: EmploymentDisplayProps) {
+export default function EmploymentDisplay() {
+  const { profile, updateProfile, saveProfile, refreshProfile } = useProfile();
+  const { showSuccess } = useNotification();
+  
   const [editingIndex, setEditingIndex] = useState<number | undefined>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
-  const employment = profile[FieldName.EMPLOYMENT] as Employment[] || [];
-  const { showSuccess } = useNotification();
 
+  const employment = profile[FieldName.EMPLOYMENT] as Employment[] || [];
+  
   const handleEdit = (index: number) => {
     setEditingIndex(index);
   };
@@ -29,34 +28,16 @@ export default function EmploymentDisplay({ profile, updateProfile }: Employment
   const handleDelete = (index: number) => {
     const updatedEmployment = [...employment];
     updatedEmployment.splice(index, 1);
-    updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployment });
+    updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployment }, true);
     showSuccess('Employment entry deleted successfully!');
   };
   
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Get the new entry from profile
-      const newEntry = profile[FieldName.TEMP_EMPLOYMENT] as Employment;
-          
-      const e = validateEmployment(newEntry);
-      if (Object.keys(e).length > 0) {
-        setErrors(e);
-        setIsSaving(false);
-        return;
-      }
+      // Save the profile
+      await saveProfile();
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const updatedEmployment = [...(profile[FieldName.EMPLOYMENT] || [])];
-      if (editingIndex !== undefined) {
-        // If editing, replace the specific employment entry
-        updatedEmployment[editingIndex] = newEntry;
-      }
-    
-      // Update the profile with the updated employment array
-      updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployment });
       showSuccess('Employment updated successfully!');
       setEditingIndex(undefined);
       setErrors({});
@@ -66,7 +47,7 @@ export default function EmploymentDisplay({ profile, updateProfile }: Employment
   };
 
   const handleClose = () => {
-    updateProfile({ [FieldName.TEMP_EMPLOYMENT]: {} as Employment });
+    refreshProfile();
     setEditingIndex(undefined);
     setErrors({});
   };

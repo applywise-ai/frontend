@@ -1,14 +1,13 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Users, Check, X, Globe, Heart } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 
-interface DemographicsDisplayProps {
-  profile: UserProfile;
-}
-
-export default function DemographicsDisplay({ profile }: DemographicsDisplayProps) {
+export default function DemographicsDisplay() {
+  const { profile } = useProfile();
+  
   const race = profile[FieldName.RACE] as string[] || [];
   const sexuality = profile[FieldName.SEXUALITY] as string[] || [];
 

@@ -15,9 +15,9 @@ import {
   Globe
 } from 'lucide-react';
 import { useNotification } from '@/app/contexts/NotificationContext';
-import { helpService } from '@/app/utils/firebase';
+import { helpService } from '@/app/services/firebase';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { CreateHelpSubmissionData } from '@/app/utils/firebase/help';
+import { CreateHelpSubmissionData } from '@/app/services/firebase/help';
 
 interface ModernHelpModalProps {
   open: boolean;

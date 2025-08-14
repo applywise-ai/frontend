@@ -15,25 +15,21 @@ interface EditSectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  onAdd?: () => void;
   title: string;
   children: ReactNode;
   isSaving?: boolean;
-  sectionId?: string;
+  isAddSection?: boolean;
 }
 
 export default function EditSectionModal({
   isOpen,
   onClose,
   onSave,
-  onAdd,
   title,
   children,
   isSaving = false,
-  sectionId
+  isAddSection
 }: EditSectionModalProps) {
-  const isAddSection = sectionId === FieldName.EMPLOYMENT || sectionId === FieldName.EDUCATION || sectionId === FieldName.PROJECTS;
-  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-white max-h-[90vh] p-0 flex flex-col overflow-hidden" aria-describedby={undefined}>
@@ -56,7 +52,7 @@ export default function EditSectionModal({
             Cancel
           </Button>
           <Button 
-            onClick={isAddSection ? onAdd : onSave} 
+            onClick={onSave} 
             disabled={isSaving}
             className="bg-teal-600 hover:bg-teal-700 text-white px-4"
           >

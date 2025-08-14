@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Loader2, CheckCircle2, LucideIcon, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle2, LucideIcon, Sparkles } from 'lucide-react';
 import { useReviewApplicationModal } from '@/app/contexts/ReviewApplicationModalContext';
 import ProfileCompletionAlert, { ProfileCompletionState } from './profile/ProfileCompletionAlert';
 import { useProfile } from '@/app/contexts/ProfileContext';
 import { useApplications } from '@/app/contexts/ApplicationsContext';
 import { FieldName, UserProfile } from '@/app/types/profile';
-import { FormQuestion } from '@/app/types/application';
+import { NoCreditsModal } from '@/app/components/applications/NoCreditsModal';
+import storageService from '@/app/services/firebase/storage';
+import { useAuth } from '@/app/contexts/AuthContext';
 import {
   Dialog,
   DialogContent,
@@ -16,190 +18,48 @@ import {
   DialogTitle,
 } from "@/app/components/ui/dialog";
 import { getProfileCompletionState } from '@/app/utils/profile';
+import { useRecommender } from '@/app/contexts/RecommenderContext';
 
 interface AnimatedApplyButtonProps {
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   jobId?: string;
+  applicationId?: string;
   buttonText?: string;
   icon?: LucideIcon;
+  onShowSubscriptionModal?: () => void;
 }
-
-// Mock function to get form questions for a job
-const getMockFormQuestions = (): FormQuestion[] => {
-  return [
-    {
-      id: 'fullName',
-      question: 'What is your full name?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter your full name',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'email',
-      question: 'What is your email address?',
-      answer: '',
-      type: 'email',
-      placeholder: 'Enter your email address',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'phone',
-      question: 'What is your phone number?',
-      answer: '',
-      type: 'phone',
-      placeholder: 'Enter your phone number',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'currentCompany',
-      question: 'Where do you currently work?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter your current company',
-      section: 'personal',
-      required: false
-    },
-    {
-      id: 'currentRole',
-      question: 'What is your current job title?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter your current role',
-      section: 'personal',
-      required: false
-    },
-    {
-      id: 'yearsOfExperience',
-      question: 'How many years of experience do you have?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter years of experience',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'desiredSalary',
-      question: 'What is your desired salary?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter desired salary',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'availableStartDate',
-      question: 'When can you start?',
-      answer: '',
-      type: 'date',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'resume',
-      question: 'Upload your resume',
-      answer: '',
-      type: 'file',
-      placeholder: 'Upload PDF, DOCX, or TXT file',
-      section: 'resume',
-      fileType: 'resume',
-      required: true
-    },
-    {
-      id: 'coverLetter',
-      question: 'Upload your cover letter',
-      answer: '',
-      type: 'file',
-      placeholder: 'Upload PDF, DOCX, or TXT file',
-      section: 'coverLetter',
-      fileType: 'coverLetter',
-      required: false
-    },
-    {
-      id: 'whyJoin',
-      question: 'Why do you want to work at our company?',
-      answer: '',
-      type: 'textarea',
-      placeholder: 'Tell us why you want to join our team',
-      section: 'screening',
-      required: true
-    },
-    {
-      id: 'challengingProject',
-      question: 'Describe a challenging project you worked on.',
-      answer: '',
-      type: 'textarea',
-      placeholder: 'Describe your experience',
-      section: 'screening',
-      required: true
-    },
-    {
-      id: 'workEnvironment',
-      question: 'What is your preferred work environment?',
-      answer: '',
-      type: 'select',
-      options: ['Remote', 'In-office', 'Hybrid'],
-      section: 'custom',
-      required: true
-    },
-    {
-      id: 'referredBy',
-      question: 'How did you hear about this position?',
-      answer: '',
-      type: 'text',
-      placeholder: 'LinkedIn, job board, referral, etc.',
-      section: 'custom',
-      required: false
-    },
-    {
-      id: 'relocation',
-      question: 'Are you willing to relocate?',
-      answer: '',
-      type: 'radio',
-      options: ['Yes', 'No', 'Maybe'],
-      section: 'custom',
-      required: false
-    },
-    {
-      id: 'salaryExpectations',
-      question: 'What are your salary expectations?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter your salary range',
-      section: 'custom',
-      required: false
-    }
-  ];
-};
 
 export default function AnimatedApplyButton({ 
   className = '', 
   size = 'md',
   fullWidth = false,
   jobId,
+  applicationId,
   buttonText,
-  icon
+  icon,
+  onShowSubscriptionModal
 }: AnimatedApplyButtonProps) {
   const [state, setState] = useState<'idle' | 'loading' | 'review'>('idle');
   const [profileAlertOpen, setProfileAlertOpen] = useState(false);
+  const [noCreditsModalOpen, setNoCreditsModalOpen] = useState(false);
   const [profileState, setProfileState] = useState<ProfileCompletionState>('complete');
-  const [createdApplicationId, setCreatedApplicationId] = useState<string | null>(null);
+  const [createdApplicationId, setCreatedApplicationId] = useState<string | null>(applicationId || null);
   
   const { profile, isLoading: profileLoading } = useProfile();
   const { applyToJob } = useApplications();
   const { openModal } = useReviewApplicationModal();
-  
-  // Determine if user is pro member
+  const { user } = useAuth();
+  const { removeJobFromRecommendations } = useRecommender();
+
+  // Get AI credits
+  const aiCredits = profile?.[FieldName.AI_CREDITS] || 0;
   const isProMember = profile?.[FieldName.IS_PRO_MEMBER] || false;
   
-  // Set button text and icon based on pro status and props
-  const finalButtonText = buttonText || (isProMember ? 'AI Apply' : 'Quick Apply');
-  const FinalIcon = icon || (isProMember ? Sparkles : Zap);
+  // Always show AI Apply, but check credits
+  const finalButtonText = buttonText || 'AI Apply';
+  const FinalIcon = icon || Sparkles;
 
   const checkProfileCompletion = async () => {
     return getProfileCompletionState(profile as UserProfile);
@@ -208,6 +68,13 @@ export default function AnimatedApplyButton({
   const handleClick = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (state !== 'idle') return;
+    
+    // Check if user has AI credits (unless they're a pro member)
+    if (!isProMember && aiCredits === 0) {
+      setNoCreditsModalOpen(true);
+      return;
+    }
+    
     setState('loading');
     
     try {
@@ -231,18 +98,43 @@ export default function AnimatedApplyButton({
         }
         // If ignoring partial alerts, continue with application creation
       }
+
+      // For pro members, show cover letter generation first
+      if (isProMember && jobId) {
+        setState('review');
+        
+        // Check if a cover letter already exists for this application
+        let coverLetterUrl: string | null = null;
+        
+        if (createdApplicationId && user) {
+          try {
+            coverLetterUrl = await storageService.getDownloadUrl('cover-letters', user.uid, createdApplicationId);
+          } catch (error) {
+            console.error('Error checking cover letter existence:', error);
+            // Continue with cover letter generation if check fails
+          }
+        }
+        
+        openModal({
+          applicationId: createdApplicationId || undefined,
+          jobId,
+          status: coverLetterUrl ? 'cover_letter_generated' : 'cover_letter',
+          coverLetterUrl: coverLetterUrl || undefined,
+          onSubmit: () => setState('idle'),
+        });
+        return;
+      }
       
       // If profile is complete, apply to job with form questions
       if (jobId) {
-        const formQuestions = getMockFormQuestions();
         try {
-          const applicationId = await applyToJob(jobId, formQuestions);
-          setCreatedApplicationId(applicationId);
+          const appliedId = await handleApply(jobId);
           
           setState('review');
           openModal({
-            applicationId,
+            applicationId: appliedId,
             jobId,
+            status: 'applying',
             onSubmit: () => setState('idle'),
           });
         } catch (applyError) {
@@ -255,6 +147,7 @@ export default function AnimatedApplyButton({
         openModal({
           applicationId: createdApplicationId || undefined,
           jobId,
+          status: 'applying',
           onSubmit: () => setState('idle'),
         });
       }
@@ -263,6 +156,21 @@ export default function AnimatedApplyButton({
       setState('idle');
     }
   };
+
+  const handleApply = async (jobId: string | undefined) => {
+    if (!jobId) return;
+    
+    setState('loading');
+    try {
+      const applicationId = await applyToJob(jobId);
+      setCreatedApplicationId(applicationId);
+      removeJobFromRecommendations(jobId);
+      return applicationId;
+    } catch (error) {
+      console.error('Error in apply:', error);
+      setState('idle');
+    }
+  }
 
   const handleReviewClick = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -275,20 +183,18 @@ export default function AnimatedApplyButton({
 
   const handleContinueAnyway = async () => {
     setProfileAlertOpen(false);
-    setState('loading');
     
     try {
       // Apply to job even with incomplete profile
       if (jobId) {
-        const formQuestions = getMockFormQuestions();
         try {
-          const applicationId = await applyToJob(jobId, formQuestions);
-          setCreatedApplicationId(applicationId);
+          const applicationId = await handleApply(jobId);
           
           setState('review');
           openModal({
             applicationId,
             jobId,
+            status: 'applying',
             onSubmit: () => setState('idle'),
           });
         } catch (applyError) {
@@ -301,6 +207,7 @@ export default function AnimatedApplyButton({
         openModal({
           applicationId: createdApplicationId || undefined,
           jobId,
+          status: 'applying',
           onSubmit: () => setState('idle'),
         });
       }
@@ -412,6 +319,15 @@ export default function AnimatedApplyButton({
           </div>
         </DialogContent>
       </Dialog>
+
+      <NoCreditsModal
+        isOpen={noCreditsModalOpen}
+        onClose={() => setNoCreditsModalOpen(false)}
+        onUpgrade={() => {
+          setNoCreditsModalOpen(false);
+          onShowSubscriptionModal?.();
+        }}
+      />
     </>
   );
 } 

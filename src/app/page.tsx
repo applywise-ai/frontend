@@ -361,6 +361,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials Carousel */}
+      {/*
       <section className="py-20 sm:py-32 px-4 sm:px-8 md:px-24 bg-gradient-to-br from-gray-800 to-gray-900">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
@@ -402,8 +403,7 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Testimonial Navigation */}
+      
             <div className="flex justify-center mt-6 sm:mt-8 gap-3">
               {testimonials.map((_, index) => (
                 <button
@@ -417,16 +417,15 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
-
+      </section> */}
       {/* Pricing Teaser */}
-      <section className="py-20 sm:py-32 px-4 sm:px-8 md:px-24 bg-gray-900">
+      <section className="py-20 sm:py-32 px-4 sm:px-8 md:px-24 bg-gradient-to-br from-gray-800 to-gray-900">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
             Start Free, Upgrade When Ready
           </h2>
           <p className="text-gray-400 text-lg sm:text-xl mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
-            Get started with limited AI applications. See the results, then unlock unlimited power.
+            Get started with some AI applications. See the results, then unlock unlimited power.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
@@ -438,15 +437,15 @@ export default function Home() {
                 <ul className="space-y-2 sm:space-y-3 text-left">
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-                    Limited AI applications
-                  </li>
-                  <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
-                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
                     Unlimited job browsing
                   </li>
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-                    Unlimited quick applies
+                    Advanced job matching
+                  </li>
+                  <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+                    Limited AI applications
                   </li>
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
@@ -480,11 +479,11 @@ export default function Home() {
                   </li>
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-                    Advanced analytics
+                    Unlimited personalized responses
                   </li>
                   <li className="flex items-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base">
                     <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-                    Priority support
+                    Smarter AI-generated answers
                   </li>
                 </ul>
               </CardContent>

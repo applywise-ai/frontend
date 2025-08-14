@@ -138,7 +138,7 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 <p className="text-sm text-gray-600 truncate">{displayCompany}</p>
                 <div className="mt-2 flex items-center space-x-2">
                   {unmodifiable(effectiveStatus) ? (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(effectiveStatus)}`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(effectiveStatus)}`}>
                     {effectiveStatus}
                   </span>
                 ) : (
@@ -168,9 +168,9 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
         </div>
         
         <div className="border-t border-gray-300 px-4 py-3 bg-gray-50 flex justify-end space-x-2">
-          {isJobExpired ? (
+          {isJobExpired || (effectiveStatus as string) === 'Not Found' ? (
             // No buttons for expired job postings
-            <div className="text-xs text-gray-500">Job posting has expired</div>
+            <div className="flex items-center py-1.5 text-sm text-gray-500 ">Job posting has expired</div>
           ) : effectiveStatus === 'Draft' ? (
             <>
               <DeleteApplicationDialog
@@ -181,12 +181,13 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 buttonText="Delete"
                 size="sm"
                 redirectTo="/applications"
+                className="w-24"
               />
               <Link href={`/applications/${id}/edit`} scroll={false} passHref onClick={() => setIsEditing(true)}>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-3 text-blue-600 hover:text-blue-700 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+                  className="h-8 px-4 w-24 text-blue-600 hover:text-blue-700 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
                   disabled={isEditing}
                 >
                   {isEditing ? (
@@ -198,12 +199,72 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 </Button>
               </Link>
             </>
-          ) :  effectiveStatus !== 'Saved' && (
-            <Link href={`/applications/${id}/submitted`} passHref onClick={() => setIsViewing(true)}>
+          ) : effectiveStatus === 'Pending' ? (
+            <>
+              <DeleteApplicationDialog
+                applicationId={id}
+                jobTitle={displayTitle}
+                companyName={displayCompany}
+                variant="button"
+                buttonText="Delete"
+                size="sm"
+                redirectTo="/applications"
+                className="w-24"
+              />
+              <AnimatedApplyButton
+                jobId={jobId}
+                applicationId={id}
+                buttonText="Review"
+                size="xs"
+                className="w-24"
+              />
+            </>
+          ) : effectiveStatus === 'Failed' ? (
+            <>
+              <DeleteApplicationDialog
+                applicationId={id}
+                jobTitle={displayTitle}
+                companyName={displayCompany}
+                variant="button"
+                buttonText="Delete"
+                size="sm"
+                redirectTo="/applications"
+                className="w-24"
+              />
+              <AnimatedApplyButton
+                jobId={jobId}
+                applicationId={id}
+                buttonText="Apply"
+                size="xs"
+                className="w-24"
+              />
+            </>
+          ) : (effectiveStatus as string) === 'Not Found' ? (
+            <>
+              <DeleteApplicationDialog
+                applicationId={id}
+                jobTitle={displayTitle}
+                companyName={displayCompany}
+                variant="button"
+                buttonText="Delete"
+                size="sm"
+                redirectTo="/applications"
+                className="w-24"
+              />
+              <AnimatedApplyButton
+                jobId={jobId}
+                applicationId={id}
+                buttonText="Apply"
+                size="xs"
+                className="w-24"
+              />
+            </>
+          ) : effectiveStatus !== 'Saved' && (
+            <Link href={`/applications/${id}/view`} passHref onClick={() => setIsViewing(true)}>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 text-teal-600 hover:text-teal-700 border-teal-300 hover:bg-teal-50 hover:border-teal-400"
+                className="h-8 px-4 w-24 text-teal-600 hover:text-teal-700 border-teal-300 hover:bg-teal-50 hover:border-teal-400"
                 disabled={isViewing}
               >
                 {isViewing ? (
@@ -232,8 +293,10 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
               </Button>
               <AnimatedApplyButton
                 jobId={jobId}
+                applicationId={id}
                 buttonText="Apply"
                 size="xs"
+                className="w-24"
               />
             </div>
         </div>

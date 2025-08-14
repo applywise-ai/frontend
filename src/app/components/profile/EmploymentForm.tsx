@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserProfile, FieldName, Employment } from '@/app/types/profile';
+import { FieldName, Employment } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
@@ -11,8 +12,6 @@ import { Building, CalendarIcon, Briefcase, MapPin, FileText } from 'lucide-reac
 import { Card, CardContent } from '@/app/components/ui/card';
 
 interface EmploymentFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
   editingIndex?: number;
   errors?: Partial<Record<string, string>>;
   setErrors?: (errors: Partial<Record<string, string>>) => void;
@@ -20,33 +19,30 @@ interface EmploymentFormProps {
 
 export default function EmploymentForm({ 
   editingIndex,
-  profile,
-  updateProfile,
   errors,
   setErrors
 }: EmploymentFormProps) {
-  const emptyEmployment: Employment = {
-    [FieldName.COMPANY]: '',
-    [FieldName.POSITION]: '',
-    [FieldName.EMPLOYMENT_FROM]: '',
-    [FieldName.EMPLOYMENT_TO]: '',
-    [FieldName.EMPLOYMENT_DESCRIPTION]: '',
-    [FieldName.EMPLOYMENT_LOCATION]: '',
-  };
+  const { profile, updateProfile } = useProfile();
   
-  const [employment, setEmployment] = useState<Employment>(
-    editingIndex !== undefined && profile[FieldName.EMPLOYMENT] ? profile[FieldName.EMPLOYMENT][editingIndex] : emptyEmployment
-  );
+  const [employment, setEmployment] = useState<Employment | null>(null);
+  const employments = profile[FieldName.EMPLOYMENT] || [];
 
   useEffect(() => {
-    updateProfile({[FieldName.TEMP_EMPLOYMENT]: employment});
-  }, []);
+    if (Object.keys(profile).length === 0) return;
+
+    let index = editingIndex;
+    if (index === null || index === undefined) {
+      index = employments.length - 1;
+    }
+    setEmployment(employments[index]);
+  }, [profile]);
 
   const handleEmploymentChange = (field: keyof Employment, value: string) => {
     const updatedEmployment = {
       ...employment,
       [field]: value
     };
+    
     setEmployment(updatedEmployment);
 
     // Clear error when field is updated
@@ -56,18 +52,14 @@ export default function EmploymentForm({
       setErrors(newErrors);
     }
 
-    // Update temporary employment in profile
-    const tempEmployment = {
-      [FieldName.TEMP_EMPLOYMENT]: {
-        [FieldName.COMPANY]: updatedEmployment[FieldName.COMPANY],
-        [FieldName.POSITION]: updatedEmployment[FieldName.POSITION],
-        [FieldName.EMPLOYMENT_FROM]: updatedEmployment[FieldName.EMPLOYMENT_FROM],
-        [FieldName.EMPLOYMENT_TO]: updatedEmployment[FieldName.EMPLOYMENT_TO],
-        [FieldName.EMPLOYMENT_DESCRIPTION]: updatedEmployment[FieldName.EMPLOYMENT_DESCRIPTION],
-        [FieldName.EMPLOYMENT_LOCATION]: updatedEmployment[FieldName.EMPLOYMENT_LOCATION]
-      }
-    };
-    updateProfile(tempEmployment);
+    let index = editingIndex;
+    if (index === null || index === undefined) {
+      index = employments.length - 1;
+    }
+    const updatedEmployments = [...employments];
+    updatedEmployments[index] = updatedEmployment;
+    // Update the index of the employment
+    updateProfile({ [FieldName.EMPLOYMENT]: updatedEmployments });
   };
 
   const parseDate = (dateStr: string | undefined): Date | undefined => {
@@ -84,6 +76,8 @@ export default function EmploymentForm({
     return format(date, 'MM/yyyy');
   };
   const getFieldError = (field: keyof Employment) => errors?.[field];
+
+  if (!employment) return;
 
   return (
     <div className="space-y-6">

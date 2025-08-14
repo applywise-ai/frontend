@@ -8,4 +8,6 @@ export { default as JobResponsibilitiesQualifications } from './JobResponsibilit
 export { default as JobRecommendationReason } from './JobRecommendationReason';
 export { default as JobFeedback } from './JobFeedback';
 export { default as JobCard } from './JobCard';
-export { default as JobCarousel } from './JobCarousel'; 
+export { default as JobCarousel } from './JobCarousel';
+export { default as EmptyRecommendationsState } from './EmptyRecommendationsState';
+export { default as IncompleteProfileState } from './IncompleteProfileState'; 

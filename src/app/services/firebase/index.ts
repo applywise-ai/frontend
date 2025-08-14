@@ -3,7 +3,6 @@ import profileService from './profile';
 import storageService from './storage';
 import helpService from './help';
 import applicationsService from './applications';
-import jobsService from './jobs';
 import { auth, db, storage } from './config';
  
 export { 
@@ -12,7 +11,6 @@ export {
   storageService,
   helpService,
   applicationsService,
-  jobsService,
   auth,
   db,
   storage

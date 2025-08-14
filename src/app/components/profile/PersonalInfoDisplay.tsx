@@ -1,6 +1,7 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { 
   User, 
   Mail, 
@@ -8,11 +9,11 @@ import {
   MapPin
 } from 'lucide-react';
 
-interface PersonalInfoDisplayProps {
-  profile: UserProfile;
-}
-
-export default function PersonalInfoDisplay({ profile }: PersonalInfoDisplayProps) {
+export default function PersonalInfoDisplay() {
+  const { profile } = useProfile();
+  
+  
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="flex items-start">

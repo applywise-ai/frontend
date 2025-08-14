@@ -37,7 +37,7 @@ export default function SubscriptionCard({
             
             <div className="flex-1">
               <h3 className="text-base font-semibold text-gray-900 mb-1">
-                {aiCredits === 0 ? 'Get 3.2x More Interviews' : `${aiCredits} AI Applies Left`}
+                {aiCredits === 0 ? 'Get 3.2x More Interviews' : `${aiCredits} AI Applications Left Today`}
               </h3>
               <p className="text-xs text-gray-600">
                 {aiCredits === 0 
@@ -79,7 +79,7 @@ export default function SubscriptionCard({
                 onClick={onUpgrade}
                 className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
               >
-                {aiCredits === 0 ? 'Unlock AI Applies' : 'Upgrade to Pro'}
+                {aiCredits === 0 ? 'Unlock AI Applications' : 'Upgrade to Pro'}
               </button>
             )}
           </div>

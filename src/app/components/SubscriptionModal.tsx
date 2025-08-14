@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/componen
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
-import { Check, Zap, Target, FileText, Calendar, Bot, Loader2, AlertCircle, X, Star } from 'lucide-react';
+import { Check, Zap, Target, FileText, Calendar, Bot, Loader2, AlertCircle, X, Star, User } from 'lucide-react';
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -155,18 +155,18 @@ const plans: PlanConfig[] = [
 
 const freeFeatures: Feature[] = [
   { text: 'Access to all jobs', icon: Target },
-  { text: '5 AI applies total', icon: Bot },
-  { text: 'Unlimited job matches', icon: Target },
-  { text: 'Unlimited 1-click quick applies', icon: Zap },
-  { text: 'Application tracking', icon: FileText },
+  { text: '10 AI applications per day', icon: Bot },
+  { text: 'Advanced job matching', icon: Target },
+  { text: 'Unlimited application tracking', icon: FileText },
+  { text: 'Basic application management', icon: Target },
 ];
 
 const proFeatures: Feature[] = [
   { text: 'Everything in Free', icon: Check },
-  { text: 'Unlimited AI applies with custom-generated answers', icon: Bot, highlight: true },
+  { text: 'Unlimited AI applications', icon: Bot, highlight: true },
+  { text: 'Smarter AI-generated answers', icon: Target, highlight: true },
   { text: 'Unlimited personalized cover letters', icon: FileText, highlight: true },
-  { text: 'Unlimited tailored resumes', icon: FileText, comingSoon: true },
-  { text: 'Auto-apply scheduling', icon: Calendar, comingSoon: true },
+  { text: 'Unlimited tailored resumes', icon: User, comingSoon: true },
 ];
 
 // Reviews Carousel Component
@@ -395,7 +395,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
           </div>
 
           {/* Reviews Carousel Section */}
-          <ReviewsCarousel />
+          {/* <ReviewsCarousel /> */}
 
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-10 md:gap-4 md:pt-3">

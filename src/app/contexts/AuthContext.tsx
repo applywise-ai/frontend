@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User } from 'firebase/auth';
-import { authService } from '@/app/utils/firebase';
+import { authService } from '@/app/services/firebase';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -31,6 +31,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('AuthProvider: Checking authentication status');
       const currentUser = await authService.isLoggedIn();
       setUser(currentUser);
+      // console.log('token', await currentUser?.getIdToken());
       console.log('AuthProvider: User authenticated:', currentUser ? `${currentUser.uid} (${currentUser.email})` : 'No user');
     } catch (error) {
       console.error('AuthProvider: Error checking authentication:', error);

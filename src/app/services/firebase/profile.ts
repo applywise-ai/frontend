@@ -56,7 +56,7 @@ class ProfileService {
         ignorePartialProfileAlert: false,
         // Default subscription status
         isProMember: false,
-        aiCredits: 5,
+        aiCredits: 10,
         // Default source
         source: 'Applywise',
         // Initialize job feedback arrays

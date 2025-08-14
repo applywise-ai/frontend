@@ -1,18 +1,17 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Mail, Phone, User, Info } from 'lucide-react';
 import LocationSearch from '@/app/components/profile/LocationSearch';
 
-interface PersonalInfoFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
-
-export default function PersonalInfoForm({ profile, updateProfile }: PersonalInfoFormProps) {
+export default function PersonalInfoForm() {
+  const { profile, updateProfile } = useProfile();
+  
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     updateProfile({ [name]: value });

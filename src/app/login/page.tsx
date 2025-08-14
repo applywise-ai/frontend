@@ -60,7 +60,7 @@ export default function Login() {
     try {
       // For now, we'll import authService directly for Google auth
       // TODO: Add Google auth to AuthContext
-      const { authService } = await import('@/app/utils/firebase');
+      const { authService } = await import('@/app/services/firebase');
     const result = await authService.googleAuth();
     
     if ('error' in result) {

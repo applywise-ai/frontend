@@ -26,7 +26,7 @@ import * as PC from '@/app/components/profile';
 import { ProfilePageSkeleton } from '@/app/components/loading/ProfilePageSkeleton';
 
 function ProfilePageContent() {
-  const { profile, isLoading, updateProfile } = useProfile();
+  const { profile, isLoading } = useProfile();
   const [activeSection, setActiveSection] = useState('personal');
   const [profileState, setProfileState] = useState<ProfileCompletionState>('incomplete');
   
@@ -287,7 +287,7 @@ function ProfilePageContent() {
 
               {/* Resume Section */}
               <div ref={sectionRefs.resume} id="resume">
-                <PC.ProfileSectionResume profile={profile} updateProfile={updateProfile} />
+                <PC.ProfileSectionResume />
               </div>
               
               <div ref={sectionRefs.personal} id="personal">
@@ -295,10 +295,8 @@ function ProfilePageContent() {
                   id="personal"
                   title="Personal Information"
                   icon={<User size={24} />}
-                  displayContent={<PC.PersonalInfoDisplay profile={profile} />}
-                  editContent={<PC.PersonalInfoForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.PersonalInfoDisplay />}
+                  editContent={<PC.PersonalInfoForm />}
                 />
               </div>
 
@@ -307,10 +305,8 @@ function ProfilePageContent() {
                   id="education"
                   title="Education"
                   icon={<GraduationCap size={24} />}
-                  displayContent={<PC.EducationDisplay profile={profile} updateProfile={updateProfile} />}
-                  editContent={<PC.EducationForm profile={profile} updateProfile={updateProfile} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.EducationDisplay />}
+                  editContent={<PC.EducationForm />}
                 />
               </div>
 
@@ -319,10 +315,8 @@ function ProfilePageContent() {
                   id="employment"
                   title="Employment History"
                   icon={<Building size={24} />}
-                  displayContent={<PC.EmploymentDisplay profile={profile} updateProfile={updateProfile} />}
-                  editContent={<PC.EmploymentForm profile={profile} updateProfile={updateProfile} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.EmploymentDisplay />}
+                  editContent={<PC.EmploymentForm />}
                 />
               </div>
 
@@ -331,10 +325,8 @@ function ProfilePageContent() {
                   id="projects"
                   title="Projects"
                   icon={<Code2 size={24} />}
-                  displayContent={<PC.ProjectDisplay profile={profile} updateProfile={updateProfile} />}
-                  editContent={<PC.ProjectForm profile={profile} updateProfile={updateProfile} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.ProjectDisplay />}
+                  editContent={<PC.ProjectForm />}
                 />
               </div>
 
@@ -343,10 +335,8 @@ function ProfilePageContent() {
                   id="skills"
                   title="Skills"
                   icon={<Code size={24} />}
-                  displayContent={<PC.SkillsDisplay profile={profile} />}
-                  editContent={<PC.SkillsForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.SkillsDisplay />}
+                  editContent={<PC.SkillsForm />}
                 />
               </div>
 
@@ -355,10 +345,8 @@ function ProfilePageContent() {
                   id="social"
                   title="Social Links"
                   icon={<LinkIcon size={24} />}
-                  displayContent={<PC.SocialLinksDisplay profile={profile} />}
-                  editContent={<PC.SocialLinksForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.SocialLinksDisplay />}
+                  editContent={<PC.SocialLinksForm />}
                 />
               </div>
 
@@ -367,10 +355,8 @@ function ProfilePageContent() {
                   id="preferences"
                   title="Job Preferences"
                   icon={<Briefcase size={24} />}
-                  displayContent={<PC.JobPreferencesDisplay profile={profile} />}
-                  editContent={<PC.JobPreferencesForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.JobPreferencesDisplay />}
+                  editContent={<PC.JobPreferencesForm />}
                 />
               </div>
 
@@ -379,10 +365,8 @@ function ProfilePageContent() {
                   id="eligibility"
                   title="Work Eligibility"
                   icon={<Globe size={24} />}
-                  displayContent={<PC.WorkEligibilityDisplay profile={profile} />}
-                  editContent={<PC.WorkEligibilityForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.WorkEligibilityDisplay />}
+                  editContent={<PC.WorkEligibilityForm />}
                 />
               </div>
 
@@ -391,10 +375,8 @@ function ProfilePageContent() {
                   id="demographics"
                   title="Demographics"
                   icon={<Users size={24} />}
-                  displayContent={<PC.DemographicsDisplay profile={profile} />}
-                  editContent={<PC.DemographicsForm profile={profile} updateProfile={() => {}} />}
-                  profile={profile}
-                  updateProfile={updateProfile}
+                  displayContent={<PC.DemographicsDisplay />}
+                  editContent={<PC.DemographicsForm />}
                 />
               </div>
             </div>

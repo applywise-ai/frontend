@@ -1,10 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { Job } from '@/app/types/job';
+import { Job, RELATED_SPECIALIZATIONS_MAP, INDUSTRY_SPECIALIZATION_OPTIONS, JOB_TYPE_OPTIONS, LOCATION_TYPE_OPTIONS } from '@/app/types/job';
 import { UserProfile } from '@/app/types/profile';
-import { useJobs } from '@/app/contexts/JobsContext';
 import { useProfile } from '@/app/contexts/ProfileContext';
+import jobsService from '@/app/services/api/jobs';
+import { useApplications } from '@/app/contexts/ApplicationsContext';
 
 // New type for jobs with scores
 export interface JobWithScore {
@@ -15,8 +16,11 @@ export interface JobWithScore {
 interface RecommenderContextType {
   recommendedJobs: JobWithScore[];
   isLoading: boolean;
+  fetchedJobs: boolean;
   refreshRecommendations: () => Promise<void>;
   calculateJobScore: (job: Job, userProfile: UserProfile) => number;
+  generateRecommendationReasons: (job: Job, userProfile: UserProfile) => string[];
+  removeJobFromRecommendations: (jobId: string) => void;
 }
 
 const RecommenderContext = createContext<RecommenderContextType | undefined>(undefined);
@@ -26,122 +30,88 @@ interface RecommenderProviderProps {
 }
 
 export function RecommenderProvider({ children }: RecommenderProviderProps) {
-  const { allJobs, fetchInitialJobs } = useJobs();
   const { profile } = useProfile();
+  const { applications } = useApplications();
   const [recommendedJobs, setRecommendedJobs] = useState<JobWithScore[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchedJobs, setFetchedJobs] = useState(false);
 
-  // Scoring weights (totaling 84 for base scoring, plus up to 16 bonus points = max 100)
+  // Scoring weights (totaling 100 points)
   const WEIGHTS = {
-    ROLE_LEVEL: 30,        // Highest priority - role level match
-    SPECIALIZATION: 25,    // Second priority - field specialization
-    SALARY: 12,           // Third priority - salary expectations (reduced from 20)
-    LOCATION: 7,          // Fourth priority - location preferences (reduced from 15)
-    SKILLS: 10            // Fifth priority - skills match
-    // BONUS: up to 16 points (8 for today, 6 for 2 days, 4 for 5 days, 2 for week, 5 for sponsorship, 3 for verified)
+    SPECIALIZATION: 35,    // Highest priority - specialization match (direct or related)
+    JOB_TYPE: 25,         // Second priority - job type preferences
+    SKILLS: 25,           // Third priority - skills match
+    LOCATION: 10,         // Fourth priority - location preferences
+    POSTING_DATE: 5       // Fifth priority - recent postings (reduced since all jobs are recent)
   };
 
   const calculateJobScore = (job: Job, userProfile: UserProfile): number => {
     let score = 0;
 
-    // 1. ROLE LEVEL SCORING (30 points max)
-    if (userProfile.roleLevel && job.experienceLevel) {
-      const userLevel = userProfile.roleLevel.toLowerCase();
-      const jobLevel = job.experienceLevel.toLowerCase();
-      
-      if (userLevel === jobLevel) {
-        score += WEIGHTS.ROLE_LEVEL; // Perfect match
-      } else {
-        // Partial scoring for adjacent levels
-        const levelHierarchy = ['entry', 'junior', 'mid', 'senior', 'lead', 'principal'];
-        const userIndex = levelHierarchy.indexOf(userLevel);
-        const jobIndex = levelHierarchy.indexOf(jobLevel);
-        
-        if (userIndex !== -1 && jobIndex !== -1) {
-          const levelDiff = Math.abs(userIndex - jobIndex);
-          if (levelDiff === 1) {
-            score += WEIGHTS.ROLE_LEVEL * 0.7; // Adjacent level
-          } else if (levelDiff === 2) {
-            score += WEIGHTS.ROLE_LEVEL * 0.4; // Two levels apart
-          }
-          // More than 2 levels apart gets 0 points
-        }
-      }
-    }
-
-    // 2. SPECIALIZATION SCORING (25 points max)
+    // 1. SPECIALIZATION SCORING (25 points max)
     if (userProfile.industrySpecializations && userProfile.industrySpecializations.length > 0 && job.specialization) {
       const userSpecs = userProfile.industrySpecializations.map(spec => spec.toLowerCase());
       const jobSpec = job.specialization.toLowerCase();
       
       if (userSpecs.includes(jobSpec)) {
-        score += WEIGHTS.SPECIALIZATION; // Perfect match
+        score += WEIGHTS.SPECIALIZATION; // Direct match - full points
       } else {
-        // Related specializations scoring
+        // Check for related specializations using the map
         const hasRelatedSpec = userSpecs.some(userSpec => {
-          const relatedSpecs = getRelatedSpecializations(userSpec);
-          return relatedSpecs.includes(jobSpec);
+          const relatedSpecs = RELATED_SPECIALIZATIONS_MAP[userSpec as keyof typeof RELATED_SPECIALIZATIONS_MAP] || [];
+          return relatedSpecs.some(relatedSpec => relatedSpec === jobSpec);
         });
         if (hasRelatedSpec) {
-          score += WEIGHTS.SPECIALIZATION * 0.6; // Related field
+          score += WEIGHTS.SPECIALIZATION * 0.6; // Related field - 60% points
         }
       }
     }
 
-    // 3. SALARY SCORING (20 points max)
-    if (userProfile.expectedSalary && job.salaryValue) {
-      const userSalary = userProfile.expectedSalary;
-      const jobSalary = job.salaryValue;
+    // 2. JOB TYPE SCORING (20 points max)
+    if (userProfile.jobTypes && userProfile.jobTypes.length > 0 && job.jobType) {
+      const userJobTypes = userProfile.jobTypes.map((type: string) => type.toLowerCase());
+      const jobType = job.jobType.toLowerCase();
       
-      if (jobSalary >= userSalary) {
-        // Job pays at or above expectation
-        const salaryRatio = Math.min(jobSalary / userSalary, 1.5); // Cap at 1.5x
-        score += WEIGHTS.SALARY * Math.min(salaryRatio, 1);
+      if (userJobTypes.includes(jobType)) {
+        score += WEIGHTS.JOB_TYPE; // Perfect match
       } else {
-        // Job pays below expectation
-        const salaryRatio = jobSalary / userSalary;
-        if (salaryRatio >= 0.8) {
-          score += WEIGHTS.SALARY * 0.8; // Within 20% of expectation
-        } else if (salaryRatio >= 0.6) {
-          score += WEIGHTS.SALARY * 0.5; // Within 40% of expectation
+        // Partial scoring for related job types
+        if (jobType === 'fulltime' && userJobTypes.includes('parttime')) {
+          score += WEIGHTS.JOB_TYPE * 0.7; // Part-time preference but full-time job
+        } else if (jobType === 'parttime' && userJobTypes.includes('fulltime')) {
+          score += WEIGHTS.JOB_TYPE * 0.8; // Full-time preference but part-time job
+        } else {
+          score += WEIGHTS.JOB_TYPE * 0.5; // Partial match
         }
-        // Below 60% gets 0 points
       }
     }
 
-    // 4. LOCATION SCORING (7 points max)
-    if (userProfile.locationPreferences && userProfile.locationPreferences.length > 0 && job.location) {
-      const jobLocation = job.location.toLowerCase();
-      let locationScore = 0;
+    // 3. COMPANY SIZE SCORING (15 points max) - Skip for now since Job doesn't have companySize
+    // TODO: Add companySize to Job interface when backend provides it
+
+    // 4. POSTING DATE SCORING (5 points max) - All jobs are within 7 days
+    if (job.postedDate) {
+      const posted = new Date(job.postedDate.toString());
+      const now = new Date();
+      const diffTime = now.getTime() - posted.getTime();
+      const daysAgo = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
-      // Remote is always preferred and gets full points
-      if (jobLocation.includes('remote')) {
-        locationScore = WEIGHTS.LOCATION;
-      } else {
-        // Check each preferred location for matches
-        for (const preferredLocation of userProfile.locationPreferences) {
-          const userLocation = preferredLocation.toLowerCase();
-          
-          if (userLocation === jobLocation) {
-            locationScore = Math.max(locationScore, WEIGHTS.LOCATION); // Exact match
-          } else if (jobLocation.includes(userLocation) || userLocation.includes(jobLocation)) {
-            locationScore = Math.max(locationScore, WEIGHTS.LOCATION * 0.7); // Partial match
-          }
-        }
-        
-        // Hybrid gets some points if no other matches
-        if (locationScore === 0 && jobLocation.includes('hybrid')) {
-          locationScore = WEIGHTS.LOCATION * 0.5;
-        }
+      if (daysAgo <= 0) {
+        score += WEIGHTS.POSTING_DATE; // Posted today - full points
+      } else if (daysAgo <= 1) {
+        score += WEIGHTS.POSTING_DATE * 0.8; // Posted yesterday
+      } else if (daysAgo <= 3) {
+        score += WEIGHTS.POSTING_DATE * 0.6; // Posted in past 3 days
+      } else if (daysAgo <= 7) {
+        score += WEIGHTS.POSTING_DATE * 0.4; // Posted within a week
       }
-      
-      score += locationScore;
+      // All jobs should be within 7 days, so no older scoring needed
     }
 
-    // 5. SKILLS SCORING (10 points max)
-    if (userProfile.skills && userProfile.skills.length > 0 && job.tags) {
-      const userSkills = userProfile.skills.map(skill => skill.toLowerCase());
-      const jobSkills = job.tags.map(tag => tag.toLowerCase());
+    // 5. SKILLS SCORING (15 points max)
+    if (userProfile.skills && userProfile.skills.length > 0 && job.skills) {
+      const userSkills = userProfile.skills.map((skill: string) => skill.toLowerCase());
+      const jobSkills = job.skills.map((skill: string) => skill.toLowerCase());
       
       const matchingSkills = userSkills.filter(skill => 
         jobSkills.some(jobSkill => 
@@ -155,79 +125,179 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
       }
     }
 
-    // BONUS FACTORS (up to 16 additional points - heavily weighted toward recent postings)
-    // Base score: 84 points max + Bonus: 16 points max = Total: 100 points max
-    let bonus = 0;
-
-    // Verified companies bonus
-    if (job.isVerified) {
-      bonus += 3;
+    // 6. LOCATION SCORING (5 points max)
+    if (userProfile.locationPreferences && userProfile.locationPreferences.length > 0 && job.location) {
+      const jobLocation = job.location.toLowerCase();
+      let locationScore = 0;
+      
+      // Remote is always preferred and gets full points
+      if (job.isRemote) {
+        locationScore = WEIGHTS.LOCATION;
+      } else {
+        // Check each preferred location for matches
+        for (const preferredLocation of userProfile.locationPreferences) {
+          const userLocation = preferredLocation.toLowerCase();
+          
+          if (userLocation === jobLocation) {
+            locationScore = Math.max(locationScore, WEIGHTS.LOCATION); // Exact match
+          } else if (jobLocation.includes(userLocation) || userLocation.includes(jobLocation)) {
+            locationScore = Math.max(locationScore, WEIGHTS.LOCATION * 0.7); // Partial match
+          }
+        }
+      }
+      
+      score += locationScore;
     }
 
-    // Sponsorship bonus (if user needs it)
-    if (userProfile.usSponsorship && job.providesSponsorship) {
-      bonus += 5;
-    }
+    return Math.min(score, 100); // Cap at 100
+  };
 
-    // Recent posting bonus - heavily prioritize recent jobs
+  // Helper functions to get labels from values
+  const getSpecializationLabel = (value: string): string => {
+    const option = INDUSTRY_SPECIALIZATION_OPTIONS.find(opt => opt.value === value);
+    return option?.label || value;
+  };
+
+  const getJobTypeLabel = (value: string): string => {
+    const option = JOB_TYPE_OPTIONS.find(opt => opt.value === value);
+    return option?.label || value;
+  };
+
+  const getLocationLabel = (value: string): string => {
+    const option = LOCATION_TYPE_OPTIONS.find(opt => opt.value === value);
+    return option?.label || value;
+  };
+
+  // Function to generate descriptive recommendation reasons based on scoring
+  const generateRecommendationReasons = (job: Job, userProfile: UserProfile): string[] => {
+    const reasons: string[] = [];
+    
+    // 1. Experience level match
+    if (userProfile.roleLevel && job.experienceLevel) {
+      const userLevel = userProfile.roleLevel.toLowerCase();
+      const jobLevel = job.experienceLevel.toLowerCase();
+      
+      if (userLevel === jobLevel) {
+        reasons.push(`Perfect match for your ${userProfile.roleLevel} experience level`);
+      } else {
+        // Check for adjacent levels
+        const levels = ['internship', 'entry', 'associate', 'mid-senior', 'director', 'executive'];
+        const userIndex = levels.indexOf(userLevel);
+        const jobIndex = levels.indexOf(jobLevel);
+        
+        if (userIndex !== -1 && jobIndex !== -1) {
+          const levelDiff = Math.abs(userIndex - jobIndex);
+          if (levelDiff === 1) {
+            reasons.push(`Adjacent experience level - ${job.experienceLevel} role (you're ${userProfile.roleLevel})`);
+          } else if (levelDiff === 2) {
+            reasons.push(`Related experience level - ${job.experienceLevel} role (you're ${userProfile.roleLevel})`);
+          }
+        }
+      }
+    }
+    
+    // 2. Specialization match
+    if (userProfile.industrySpecializations && userProfile.industrySpecializations.length > 0 && job.specialization) {
+      const userSpecs = userProfile.industrySpecializations.map(spec => spec.toLowerCase());
+      const jobSpec = job.specialization.toLowerCase();
+      
+      if (userSpecs.includes(jobSpec)) {
+        reasons.push(`Perfect match for your ${getSpecializationLabel(job.specialization)} specialization`);
+      } else {
+        // Check for related specializations
+        const hasRelatedSpec = userSpecs.some(userSpec => {
+          const relatedSpecs = RELATED_SPECIALIZATIONS_MAP[userSpec as keyof typeof RELATED_SPECIALIZATIONS_MAP] || [];
+          return relatedSpecs.some(relatedSpec => relatedSpec === jobSpec);
+        });
+        if (hasRelatedSpec) {
+          reasons.push(`Related to your specialization field`);
+        }
+      }
+    }
+    
+    // 3. Job type match
+    if (userProfile.jobTypes && userProfile.jobTypes.length > 0 && job.jobType) {
+      const userJobTypes = userProfile.jobTypes.map((type: string) => type.toLowerCase());
+      const jobType = job.jobType.toLowerCase();
+      
+      if (userJobTypes.includes(jobType)) {
+        reasons.push(`Matches your preferred ${getJobTypeLabel(job.jobType)} work arrangement`);
+      } else if (jobType === 'fulltime' && userJobTypes.includes('parttime')) {
+        reasons.push(`Full-time opportunity (you prefer part-time but this could be a good fit)`);
+      } else if (jobType === 'parttime' && userJobTypes.includes('fulltime')) {
+        reasons.push(`Part-time role (you prefer full-time but this offers flexibility)`);
+      }
+    }
+    
+    // 4. Skills match
+    if (userProfile.skills && userProfile.skills.length > 0 && job.skills) {
+      const userSkills = userProfile.skills.map((skill: string) => skill.toLowerCase());
+      const jobSkills = job.skills.map((skill: string) => skill.toLowerCase());
+      
+      const matchingSkills = userSkills.filter(skill => 
+        jobSkills.some(jobSkill => 
+          jobSkill.includes(skill) || skill.includes(jobSkill)
+        )
+      );
+      
+      if (matchingSkills.length > 0) {
+        const skillMatchRatio = matchingSkills.length / Math.max(userSkills.length, 1);
+        if (skillMatchRatio >= 0.5) {
+          reasons.push(`Strong skill match: ${matchingSkills.slice(0, 3).join(', ')}${matchingSkills.length > 3 ? ' and more' : ''}`);
+        } else if (skillMatchRatio >= 0.25) {
+          reasons.push(`Good skill overlap: ${matchingSkills.slice(0, 2).join(', ')}${matchingSkills.length > 2 ? ' and more' : ''}`);
+        } else {
+          reasons.push(`Some matching skills: ${matchingSkills[0]}${matchingSkills.length > 1 ? ' and more' : ''}`);
+        }
+      }
+    }
+    
+    // 5. Location match
+    if (userProfile.locationPreferences && userProfile.locationPreferences.length > 0 && job.location) {
+      if (job.isRemote) {
+        reasons.push(`Remote work opportunity (matches your location preferences)`);
+      } else {
+        const jobLocation = job.location.toLowerCase();
+        const hasExactMatch = userProfile.locationPreferences.some(pref => 
+          pref.toLowerCase() === jobLocation
+        );
+        const hasPartialMatch = userProfile.locationPreferences.some(pref => 
+          jobLocation.includes(pref.toLowerCase()) || pref.toLowerCase().includes(jobLocation)
+        );
+        
+        if (hasExactMatch) {
+          reasons.push(`Perfect location match: ${getLocationLabel(job.location)}`);
+        } else if (hasPartialMatch) {
+          reasons.push(`Location aligns with your preferences: ${getLocationLabel(job.location)}`);
+        }
+      }
+    }
+    
+    // 6. Recent posting
     if (job.postedDate) {
       const posted = new Date(job.postedDate.toString());
       const now = new Date();
       const diffTime = now.getTime() - posted.getTime();
       const daysAgo = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
-      if (daysAgo <= 0) {
-        bonus += 8; // Posted today - highest priority
-        console.log(`🔥 FRESH JOB: ${job.title} at ${job.company} posted TODAY (+8 bonus)`);
-      } else if (daysAgo <= 2) {
-        bonus += 6; // Posted in past 2 days - very high priority
-        console.log(`🚀 RECENT JOB: ${job.title} at ${job.company} posted ${daysAgo} days ago (+6 bonus)`);
-      } else if (daysAgo <= 5) {
-        bonus += 4; // Posted in past 5 days - high priority
-        console.log(`⭐ NEW JOB: ${job.title} at ${job.company} posted ${daysAgo} days ago (+4 bonus)`);
-      } else if (daysAgo <= 7) {
-        bonus += 2; // Posted within a week - moderate priority
-        console.log(`📅 WEEK OLD: ${job.title} at ${job.company} posted ${daysAgo} days ago (+2 bonus)`);
+      if (daysAgo <= 1) {
+        reasons.push(`Fresh opportunity - posted ${daysAgo === 0 ? 'today' : 'yesterday'}`);
+      } else if (daysAgo <= 3) {
+        reasons.push(`Recently posted - ${daysAgo} days ago`);
       }
     }
-
-    return Math.min(score + bonus, 100); // Cap at 100
+    
+    // Return top 3 most relevant reasons
+    return reasons.slice(0, 3);
   };
-
-  const getRelatedSpecializations = (specialization: string): string[] => {
-    const relatedMap: Record<string, string[]> = {
-      'frontend': ['fullstack', 'ui_ux', 'web'],
-      'backend': ['fullstack', 'devops', 'api'],
-      'fullstack': ['frontend', 'backend', 'web'],
-      'mobile': ['frontend', 'ios', 'android'],
-      'devops': ['backend', 'cloud', 'infrastructure'],
-      'ml_ai': ['data_science', 'python', 'analytics'],
-      'data_science': ['ml_ai', 'analytics', 'python'],
-      'ui_ux': ['frontend', 'design', 'product'],
-      'qa': ['automation', 'testing', 'backend'],
-      'security': ['backend', 'devops', 'infrastructure']
-    };
-
-    return relatedMap[specialization] || [];
-  };
-
-
 
   const inflateScore = (score: number): number => {
     // Inflate the score by applying a curve that makes scores higher
     // Use a power function to boost scores while keeping them realistic
     const inflatedScore = Math.pow(score / 100, 0.6) * 100;
     
-    // Add a base boost to make scores more impressive
-    const boostedScore = inflatedScore + 15;
-    
     // Cap at 99 and round up to nearest whole number
-    const finalScore = Math.min(Math.ceil(boostedScore), 99);
-    
-    // Temporary debug log
-    if (score > 0) {
-      console.log(`Score inflation: ${score.toFixed(1)} → ${finalScore}`);
-    }
+    const finalScore = Math.min(Math.ceil(inflatedScore), 99);
     
     return finalScore;
   };
@@ -262,32 +332,87 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
 
   // Function to refresh recommendations
   const refreshRecommendations = async (): Promise<void> => {
-    if (!profile) return;
+    if (!profile || isLoading) return;
+    
+    // Check if profile has enough details for recommendations
+    const hasExperienceLevel = !!profile.roleLevel;
+    const hasSpecializations = !!(profile.industrySpecializations && profile.industrySpecializations.length > 0);
+    const hasJobTypes = !!(profile.jobTypes && profile.jobTypes.length > 0);
+    const hasSkills = !!(profile.skills && profile.skills.length > 0);
+    const hasLocationPreferences = !!(profile.locationPreferences && profile.locationPreferences.length > 0);
+    
+    const requiredFields = [hasExperienceLevel, hasSpecializations, hasJobTypes, hasSkills, hasLocationPreferences];
+    const filledFields = requiredFields.filter(Boolean).length;
+    
+    // Don't make API call if profile is incomplete (need at least 3 out of 5 fields)
+    if (filledFields < 3) {
+      setFetchedJobs(true);
+      return;
+    }
     
     setIsLoading(true);
     try {
-      // Fetch all jobs if not already loaded
-      if (allJobs.length === 0) {
-        await fetchInitialJobs();
-      }
+      // Get disliked job IDs to exclude from API
+      // Include applied job IDs to exclude from API
+      const appliedJobIds = applications?.filter(app => app.status !== 'Saved').map(app => app.jobId) || [];
+      const excludedJobIds = profile.dislikedJobs || [];
       
-      // Generate recommendations based on current jobs and profile
-      const recommendations = generateRecommendations(allJobs, profile);
-      setRecommendedJobs(recommendations);
+      // Fetch recommended jobs from API with profile parameters
+      const recommendedJobsFromAPI = await jobsService.getRecommendedJobs(
+        profile.roleLevel ? [profile.roleLevel] : undefined,
+        profile.industrySpecializations || undefined,
+        profile.usSponsorship || undefined,
+        excludedJobIds.concat(appliedJobIds)
+      );
+
+      // Generate recommendations based on API jobs and profile
+      const recommendations = generateRecommendations(recommendedJobsFromAPI, profile);
+      if (recommendations.length > 0) {
+        setRecommendedJobs(recommendations);
+      }
+
     } catch (error) {
       console.error('Error refreshing recommendations:', error);
     } finally {
       setIsLoading(false);
+      setFetchedJobs(true);
     }
   };
 
-  // Auto-generate recommendations when profile or jobs change
+  // Auto-generate recommendations when job-related profile preferences change
   useEffect(() => {
-    if (profile && allJobs.length > 0) {
-      const recommendations = generateRecommendations(allJobs, profile);
-      setRecommendedJobs(recommendations);
+    if (profile && applications) {
+      refreshRecommendations();
     }
-  }, [profile, allJobs]);
+    // These should change when anything sent to the api changes
+  }, [
+    profile?.roleLevel,
+    profile?.usSponsorship,
+    profile?.industrySpecializations,
+    applications?.length
+  ]);
+
+  // Regenerate scores when rating-related profile fields change (without API calls)
+  useEffect(() => {
+    if (profile && recommendedJobs.length > 0) {
+      // Recalculate scores for existing jobs without fetching new ones
+      const rescoredJobs = recommendedJobs.map(jobWithScore => ({
+        ...jobWithScore,
+        score: calculateJobScore(jobWithScore.job, profile)
+      }));
+      
+      // Sort by new scores
+      rescoredJobs.sort((a, b) => b.score - a.score);
+      
+      setRecommendedJobs(rescoredJobs);
+    }
+  }, [
+    profile?.industrySpecializations,  // Specialization scoring (35 points)
+    profile?.jobTypes,                 // Job type scoring (25 points)
+    profile?.skills,                   // Skills scoring (25 points)
+    profile?.locationPreferences,      // Location scoring (10 points)
+    profile?.expectedSalary
+  ]);
 
   const applyDiversityFilters = (
     scoredJobs: Array<{ job: Job; score: number }>
@@ -295,6 +420,7 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
     const result: JobWithScore[] = [];
     const usedCompanies = new Set<string>();
     const usedSpecializations = new Set<string>();
+    const usedJobTitleCompany = new Set<string>(); // Track job title + company combinations
     
     // First pass: Get high-scoring diverse jobs
     for (const { job, score } of scoredJobs) {
@@ -304,6 +430,10 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
       const companyCount = result.filter(j => j.job.company === job.company).length;
       if (companyCount >= 2) continue;
       
+      // Skip if we already have a job with the same title and company
+      const jobTitleCompany = `${job.title.toLowerCase().trim()}-${job.company.toLowerCase().trim()}`;
+      if (usedJobTitleCompany.has(jobTitleCompany)) continue;
+      
       // Prefer diverse specializations for first 10 jobs
       if (result.length < 10 && job.specialization && usedSpecializations.has(job.specialization)) {
         continue;
@@ -311,6 +441,7 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
       
       result.push({ job, score });
       usedCompanies.add(job.company);
+      usedJobTitleCompany.add(jobTitleCompany);
       if (job.specialization) {
         usedSpecializations.add(job.specialization);
       }
@@ -325,14 +456,24 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
   ): JobWithScore[] => {
     const result = [...diverseJobs];
     const usedJobIds = new Set(result.map(jobWithScore => jobWithScore.job.id));
+    const usedJobTitleCompany = new Set(
+      result.map(jobWithScore => 
+        `${jobWithScore.job.title.toLowerCase().trim()}-${jobWithScore.job.company.toLowerCase().trim()}`
+      )
+    );
     
     // If we have fewer than 20, backfill with remaining highest-scored jobs
     if (result.length < 20) {
       for (const { job, score } of allScoredJobs) {
         if (result.length >= 20) break;
         if (!usedJobIds.has(job.id)) {
-          result.push({ job, score });
-          usedJobIds.add(job.id);
+          // Also check for duplicate job title + company combinations
+          const jobTitleCompany = `${job.title.toLowerCase().trim()}-${job.company.toLowerCase().trim()}`;
+          if (!usedJobTitleCompany.has(jobTitleCompany)) {
+            result.push({ job, score });
+            usedJobIds.add(job.id);
+            usedJobTitleCompany.add(jobTitleCompany);
+          }
         }
       }
     }
@@ -340,11 +481,19 @@ export function RecommenderProvider({ children }: RecommenderProviderProps) {
     return result.slice(0, 20); // Ensure exactly 20 jobs
   };
 
+  // Function to remove a job from recommendations when applied to
+  const removeJobFromRecommendations = (jobId: string): void => {
+    setRecommendedJobs(prev => prev.filter(jobWithScore => jobWithScore.job.id !== jobId));
+  };
+
   const contextValue: RecommenderContextType = {
     recommendedJobs,
     isLoading,
+    fetchedJobs,
     refreshRecommendations,
-    calculateJobScore
+    calculateJobScore,
+    generateRecommendationReasons,
+    removeJobFromRecommendations
   };
 
   return (

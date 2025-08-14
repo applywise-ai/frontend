@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Job, JobFilters } from '@/app/types/job';
-import { jobsService } from '@/app/utils/firebase';
+import jobsService from '@/app/services/api/jobs';
 import { ApplicationWithJob } from './ApplicationsContext';
 
 interface JobsContextType {
@@ -11,7 +11,7 @@ interface JobsContextType {
   jobLoading: boolean;
   
   // All jobs with pagination functionality
-  allJobs: Job[];
+  allJobs: Job[] | null;
   isLoadingAllJobs: boolean;
   isLoadingMoreJobs: boolean;
   allJobsError: string | null;
@@ -31,14 +31,14 @@ const JobsContext = createContext<JobsContextType | undefined>(undefined);
 
 export function JobsProvider({ children }: { children: React.ReactNode }) {
   // All jobs state
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[] | null>(null);
   const [isLoadingAllJobs, setIsLoadingAllJobs] = useState(true);
   const [isLoadingMoreJobs, setIsLoadingMoreJobs] = useState(false);
   const [allJobsError, setAllJobsError] = useState<string | null>(null);
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
   const [totalJobs, setTotalJobs] = useState(0);
   const [filteredJobsCount, setFilteredJobsCount] = useState(0);
-  const [lastJobId, setLastJobId] = useState<string | undefined>(undefined);
+  const [currentOffset, setCurrentOffset] = useState<number>(0);
   const [currentFilters, setCurrentFilters] = useState<JobFilters | undefined>(undefined);
   
   // Individual job loading state
@@ -54,7 +54,7 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // First check if job exists in allJobs cache
-      const cachedJob = allJobs.find(job => job.id.toString() === jobId);
+      const cachedJob = allJobs?.find(job => job.id.toString() === jobId);
       if (cachedJob) {
         console.log(`JobsContext: Found job ${jobId} in allJobs cache`);
         const savedStatus = isJobSaved ? await isJobSaved(jobId) : false;
@@ -111,18 +111,18 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
       
       // Fetch initial jobs excluding applied jobs, and total count in parallel
       const [paginatedResult, filteredCount, totalCount] = await Promise.all([
-        jobsService.getJobsPaginated(9, undefined, currentFilters, new Set(appliedJobIds)),
+        jobsService.getJobsPaginated(10, 0, currentFilters, new Set(appliedJobIds)),
         jobsService.getFilteredJobsCount(currentFilters, appliedJobIds.length),
         jobsService.getTotalAvailableJobsCount(appliedJobIds.length)
       ]);
-      
+
       // Update state
       setFilteredJobsCount(filteredCount);
       setTotalJobs(totalCount);
       setHasMoreJobs(paginatedResult.hasMore);
-      setLastJobId(paginatedResult.lastJobId);
+      setCurrentOffset(10);
       
-      setAllJobs(paginatedResult.jobs);
+      setAllJobs(paginatedResult.jobs || [] as Job[]);
     } catch (err) {
       console.error('Error fetching initial jobs:', err);
       setAllJobsError('Failed to load jobs');
@@ -135,7 +135,7 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
   }, [currentFilters]);
 
   const fetchMoreJobs = useCallback(async (applications?: ApplicationWithJob[] | null) => {
-    if (!hasMoreJobs || isLoadingMoreJobs || !lastJobId) {
+    if (!hasMoreJobs || isLoadingMoreJobs) {
       return;
     }
 
@@ -143,30 +143,40 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     setAllJobsError(null);
 
     try {
-        console.log(`JobsContext: fetchMoreJobs(lastJobId: ${lastJobId})`);
+      console.log(`JobsContext: fetchMoreJobs(offset: ${currentOffset})`);
       // Use applications parameter to exclude applied jobs
       const appliedJobIds = applications?.map((app: ApplicationWithJob) => app.jobId) || [];
       
-      const paginatedResult = await jobsService.getJobsPaginated(9, lastJobId, currentFilters, new Set(appliedJobIds));
+      const paginatedResult = await jobsService.getJobsPaginated(10, currentOffset, currentFilters, new Set(appliedJobIds));
       
-      // Add new jobs to state
-      const newJobs = [...allJobs, ...paginatedResult.jobs];
+      // Add new jobs to state, ensuring no duplicates
+      const existingJobIds = new Set(allJobs?.map(job => job.id));
+      const uniqueNewJobs = paginatedResult.jobs.filter(job => !existingJobIds?.has(job.id));
+      const newJobs = [...(allJobs || []), ...(uniqueNewJobs || [])] as Job[];
+      console.log("new jobs", paginatedResult.jobs.length); 
       
       setAllJobs(newJobs);
       setHasMoreJobs(paginatedResult.hasMore);
-      setLastJobId(paginatedResult.lastJobId);
+      setCurrentOffset(currentOffset + 10);
     } catch (err) {
       console.error('Error fetching more jobs:', err);
       setAllJobsError('Failed to load more jobs');
     } finally {
       setIsLoadingMoreJobs(false);
     }
-  }, [hasMoreJobs, isLoadingMoreJobs, lastJobId, allJobs, currentFilters]);
+  }, [hasMoreJobs, isLoadingMoreJobs, currentOffset, allJobs, currentFilters]);
 
   // Set job filters function
   const setJobFilters = useCallback((filters?: JobFilters) => {
     console.log(`JobsContext: setJobFilters(${filters ? 'with filters' : 'no filters'})`);
     setCurrentFilters(filters);
+    // Reset state and refetch with new filters
+    setCurrentOffset(0);
+    setHasMoreJobs(true);
+    setAllJobs(null);
+    setAllJobsError(null);
+    setIsLoadingAllJobs(true);
+    // Note: fetchInitialJobs will be called by the component using this context
   }, []);
 
   // Job cache management function
@@ -176,21 +186,21 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     
     setAllJobs(prevJobs => {
       if (add) {
-        const existingJobIndex = prevJobs.findIndex(existingJob => existingJob.id === job.id);
+        const existingJobIndex = prevJobs?.findIndex(existingJob => existingJob.id === job.id);
         if (existingJobIndex === -1) {
           shouldUpdateCounts = true;
-          return [...prevJobs, job];
+          return [...(prevJobs || []), job] as Job[];
         } else {
           // Update existing job (no count change)
-          const updatedJobs = [...prevJobs];
-          updatedJobs[existingJobIndex] = job;
+          const updatedJobs = [...(prevJobs || [])];
+          updatedJobs[existingJobIndex || 0] = job;
           return updatedJobs;
         }
       } else {
-        const jobExists = prevJobs.some(existingJob => existingJob.id === job.id);
+        const jobExists = prevJobs?.some(existingJob => existingJob.id === job.id);
         if (jobExists) {
           shouldUpdateCounts = true;
-          return prevJobs.filter(existingJob => existingJob.id !== job.id);
+          return prevJobs?.filter(existingJob => existingJob.id !== job.id) as Job[];
         }
         return prevJobs;
       }
@@ -208,11 +218,11 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
 
   // Update filteredJobsCount when all jobs are loaded
   useEffect(() => {
-    if (!hasMoreJobs && !isLoadingAllJobs && allJobs.length > 0) {
+    if (!hasMoreJobs && !isLoadingAllJobs && allJobs && allJobs.length > 0) {
       // When all jobs are loaded, use the actual displayed count
       setFilteredJobsCount(allJobs.length);
     }
-  }, [hasMoreJobs, isLoadingAllJobs, allJobs.length]);
+  }, [hasMoreJobs, isLoadingAllJobs, allJobs?.length]);
 
   // Context value
   const contextValue: JobsContextType = {
@@ -231,15 +241,19 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     refetchAllJobs: (newFilters?: JobFilters, applications?: ApplicationWithJob[] | null) => {
       console.log(`JobsContext: refetchAllJobs(${newFilters ? 'with filters' : 'no filters'})`);
       // Reset state and refetch
-      setLastJobId(undefined);
+      setCurrentOffset(0);
       setHasMoreJobs(true);
+      setAllJobs(null);
+      setAllJobsError(null);
+      setIsLoadingAllJobs(true);
       
       // Update filters if provided
       if (newFilters !== undefined) {
         setCurrentFilters(newFilters);
-      } else {
-        fetchInitialJobs(applications);
       }
+      
+      // Always fetch initial jobs after updating filters
+      fetchInitialJobs(applications);
     },
     fetchInitialJobs,
     fetchMoreJobs,

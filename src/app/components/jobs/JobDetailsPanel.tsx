@@ -1,31 +1,39 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BadgeCheck, X, ExternalLink, Bookmark, DollarSign, MapPin, Briefcase, Clock, Globe, GraduationCap, Link as LinkIcon } from 'lucide-react';
+import { BadgeCheck, X, ExternalLink, Bookmark, DollarSign, MapPin, Briefcase, Clock, Globe, GraduationCap, Link as LinkIcon, Check, Pencil } from 'lucide-react';
 import JobDetailsPanelSkeleton from '@/app/components/loading/JobDetailsPanelSkeleton';
 import { Job } from '@/app/types/job';
-import { ROLE_LEVEL_OPTIONS } from '@/app/types/job';
 import AnimatedApplyButton from '@/app/components/AnimatedApplyButton';
 import { getAvatarColor } from '@/app/utils/avatar';
-import SubscriptionCard from '@/app/components/SubscriptionCard';
+import Link from 'next/link';
+
 import SubscriptionModal from '@/app/components/SubscriptionModal';
 import { useApplications } from '@/app/contexts/ApplicationsContext';
-import { formatJobPostedDate } from '@/app/utils/job';
+import { formatJobPostedDate, formatSalaryRange, getJobTypeLabel, getExperienceLevelLabel, getLocationLabelFromJob } from '@/app/utils/job';
 
 interface JobDetailsPanelProps {
   job: Job | null;
   onClose?: () => void;
   isLoading?: boolean;
   fullPage?: boolean;
-  hasApplied?: boolean;
 }
 
-export default function JobDetailsPanel({ job, onClose, isLoading = false, fullPage = false, hasApplied = false }: JobDetailsPanelProps) {
-  const { toggleSave, isJobSaved } = useApplications();
+export default function JobDetailsPanel({ job, onClose, isLoading = false, fullPage = false }: JobDetailsPanelProps) {
+  const { toggleSave, isJobSaved, applications } = useApplications();
   
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  
+  // Get the actual application status for this job
+  const getApplicationStatus = (): string | null => {
+    if (!job || !applications) return null;
+    const application = applications.find(app => app.jobId === job.id.toString());
+    return application?.status || null;
+  };
+  
+  const applicationStatus = getApplicationStatus();
   
   // Check if job is saved when job changes
   useEffect(() => {
@@ -61,13 +69,101 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
   
   if (!job) return null;
   
+  // Render status-based button
+  const renderStatusButton = () => {
+    if (!applicationStatus) {
+      return (
+        <AnimatedApplyButton
+          size="sm"
+          jobId={job.id.toString()}
+          onShowSubscriptionModal={() => setShowSubscriptionModal(true)}
+        />
+      );
+    }
+    
+    switch (applicationStatus) {
+      case 'Draft':
+        return (
+          <Link href={`/applications/${applications?.find(app => app.jobId === job.id.toString())?.id}/edit`}>
+            <div className="inline-flex items-center justify-center px-4 py-3 border border-amber-200 rounded-md shadow-sm bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors">
+              <Pencil className="h-5 w-5 mr-2" />
+              <span className="font-medium">Edit Draft</span>
+            </div>
+          </Link>
+        );
+      case 'Applied':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-blue-200 rounded-md shadow-sm bg-blue-50 text-blue-700">
+            <Check className="h-5 w-5 mr-2" />
+            <span className="font-medium">Applied</span>
+          </div>
+        );
+      case 'Interviewing':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-green-200 rounded-md shadow-sm bg-green-50 text-green-700">
+            <Check className="h-5 w-5 mr-2" />
+            <span className="font-medium">Interviewing</span>
+          </div>
+        );
+      case 'Accepted':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-emerald-200 rounded-md shadow-sm bg-emerald-50 text-emerald-700">
+            <Check className="h-5 w-5 mr-2" />
+            <span className="font-medium">Accepted</span>
+          </div>
+        );
+      case 'Rejected':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-red-200 rounded-md shadow-sm bg-red-50 text-red-700">
+            <X className="h-5 w-5 mr-2" />
+            <span className="font-medium">Rejected</span>
+          </div>
+        );
+      case 'Pending':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-orange-200 rounded-md shadow-sm bg-orange-50 text-orange-700">
+            <Clock className="h-5 w-5 mr-2" />
+            <span className="font-medium">Pending</span>
+          </div>
+        );
+      case 'Failed':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-red-200 rounded-md shadow-sm bg-red-50 text-red-700">
+            <X className="h-5 w-5 mr-2" />
+            <span className="font-medium">Failed</span>
+          </div>
+        );
+      case 'Not Found':
+        return (
+          <div className="inline-flex items-center justify-center px-4 py-3 border border-gray-200 rounded-md shadow-sm bg-gray-50 text-gray-700">
+            <X className="h-5 w-5 mr-2" />
+            <span className="font-medium">Not Found</span>
+          </div>
+        );
+      case 'Saved':
+        return (
+          <AnimatedApplyButton 
+            jobId={job.id.toString()}
+            onShowSubscriptionModal={() => setShowSubscriptionModal(true)}
+          />
+        );
+      default:
+        return (
+          <AnimatedApplyButton 
+            jobId={job.id.toString()}
+            onShowSubscriptionModal={() => setShowSubscriptionModal(true)}
+          />
+        );
+    }
+  };
+  
   return (
     <div className={`bg-white ${!fullPage && 'border-t border-l border-gray-200/60 shadow-lg h-screen pb-16'} flex flex-col`}>
       {/* Header with close button */}
       <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center flex-shrink-0 z-10">
-        <div className="flex items-center">
+        <div className="flex items-center min-w-0 flex-1">
           <div className={`
-            w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 mr-3
+            w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 mr-3 flex-shrink-0
             ${job.logo ? 'bg-gray-100' : getAvatarColor(job.company)}
           `}>
             {job.logo ? (
@@ -78,68 +174,121 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
               </div>
             )}
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-bold text-gray-900 line-clamp-1">{job.title}</h2>
             <div className="flex items-center space-x-1">
               <span className="text-sm text-gray-600">{job.company}</span>
-              {job.isVerified && <BadgeCheck className="h-4 w-4 text-teal-500" />}
+              {job.isVerified && <BadgeCheck className="h-4 w-4 text-teal-500 flex-shrink-0" />}
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          {/* Action buttons - show in header on large screens when fullPage */}
-          {fullPage && (
-            <div className="hidden lg:flex space-x-3">
-              {!hasApplied && (
-                <AnimatedApplyButton 
-                  jobId={job.id.toString()}
-                />
-              )}
-              
-              <a 
-                href={job.jobUrl || "#"} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                title="View original job posting"
-              >
-                <ExternalLink className="h-5 w-5" />
-                <span className="sr-only">View original job posting</span>
-              </a>
-              {!hasApplied && (
-              <button
-                onClick={handleSaveToggle}
-                disabled={isSaveLoading}
-                className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={isSaved ? "Unsave job" : "Save job"}
-              >
-                <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
-              </button>
-              )}
+        
+        {/* Action buttons - show in header on lg and down when not fullPage */}
+        {!fullPage && (
+          <div className="hidden lg:flex items-center space-x-2 ml-4 flex-shrink-0">
+            <div className="flex-shrink-0">
+              {renderStatusButton()}
             </div>
-          )}
-          {!fullPage && onClose && (
-            <button 
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+            
+            <a 
+              href={job.jobUrl || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center h-10 px-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 flex-shrink-0"
+              title="View original job posting"
             >
-              <X className="h-5 w-5" />
+              <ExternalLink className="h-4 w-4" />
+              <span className="sr-only">View original job posting</span>
+            </a>
+            {!applicationStatus || applicationStatus === 'Saved' ? (
+            <button
+              onClick={handleSaveToggle}
+              disabled={isSaveLoading}
+              className="inline-flex items-center justify-center h-10 px-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              aria-label={isSaved ? "Unsave job" : "Save job"}
+            >
+              <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
             </button>
-          )}
-        </div>
+            ) : null}
+          </div>
+        )}
+        
+        {/* Action buttons - show in header on md and down when not fullPage, but smaller */}
+        {!fullPage && (
+          <div className="lg:hidden flex items-center space-x-2 ml-3 flex-shrink-0">
+            <div className="flex-shrink-0">
+              {renderStatusButton()}
+            </div>
+            
+            <a 
+              href={job.jobUrl || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center h-10 px-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 flex-shrink-0"
+              title="View original job posting"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="sr-only">View original job posting</span>
+            </a>
+            {!applicationStatus || applicationStatus === 'Saved' ? (
+            <button
+              onClick={handleSaveToggle}
+              disabled={isSaveLoading}
+              className="inline-flex items-center justify-center h-10 px-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              aria-label={isSaved ? "Unsave job" : "Save job"}
+            >
+              <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
+            </button>
+            ) : null}
+          </div>
+        )}
+        
+        {/* Action buttons - show in header on large screens when fullPage */}
+        {fullPage && (
+          <div className="hidden md:flex space-x-3">
+            {renderStatusButton()}
+            
+            <a 
+              href={job.jobUrl || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center h-12 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              title="View original job posting"
+            >
+              <ExternalLink className="h-5 w-5" />
+              <span className="sr-only">View original job posting</span>
+            </a>
+            {!applicationStatus || applicationStatus === 'Saved' ? (
+            <button
+              onClick={handleSaveToggle}
+              disabled={isSaveLoading}
+              className="inline-flex items-center justify-center h-12 px-4 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={isSaved ? "Unsave job" : "Save job"}
+            >
+              <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
+            </button>
+            ) : null}
+          </div>
+        )}
+        
+        {!fullPage && onClose && (
+          <button 
+            onClick={onClose}
+            className="inline-flex items-center justify-center h-10 w-10 border border-gray-300 rounded-md shadow-sm bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 ml-2 flex-shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
       
       {/* Content - scrollable for sidebar, normal flow for full page */}
       <div className={`${fullPage ? 'p-4' : 'p-6'} ${fullPage ? 'space-y-3' : 'space-y-4'} ${fullPage ? '' : 'overflow-y-auto flex-grow'}`}>
-        {/* Apply and Save Buttons - show below header on small screens when fullPage, always show in sidebar */}
-        {(!fullPage || (fullPage && 'lg:hidden')) && (
-          <div className={`flex space-x-3 ${fullPage ? 'lg:hidden' : ''}`}>
-            {!hasApplied && (
-              <AnimatedApplyButton 
-                className="flex-1"
-                jobId={job.id.toString()}
-              />
-            )}
+        {/* Apply and Save Buttons - show below header on small screens when fullPage, or when buttons don't fit in header */}
+        {fullPage && (
+          <div className="md:hidden flex space-x-3">
+            <div className="flex-1">
+              {renderStatusButton()}
+            </div>
             
             <a 
               href={job.jobUrl || "#"} 
@@ -151,7 +300,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
               <ExternalLink className="h-5 w-5" />
               <span className="sr-only">View original job posting</span>
             </a>
-            {!hasApplied && (
+            {!applicationStatus || applicationStatus === 'Saved' ? (
             <button
               onClick={handleSaveToggle}
               disabled={isSaveLoading}
@@ -160,16 +309,11 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
             >
               <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-teal-600 text-teal-600' : 'text-gray-400 fill-transparent'} ${isSaveLoading ? 'animate-pulse' : ''}`} />
             </button>
-            )}
+            ) : null}
           </div>
         )}
         
-        {/* AI Applies Card */}
-        <SubscriptionCard
-          onUpgrade={() => setShowSubscriptionModal(true)}
-          jobId={job.id.toString()}
-          hasApplied={hasApplied}
-        />
+
         
         {/* Key Details and Company Info - Side by side on large screens when fullPage */}
         <div className={`${fullPage ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}`}>
@@ -187,7 +331,9 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 font-medium">Salary Range</div>
-                    <div className="font-semibold text-sm text-gray-900">{job.salary}</div>
+                    <div className="font-semibold text-sm text-gray-900">
+                      {formatSalaryRange(job)}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -196,7 +342,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 font-medium">Location</div>
-                    <div className="font-semibold text-sm text-gray-900">{job.location}</div>
+                    <div className="font-semibold text-sm text-gray-900">{getLocationLabelFromJob(job)}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -205,7 +351,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 font-medium">Job Type</div>
-                    <div className="font-semibold text-sm text-gray-900">{job.jobType}</div>
+                    <div className="font-semibold text-sm text-gray-900">{getJobTypeLabel(job.jobType)}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -214,7 +360,9 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 font-medium">Posted</div>
-                    <div className="font-semibold text-sm text-gray-900">{formatJobPostedDate(job.postedDate)}</div>
+                    <div className="font-semibold text-sm text-gray-900">
+                      {job.postedDate ? formatJobPostedDate(job.postedDate) : 'Recently'}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -224,7 +372,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   <div>
                     <div className="text-xs text-gray-500 font-medium">Experience</div>
                     <div className="font-semibold text-sm text-gray-900">
-                      {ROLE_LEVEL_OPTIONS.find(level => level.value === job.experienceLevel)?.label || job.experienceLevel}
+                      {getExperienceLevelLabel(job.experienceLevel)}
                     </div>
                   </div>
                 </div>
@@ -265,14 +413,21 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
                   <h4 className="font-semibold text-base text-gray-900">{job.company}</h4>
                   {job.isVerified && <BadgeCheck className="h-4 w-4 text-teal-500" />}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="bg-teal-100 rounded-full p-1">
-                    <LinkIcon className="h-3 w-3 text-teal-600" />
+                {job.companyUrl && (
+                  <div className="flex items-center space-x-2">
+                    <div className="bg-teal-100 rounded-full p-1">
+                      <LinkIcon className="h-3 w-3 text-teal-600" />
+                    </div>
+                    <a 
+                      href={job.companyUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-teal-600 hover:text-teal-700 hover:underline text-xs font-medium transition-colors"
+                    >
+                      Visit Company Website
+                    </a>
                   </div>
-                  <a href="#" className="text-teal-600 hover:text-teal-700 hover:underline text-xs font-medium transition-colors">
-                    Visit Company Website
-                  </a>
-                </div>
+                )}
               </div>
             </div>
             <div className={`bg-white/70 rounded-md p-3 border border-gray-200/40 ${fullPage ? 'flex-1' : ''}`}>
@@ -304,7 +459,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
             <ul className="space-y-1.5">
               {job.responsibilities && job.responsibilities.length > 0 && (
                 job.responsibilities.map((item, index) => (
-                  <li key={index} className="flex items-start space-x-2">
+                  <li key={`responsibility-${index}`} className="flex items-start space-x-2">
                     <div className="w-1 h-1 bg-gray-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span className="text-gray-700 leading-relaxed text-sm">{item}</span>
                   </li>
@@ -324,7 +479,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
             <ul className="space-y-1.5">
               {job.requirements && job.requirements.length > 0 && (
                 job.requirements.map((item, index) => (
-                  <li key={index} className="flex items-start space-x-2">
+                  <li key={`requirement-${index}`} className="flex items-start space-x-2">
                     <div className="w-1 h-1 bg-gray-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span className="text-gray-700 leading-relaxed text-sm">{item}</span>
                   </li>

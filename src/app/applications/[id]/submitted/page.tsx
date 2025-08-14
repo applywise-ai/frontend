@@ -30,10 +30,10 @@ function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
   // Fetch application details to get jobId - only when user is authenticated
   useEffect(() => {
     const fetchApplicationJobId = async () => {
-      if (!applicationId || applicationsLoading) return;
+      if (!applicationId || applicationsLoading || !applications) return;
       
       try {
-        const appData = await applications?.find(app => app.id === applicationId);
+        const appData = applications.find(app => app && app.id === applicationId);
         if (appData) {
           setApplication(appData);
         }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserProfile, FieldName, Project } from '@/app/types/profile';
+import { FieldName, Project } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
@@ -9,8 +10,6 @@ import { Link as LinkIcon, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
 
 interface ProjectFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
   editingIndex?: number;
   errors?: Partial<Record<string, string>>;
   setErrors?: (errors: Partial<Record<string, string>>) => void;
@@ -18,24 +17,13 @@ interface ProjectFormProps {
 
 export default function ProjectForm({ 
   editingIndex,
-  profile,
-  updateProfile,
   errors,
   setErrors
 }: ProjectFormProps) {
-  const emptyProject: Project = {
-    [FieldName.PROJECT_NAME]: '',
-    [FieldName.PROJECT_DESCRIPTION]: '',
-    [FieldName.PROJECT_LINK]: ''
-  };
+  const { profile, updateProfile } = useProfile();
   
-  const [project, setProject] = useState<Project>(
-    editingIndex !== undefined && profile[FieldName.PROJECTS] ? profile[FieldName.PROJECTS][editingIndex] : emptyProject
-  );
-
-  useEffect(() => {
-    updateProfile({[FieldName.TEMP_PROJECT]: project});
-  }, []);
+  const [project, setProject] = useState<Project | null>(null);
+  const projects = profile[FieldName.PROJECT] || [];
 
   const handleProjectChange = (field: keyof Project, value: string) => {
     const updatedProject = {
@@ -51,18 +39,29 @@ export default function ProjectForm({
       setErrors(newErrors);
     }
 
-    // Update temporary project in profile
-    const tempProject = {
-      [FieldName.TEMP_PROJECT]: {
-        [FieldName.PROJECT_NAME]: updatedProject[FieldName.PROJECT_NAME],
-        [FieldName.PROJECT_DESCRIPTION]: updatedProject[FieldName.PROJECT_DESCRIPTION],
-        [FieldName.PROJECT_LINK]: updatedProject[FieldName.PROJECT_LINK]
-      }
-    };
-    updateProfile(tempProject);
+    let index = editingIndex;
+    if (index === null || index === undefined) {
+      index = projects.length - 1;
+    }
+    const updatedProjects = [...projects];
+    updatedProjects[index] = updatedProject;
+    // Update the index of the project
+    updateProfile({ [FieldName.PROJECT]: updatedProjects });
   };
 
+  useEffect(() => {
+    if (Object.keys(profile).length === 0) return;
+
+    let index = editingIndex;
+    if (index === null || index === undefined) {
+      index = projects.length - 1;
+    }
+    setProject(projects[index]);
+  }, [profile]);
+
   const getFieldError = (field: keyof Project) => errors?.[field];
+
+  if (!project) return;
 
   return (
     <div className="space-y-6">

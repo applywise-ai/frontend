@@ -3,25 +3,24 @@
  */
 
 // Form question types
-export type QuestionType = 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'radio' | 'date' | 'file';
-export type FormSectionType = 'personal' | 'coverLetter' | 'screening' | 'custom' | 'resume';
-export type FileType = 'resume' | 'coverLetter' | 'other';
-export type ApplicationStatus = 'Draft' | 'Applied' | 'Saved' | 'Rejected' | 'Interviewing' | 'Expired' | 'Accepted';
-
-// Answer type
-export type Answer = string | Record<string, string | number | boolean | null>;
+export type QuestionType = 'text' | 'textarea' | 'select' | 'multiselect' | 'date' | 'file' | 'checkbox' | 'number';
+export type FormSectionType = 'personal' | 'education' | 'experience' | 'resume' | 'cover_letter' | 'additional' | 'demographic';
+export type ApplicationStatus = 'Draft' | 'Applied' | 'Saved' | 'Rejected' | 'Interviewing' | 'Expired' | 'Accepted' | 'Pending' | 'Failed' | 'Not Found';
 
 // Form question structure
 export interface FormQuestion {
-  id: string;
+  unique_label_id: string;
   question: string;
-  answer: Answer;
+  answer?: string | null;
   type: QuestionType;
   placeholder?: string;
   options?: string[];
   section: FormSectionType;
-  fileType?: FileType;
+  file_url?: string;
+  file_name?: string;
   required?: boolean;
+  pruned?: boolean;
+  ai_custom?: boolean; // New property for AI custom functionality
 }
 
 // Main application interface
@@ -34,11 +33,8 @@ export interface Application {
   appliedDate?: string;
   lastUpdated: string;
   createdAt: string;
-  // // File references
-  // resumeUrl?: string;
-  // resumeFilename?: string;
-  // coverLetterUrl?: string;
-  // coverLetterFilename?: string;
+  screenshot?: string;
+  submittedScreenshot?: string;
 }
 
 // Firestore-specific application interface
@@ -52,11 +48,11 @@ export interface FirestoreApplication extends Omit<Application, 'createdAt' | 'l
  * Helper functions for applications
  */
 export const unmodifiable = (status: string): boolean => {
-  return status === 'Draft' || status === 'Saved' || status === 'Expired';
+  return status === 'Draft' || status === 'Saved' || status === 'Expired' || status === 'Pending' || status === 'Failed' || status === 'Not Found';
 };
 
 export const isSubmitted = (status: string): boolean => {
-  return ['Applied', 'Saved', 'Rejected', 'Interviewing', 'Expired', 'Accepted'].includes(status);
+  return ['Applied', 'Saved', 'Rejected', 'Interviewing', 'Expired', 'Accepted', 'Pending', 'Failed', 'Not Found'].includes(status);
 };
 
 export const getStatusColor = (status: Application['status']): string => {
@@ -73,50 +69,14 @@ export const getStatusColor = (status: Application['status']): string => {
       return 'bg-red-50 text-red-600 border-red-200';
     case 'Expired':
       return 'bg-gray-50 text-gray-600 border-gray-200';
+    case 'Pending':
+      return 'bg-orange-50 text-orange-600 border-orange-200';
+    case 'Failed':
+      return 'bg-red-50 text-red-600 border-red-200';
+    case 'Not Found':
+      return 'bg-gray-50 text-gray-600 border-gray-200';
     case 'Draft':
     default:
       return 'bg-amber-50 text-amber-600 border-amber-200';
   }
 };
-
-export const getDefaultFormQuestions = (): FormQuestion[] => {
-  return [
-    {
-      id: 'fullName',
-      question: 'What is your full name?',
-      answer: '',
-      type: 'text',
-      placeholder: 'Enter your full name',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'email',
-      question: 'What is your email address?',
-      answer: '',
-      type: 'email',
-      placeholder: 'Enter your email address',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'phone',
-      question: 'What is your phone number?',
-      answer: '',
-      type: 'phone',
-      placeholder: 'Enter your phone number',
-      section: 'personal',
-      required: true
-    },
-    {
-      id: 'resume',
-      question: 'Upload your resume',
-      answer: '',
-      type: 'file',
-      placeholder: 'Upload PDF, DOCX, or TXT file',
-      section: 'resume',
-      fileType: 'resume',
-      required: true
-    }
-  ];
-}; 

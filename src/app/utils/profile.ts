@@ -1,6 +1,30 @@
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { UserProfile, FieldName, Project, Education, Employment } from '@/app/types/profile';
 
 export type ProfileCompletionState = 'complete' | 'partial' | 'incomplete';
+
+export const emptyProject: Project = {
+  [FieldName.PROJECT_NAME]: '',
+  [FieldName.PROJECT_DESCRIPTION]: '',
+  [FieldName.PROJECT_LINK]: ''
+};
+
+export const emptyEducation: Education = {
+  [FieldName.COMPANY]: '',
+  [FieldName.POSITION]: '',
+  [FieldName.EMPLOYMENT_FROM]: '',
+  [FieldName.EMPLOYMENT_TO]: '',
+  [FieldName.EMPLOYMENT_DESCRIPTION]: '',
+  [FieldName.EMPLOYMENT_LOCATION]: '',
+};
+
+export const emptyEmployment: Employment = {
+  [FieldName.COMPANY]: '',
+  [FieldName.POSITION]: '',
+  [FieldName.EMPLOYMENT_FROM]: '',
+  [FieldName.EMPLOYMENT_TO]: '',
+  [FieldName.EMPLOYMENT_DESCRIPTION]: '',
+  [FieldName.EMPLOYMENT_LOCATION]: '',
+};
 
 const partiallyCompleteFields = [
   FieldName.FULL_NAME,
@@ -21,7 +45,7 @@ const partiallyCompleteFields = [
 
 export const fullyCompleteFields = [
   ...partiallyCompleteFields,
-  FieldName.PROJECTS,
+  FieldName.PROJECT,
   FieldName.JOB_TYPES,
   FieldName.LOCATION_PREFERENCES,
   FieldName.ROLE_LEVEL,
@@ -40,7 +64,7 @@ export const fullyCompleteFields = [
 
 export const isFieldFilled = (profile: UserProfile, field: string): boolean => {
   if (field === FieldName.EDUCATION || field === FieldName.EMPLOYMENT ||
-    field === FieldName.SKILLS || field === FieldName.PROJECTS
+    field === FieldName.SKILLS || field === FieldName.PROJECT
   ) {
     const arr = profile[field as keyof UserProfile] as unknown;
     return Array.isArray(arr) && arr.length > 0;
@@ -114,7 +138,7 @@ export const getNextSectionToFill = (profile: UserProfile, profileState: Profile
   if (!profile[FieldName.EMPLOYMENT]?.length) {
     return { name: 'Employment', id: 'employment' };
   }
-  if (!profile[FieldName.PROJECTS]?.length) {
+  if (!profile[FieldName.PROJECT]?.length) {
     return { name: 'Projects', id: 'projects' };
   }
   if (!profile[FieldName.SKILLS]?.length) {
@@ -150,3 +174,55 @@ export const getNextSectionToFill = (profile: UserProfile, profileState: Profile
 
   return null;
 }; 
+
+/**
+ * Check if the user profile has enough details to generate personalized recommendations
+ * Returns true if the profile has the minimum required fields for scoring
+ */
+export function hasEnoughProfileDetailsForRecommendations(profile: UserProfile | null): boolean {
+  if (!profile) return false;
+
+  // Check for required fields that are used in the scoring algorithm
+  const hasExperienceLevel = !!profile.roleLevel;
+  const hasSpecializations = !!(profile.industrySpecializations && profile.industrySpecializations.length > 0);
+  const hasJobTypes = !!(profile.jobTypes && profile.jobTypes.length > 0);
+  const hasSkills = !!(profile.skills && profile.skills.length > 0);
+  const hasLocationPreferences = !!(profile.locationPreferences && profile.locationPreferences.length > 0);
+
+  // We need at least 3 out of 5 key fields to generate meaningful recommendations
+  const requiredFields = [hasExperienceLevel, hasSpecializations, hasJobTypes, hasSkills, hasLocationPreferences];
+  const filledFields = requiredFields.filter(Boolean).length;
+
+  return filledFields >= 3;
+}
+
+/**
+ * Get a list of missing profile fields that are needed for recommendations
+ */
+export function getMissingProfileFields(profile: UserProfile | null): string[] {
+  if (!profile) return ['Complete profile setup'];
+
+  const missingFields: string[] = [];
+
+  if (!profile.roleLevel) {
+    missingFields.push('Experience level');
+  }
+
+  if (!profile.industrySpecializations || profile.industrySpecializations.length === 0) {
+    missingFields.push('Industry specializations');
+  }
+
+  if (!profile.jobTypes || profile.jobTypes.length === 0) {
+    missingFields.push('Job type preferences');
+  }
+
+  if (!profile.skills || profile.skills.length === 0) {
+    missingFields.push('Skills');
+  }
+
+  if (!profile.locationPreferences || profile.locationPreferences.length === 0) {
+    missingFields.push('Location preferences');
+  }
+
+  return missingFields;
+} 

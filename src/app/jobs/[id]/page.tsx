@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
 import Link from 'next/link';
-import { useApplications } from '@/app/contexts/ApplicationsContext';
+
 import { useGetJob } from '@/app/hooks/useGetJob';
 
 function JobDetailPageContent() {
@@ -14,13 +14,8 @@ function JobDetailPageContent() {
   
   // Use our hooks
   const { job, error: jobError, loading: jobLoading } = useGetJob(jobId);
-  const { applications } = useApplications();
 
-  // Function to check if user has applied to this job (any status except "Saved")
-  const hasApplied = (): boolean => {
-    if (!applications || !jobId) return false;
-    return applications.some(app => app.jobId === jobId && app.status !== 'Saved');
-  };
+
   
   if ((!job && !jobLoading) || jobError) {
     return (
@@ -71,7 +66,6 @@ function JobDetailPageContent() {
               job={job} 
               isLoading={jobLoading}
               fullPage={true}
-              hasApplied={hasApplied()}
             />
           </div>
         </div>

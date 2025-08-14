@@ -1,19 +1,11 @@
 'use client';
 
-import { UserProfile } from '@/app/types/profile';
 import { Card, CardHeader, CardTitle, CardContent } from '@/app/components/ui/card';
 import { FileText } from 'lucide-react';
 import ResumeDisplay from './ResumeDisplay';
 
-interface ProfileSectionResumeProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
+export default function ProfileSectionResume() {
 
-export default function ProfileSectionResume({
-  profile,
-  updateProfile
-}: ProfileSectionResumeProps) {
   return (
     <div>
       <Card className="mb-6">
@@ -26,7 +18,7 @@ export default function ProfileSectionResume({
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <ResumeDisplay profile={profile} updateProfile={updateProfile} />
+          <ResumeDisplay />
         </CardContent>
       </Card>
     </div>

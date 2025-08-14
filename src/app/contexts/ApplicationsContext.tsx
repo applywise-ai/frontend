@@ -1,9 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Application, FormQuestion, Answer } from '@/app/types/application';
+import { Application, FormQuestion } from '@/app/types/application';
 import { Job } from '@/app/types/job';
-import { applicationsService, jobsService } from '@/app/utils/firebase';
+import { applicationsService } from '@/app/services/firebase';
+import jobsService from '@/app/services/api/jobs';
+import apiApplicationsService from '@/app/services/api/applications';
 import { useNotification } from '@/app/contexts/NotificationContext';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useJobs } from '@/app/contexts/JobsContext';
@@ -17,16 +19,19 @@ interface ApplicationsContextType {
   isLoading: boolean;
   error: string | null;
   // CRUD operations
+  fetchApplication: (applicationId: string) => Promise<ApplicationWithJob>;
   deleteApplication: (applicationId: string) => Promise<boolean>;
-  updateApplication: (applicationId: string, updates: Partial<Application>) => Promise<Application>;
-  updateApplicationAnswer: (applicationId: string, questionId: string, answer: Answer) => Promise<Application>;
+  updateApplication: (applicationId: string, updates: Partial<Application>) => void;
+  updateApplicationAnswer: (applicationId: string, questionId: string, answer: string | null | Partial<FormQuestion>) => Promise<Application>;
   updateApplicationStatus: (applicationId: string, status: Application['status']) => Promise<Application>;
   // Job-specific operations
   unsaveJob: (jobId: string) => Promise<boolean>;
   isJobSaved: (jobId: string) => Promise<boolean>;
   toggleSave: (jobId: string, currentIsSaved: boolean) => Promise<void>;
-  applyToJob: (jobId: string, formQuestions?: FormQuestion[]) => Promise<string>;
+  applyToJob: (jobId: string) => Promise<string>;
   submitApplication: (applicationId: string) => Promise<Application>;
+  generateCoverLetter: (jobId: string, prompt: string) => Promise<{ application_id: string; cover_letter_url: string; message: string }>;
+  generateCustomAnswer: (jobDescription: string, question: string, prompt: string) => Promise<{ answer: string; message: string }>;
 }
 
 const ApplicationsContext = createContext<ApplicationsContextType | undefined>(undefined);
@@ -64,7 +69,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
     try {
       console.log('ApplicationsProvider: Loading applications for user:', user.uid);
       const userApplications = await applicationsService.getUserApplications(user.uid);
-      
+
       // Extract job IDs from applications
       const jobIds = userApplications.map(app => app.jobId);
       
@@ -80,7 +85,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
         ...app,
         job: jobsData[index] || null
       }));
-      
+
       setApplications(applicationsWithJobs);
     } catch (err) {
       console.error('Error loading applications:', err);
@@ -96,6 +101,57 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
     }
   }, [user, loadApplications]);
 
+  // Fetch a single application by ID
+  const fetchApplication = useCallback(async (applicationId: string): Promise<ApplicationWithJob> => {
+    console.log(`ApplicationsContext: fetchApplication(${applicationId})`);
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      // If not in local state, fetch from Firebase
+      const application = await applicationsService.getApplication(user.uid, applicationId);
+      
+      if (!application) {
+        throw new Error('Application not found');
+      } else {
+        console.log('ApplicationsContext: application', application);
+      }
+
+      // Fetch the job details
+      const jobData = await jobsService.getJob(application?.jobId || '');
+      
+      // Create the application with job
+      const applicationWithJob: ApplicationWithJob = {
+        ...application || {},
+        job: jobData
+      };
+      
+      // Update local state to include this application
+      setApplications(prev => {
+        if (!prev) return [applicationWithJob];
+        
+        // Check if application already exists
+        const existingIndex = prev.findIndex(app => app && app.id && app.id === applicationId);
+        if (existingIndex >= 0) {
+          // Update existing application
+          const updated = [...prev];
+          updated[existingIndex] = applicationWithJob;
+          return updated;
+        } else {
+          // Add new application
+          return [...prev, applicationWithJob];
+        }
+      });
+      
+      return applicationWithJob;
+    } catch (err) {
+      console.error('Error fetching application:', err);
+      setError('Failed to fetch application');
+      throw err;
+    }
+  }, [user]);
+
   // Delete an application
   const deleteApplication = useCallback(async (applicationId: string): Promise<boolean> => {
     console.log(`ApplicationsContext: deleteApplication(${applicationId})`);
@@ -108,7 +164,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
       
       if (success) {
         // Get the application before removing to access job data
-        const appToDelete = applications?.find(app => app.id === applicationId);
+        const appToDelete = applications?.find(app => app && app.id && app.id === applicationId);
         
         // Remove from local state
         setApplications(prev => prev ? prev.filter(app => app.id !== applicationId) : null);
@@ -165,29 +221,32 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   const updateApplication = useCallback(async (
     applicationId: string, 
     updates: Partial<Application>
-  ): Promise<Application> => {
+  ) => {
     console.log(`ApplicationsContext: updateApplication(${applicationId})`);
     if (!user) {
       throw new Error('User not authenticated');
     }
 
     try {
-      const updatedApplication = await applicationsService.updateApplication(
-        user.uid, 
-        applicationId, 
-        updates
-      );
-      
+      // If form questions are being updated, use the API save method
+      if (updates.formQuestions) {
+        await apiApplicationsService.save(applicationId, updates.formQuestions);
+      }
+
+      const updatedApplication = applications?.find(app => app && app.id && app.id === applicationId);
+      const updatedApplicationWithUpdates = updatedApplication
+        ? { ...updatedApplication, formQuestions: updates.formQuestions, job: updatedApplication.job }
+        : null;
+
+      // console.log(applications, updatedApplicationWithUpdates, applicationId, updatedApplication)
       // Update local state - preserve the job data
       setApplications(prev => 
         prev ? prev.map(app => 
-          app.id === applicationId 
-            ? { ...updatedApplication, job: app.job } as ApplicationWithJob
+          app && app.id && app.id === applicationId 
+            ? updatedApplicationWithUpdates as ApplicationWithJob
             : app
         ) : null
       );
-      
-      return updatedApplication;
     } catch (err) {
       console.error('Error updating application:', err);
       setError('Failed to update application');
@@ -199,7 +258,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   const updateApplicationAnswer = useCallback(async (
     applicationId: string,
     questionId: string,
-    answer: Answer
+    answer: string | null | Partial<FormQuestion>
   ): Promise<Application> => {
     console.log(`ApplicationsContext: updateApplicationAnswer(${applicationId}, ${questionId})`);
     if (!user) {
@@ -208,15 +267,20 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
 
     try {
       // Find the current application
-      const currentApp = applications?.find(app => app.id === applicationId);
+      const currentApp = applications?.find(app => app && app.id && app.id === applicationId);
       if (!currentApp) {
         throw new Error('Application not found');
       }
 
       // Update the specific question's answer
       const updatedFormQuestions = currentApp.formQuestions.map(question => 
-        question.id === questionId 
-          ? { ...question, answer }
+        question.unique_label_id === questionId 
+          ? { 
+              ...question, 
+              ...(typeof answer === 'string' || answer === null 
+                ? { answer } 
+                : answer)
+            }
           : question
       );
 
@@ -230,7 +294,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
       // Update local state - preserve the job data
       setApplications(prev => 
         prev ? prev.map(app => 
-          app.id === applicationId 
+          app && app.id && app.id === applicationId 
             ? { ...updatedApplication, job: app.job } as ApplicationWithJob
             : app
         ) : null
@@ -277,7 +341,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
         updateJobCache(jobData, false);
       }
       
-      showSuccess('Job saved successfully!');
+      showSuccess('Job saved. You can find it in the applications tab!');
       return applicationId;
     } catch (err) {
       console.error('Error saving job:', err);
@@ -294,18 +358,23 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
     }
 
     try {
-      const submittedApplication = await applicationsService.submitApplication(
+      // Use the new API service to submit the application
+      await apiApplicationsService.submit(applicationId);
+      
+      // Then update the local application status
+      const submittedApplication = await applicationsService.updateApplicationStatus(
         user.uid, 
-        applicationId
+        applicationId,
+        'Applied'
       );
       
       // Get the application before updating to access job data
-      const appToSubmit = applications?.find(app => app.id === applicationId);
+      const appToSubmit = applications?.find(app => app && app.id && app.id === applicationId);
       
       // Update local state - preserve the job data
       setApplications(prev => 
         prev ? prev.map(app => 
-          app.id === applicationId 
+          app && app.id && app.id === applicationId 
             ? { ...submittedApplication, job: app.job } as ApplicationWithJob
             : app
         ) : null
@@ -323,6 +392,40 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
       throw err;
     }
   }, [user, applications, updateJobCache]);
+
+  // Generate a cover letter
+  const generateCoverLetter = useCallback(async (jobId: string, prompt: string): Promise<{ application_id: string; cover_letter_url: string; message: string }> => {
+    console.log(`ApplicationsContext: generateCoverLetter(${jobId})`);
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      const response = await apiApplicationsService.generateCoverLetter(jobId, prompt);
+      return response;
+    } catch (err) {
+      console.error('Error generating cover letter:', err);
+      setError('Failed to generate cover letter');
+      throw err;
+    }
+  }, [user]);
+
+  // Generate a custom answer
+  const generateCustomAnswer = useCallback(async (jobDescription: string, question: string, prompt: string): Promise<{ answer: string; message: string }> => {
+    console.log(`ApplicationsContext: generateCustomAnswer(${jobDescription}, ${question})`);
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      const response = await apiApplicationsService.generateCustomAnswer(jobDescription, question, prompt);
+      return response;
+    } catch (err) {
+      console.error('Error generating custom answer:', err);
+      setError('Failed to generate custom answer');
+      throw err;
+    }
+  }, [user]);
 
   // Check if user has saved a job (using local state first)
   const isJobSaved = useCallback(async (jobId: string): Promise<boolean> => {
@@ -387,15 +490,16 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   }, [user, showSuccess, applications, updateJobCache]);
 
   // Apply to a job (create draft application or update saved to draft)
-  const applyToJob = useCallback(async (jobId: string, formQuestions?: FormQuestion[]): Promise<string> => {
+  const applyToJob = useCallback(async (jobId: string): Promise<string> => {
     console.log(`ApplicationsContext: applyToJob(${jobId})`);
     if (!user) {
       throw new Error('User not authenticated');
     }
 
     try {
-      const applicationId = await applicationsService.apply(user.uid, jobId, formQuestions);
-      
+      // Use the new API service to apply to the job
+      const applicationId = await apiApplicationsService.apply(jobId);
+
       // Check if we updated an existing saved application or created a new one
       const existingSavedApp = applications?.find(app => app.jobId === jobId && app.status === 'Saved');
       
@@ -403,8 +507,8 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
         // Update the existing saved application to Draft status
         setApplications(prev => 
           prev ? prev.map(app => 
-            app.id === applicationId 
-              ? { ...app, status: 'Draft' as const, formQuestions: formQuestions || [], lastUpdated: new Date().toISOString() }
+            app && app.id && app.id === applicationId 
+              ? { ...app, status: 'Draft' as const, formQuestions: [], lastUpdated: new Date().toISOString() }
               : app
           ) : null
         );
@@ -424,13 +528,13 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
           userId: user.uid,
           jobId: jobId,
           status: 'Draft' as const,
-          formQuestions: formQuestions || [],
+          formQuestions: [],
           lastUpdated: new Date().toISOString(),
           createdAt: new Date().toISOString(),
           job: jobData
         };
         
-        setApplications(prev => prev ? [...prev, newApplication] : [newApplication]);
+        setApplications(prev => prev ? [newApplication, ...prev] : [newApplication]);
         
         // Remove job from jobs cache since user is now applying
         if (jobData) {
@@ -460,6 +564,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
     applications,
     isLoading,
     error,
+    fetchApplication,
     deleteApplication,
     updateApplication,
     updateApplicationStatus,
@@ -469,6 +574,8 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
     applyToJob,
     submitApplication,
     updateApplicationAnswer,
+    generateCoverLetter,
+    generateCustomAnswer,
   };
 
   return (

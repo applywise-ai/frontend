@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserProfile, FieldName, Education, DEGREE_OPTIONS } from '@/app/types/profile';
+import { FieldName, Education, DEGREE_OPTIONS } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { MonthPicker } from '@/app/components/ui/month-picker';
@@ -11,8 +12,6 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 
 interface EducationFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
   editingIndex?: number;
   errors?: Partial<Record<string, string>>;
   setErrors?: (errors: Partial<Record<string, string>>) => void;
@@ -20,27 +19,22 @@ interface EducationFormProps {
 
 export default function EducationForm({ 
   editingIndex,
-  profile,
-  updateProfile,
   errors,
   setErrors
 }: EducationFormProps) {
-  const emptyEducation: Education = {
-    [FieldName.SCHOOL]: '',
-    [FieldName.DEGREE]: '',
-    [FieldName.FIELD_OF_STUDY]: '',
-    [FieldName.EDUCATION_FROM]: '',
-    [FieldName.EDUCATION_TO]: '',
-    [FieldName.EDUCATION_GPA]: '',
-  };
-  
-  const [education, setEducation] = useState<Education>(
-    editingIndex !== undefined && profile[FieldName.EDUCATION] ? profile[FieldName.EDUCATION][editingIndex] : emptyEducation
-  );
+  const { profile, updateProfile } = useProfile();
+  const [education, setEducation] = useState<Education | null>(null);
+  const educations = profile[FieldName.EDUCATION] || [];
 
   useEffect(() => {
-    updateProfile({[FieldName.TEMP_EDUCATION]: education});
-  }, []);
+    if (Object.keys(profile).length === 0) return;
+
+    let index = editingIndex;
+    if (index === null || index === undefined) {
+      index = educations.length - 1;
+    }
+    setEducation(educations[index]);
+  }, [profile]);
 
   const handleEducationChange = (field: keyof Education, value: string) => {
     const updatedEducation = {
@@ -56,18 +50,14 @@ export default function EducationForm({
       setErrors(newErrors);
     }
 
-    // Update temporary education in profile
-    const tempEducation = {
-      [FieldName.TEMP_EDUCATION]: {
-        [FieldName.SCHOOL]: updatedEducation[FieldName.SCHOOL],
-        [FieldName.DEGREE]: updatedEducation[FieldName.DEGREE],
-        [FieldName.FIELD_OF_STUDY]: updatedEducation[FieldName.FIELD_OF_STUDY],
-        [FieldName.EDUCATION_FROM]: updatedEducation[FieldName.EDUCATION_FROM],
-        [FieldName.EDUCATION_TO]: updatedEducation[FieldName.EDUCATION_TO],
-        [FieldName.EDUCATION_GPA]: updatedEducation[FieldName.EDUCATION_GPA]
-      }
-    };
-    updateProfile(tempEducation);
+    let index = editingIndex;
+    if (index === null || index === undefined) {
+      index = educations.length - 1;
+    }
+    const updatedEducations = [...educations];
+    updatedEducations[index] = updatedEducation;
+    // Update the index of the education
+    updateProfile({ [FieldName.EDUCATION]: updatedEducations });
   };
   
   const parseDate = (dateStr: string | undefined): Date | undefined => {
@@ -85,6 +75,8 @@ export default function EducationForm({
   };
 
   const getFieldError = (field: keyof Education) => errors?.[field];
+
+  if (!education) return;
 
   return (
     <div className="space-y-6">
@@ -114,10 +106,10 @@ export default function EducationForm({
                       onChange={(e) => handleEducationChange(FieldName.SCHOOL, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.SCHOOL) ? 'border-red-500' : ''}`}
                       placeholder="School name"
-        />
+                    />
                     {getFieldError(FieldName.SCHOOL) && (
                       <p className="mt-1 text-sm text-red-600">{getFieldError(FieldName.SCHOOL)}</p>
-        )}
+                    )}
                   </div>
                 </div>
 

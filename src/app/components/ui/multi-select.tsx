@@ -29,6 +29,7 @@ interface MultiSelectProps {
   placeholder?: string
   className?: string
   itemName?: string
+  showOptions?: boolean
 }
 
 export function MultiSelect({
@@ -37,7 +38,8 @@ export function MultiSelect({
   onChange,
   placeholder = "Select options...",
   className,
-  itemName
+  itemName,
+  showOptions = false
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -66,6 +68,14 @@ export function MultiSelect({
           <div className="flex gap-1 flex-wrap">
             {selected.length === 0 ? (
               <span className="text-sm text-gray-500">{placeholder}</span>
+            ) : showOptions ? (
+              <div className="flex flex-wrap gap-1">
+                {selected.map((value) => (
+                  <span key={value} className="text-xs text-gray-700 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded-md">
+                    {value}
+                  </span>
+                ))}
+              </div>
             ) : (
               <span className="text-sm text-gray-900 font-">
                 {selected.length} {itemName}{selected.length > 1 && 's' } selected

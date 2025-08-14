@@ -1,14 +1,14 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Check, X, Calendar, Globe, HelpCircle } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 
-interface WorkEligibilityDisplayProps {
-  profile: UserProfile;
-}
-
-export default function WorkEligibilityDisplay({ profile }: WorkEligibilityDisplayProps) {
+export default function WorkEligibilityDisplay() {
+  const { profile } = useProfile();
+  
+  
   return (
     <div className="space-y-6">
       {/* Age Verification */}

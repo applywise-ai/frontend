@@ -28,7 +28,7 @@ export function QuestionLabel({ htmlFor, required = false, section, children }: 
   return (
     <Label 
       htmlFor={htmlFor} 
-      className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-medium text-gray-700"
+      className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-semibold text-gray-700"
     >
       <div className="flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-gray-100">
         {getQuestionIcon(htmlFor, section)}
@@ -45,7 +45,7 @@ export function QuestionLabel({ htmlFor, required = false, section, children }: 
 export function LegacyQuestionLabel({ question }: { question: FormQuestion }) {
   return (
     <QuestionLabel
-      htmlFor={question.id}
+      htmlFor={question.unique_label_id}
       required={question.required || false}
       section={question.section}
     >
@@ -85,9 +85,11 @@ function getIconColorBySection(section: FormSectionType): string {
   switch (section) {
     case 'personal': return 'text-blue-600';
     case 'resume': return 'text-green-600';
-    case 'coverLetter': return 'text-indigo-600';
-    case 'screening': return 'text-teal-600';
-    case 'custom': return 'text-amber-600';
+    case 'cover_letter': return 'text-indigo-600';
+    case 'education': return 'text-teal-600';
+    case 'experience': return 'text-amber-600';
+    case 'additional': return 'text-yellow-600';
+    case 'demographic': return 'text-purple-600';
     default: return 'text-gray-500';
   }
 } 

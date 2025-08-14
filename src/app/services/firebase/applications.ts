@@ -16,8 +16,7 @@ import { db } from './config';
 import { 
   Application, 
   FirestoreApplication, 
-  FormQuestion, 
-  getDefaultFormQuestions 
+  FormQuestion
 } from '@/app/types/application';
 
 class ApplicationsService {
@@ -84,7 +83,7 @@ class ApplicationsService {
         userId,
         jobId,
         status,
-        formQuestions: formQuestions || getDefaultFormQuestions(),
+        formQuestions: formQuestions || [],
         createdAt: serverTimestamp(),
         lastUpdated: serverTimestamp(),
       };
@@ -276,56 +275,6 @@ class ApplicationsService {
   }
 
   /**
-   * Submit an application (change status from Draft to Applied)
-   */
-  async submitApplication(userId: string, applicationId: string): Promise<Application> {
-    try {
-      return await this.updateApplicationStatus(userId, applicationId, 'Applied');
-    } catch (error) {
-      console.error('Error submitting application:', error);
-      throw new Error('Failed to submit application');
-    }
-  }
-
-  /**
-   * Apply to a job - if saved application exists, update to Draft, otherwise create new Draft application
-   */
-  async apply(
-    userId: string, 
-    jobId: string, 
-    formQuestions?: FormQuestion[]
-  ): Promise<string> {
-    try {
-      // Check if there's already a saved application for this job
-      const applicationsRef = this.getApplicationsRef(userId);
-      const q = query(
-        applicationsRef, 
-        where('jobId', '==', jobId),
-        where('status', '==', 'Saved')
-      );
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        // Found a saved application, update it to Draft
-        const savedApplication = querySnapshot.docs[0];
-        const applicationId = savedApplication.id;
-        
-        // Update the status to Draft
-        await this.updateApplicationStatus(userId, applicationId, 'Draft');
-        
-        return applicationId;
-      } else {
-        // No saved application found, create a new one with Draft status
-        const applicationId = await this.createApplication(userId, jobId, 'Draft', formQuestions);
-        return applicationId;
-      }
-    } catch (error) {
-      console.error('Error applying to job:', error);
-      throw new Error('Failed to apply to job');
-    }
-  }
-
-  /**
    * Get application statistics for a user
    */
   async getApplicationStats(userId: string): Promise<{
@@ -416,24 +365,6 @@ class ApplicationsService {
     }
   }
 
-  /**
-   * Get recent applications (last 30 days)
-   */
-  async getRecentApplications(userId: string, days: number = 30): Promise<Application[]> {
-    try {
-      const applications = await this.getUserApplications(userId);
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - days);
-      
-      return applications.filter(app => {
-        const createdDate = new Date(app.createdAt);
-        return createdDate >= cutoffDate;
-      });
-    } catch (error) {
-      console.error('Error fetching recent applications:', error);
-      throw new Error('Failed to fetch recent applications');
-    }
-  }
 }
 
 const applicationsService = new ApplicationsService();

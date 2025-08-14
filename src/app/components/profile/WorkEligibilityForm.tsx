@@ -1,18 +1,17 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Label } from '@/app/components/ui/label';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Calendar, Globe, Briefcase, ShieldCheck } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 
-interface WorkEligibilityFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
-
-export default function WorkEligibilityForm({ profile, updateProfile }: WorkEligibilityFormProps) {
+export default function WorkEligibilityForm() {
+  const { profile, updateProfile } = useProfile();
+  
+  
   const handleCheckboxChange = (field: string, checked: boolean) => {
     updateProfile({ [field]: checked });
   };

@@ -1,16 +1,15 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Lightbulb, Info, Tags } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
 import SkillSearch from '@/app/components/profile/SkillSearch';
 
-interface SkillsFormProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
-
-export default function SkillsForm({ profile, updateProfile }: SkillsFormProps) {
+export default function SkillsForm() {
+  const { profile, updateProfile } = useProfile();
+  
+  
   // Ensure skills array exists
   const skillsList = profile[FieldName.SKILLS] || [];
   

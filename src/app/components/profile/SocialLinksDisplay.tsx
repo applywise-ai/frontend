@@ -1,6 +1,7 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { 
   Linkedin, 
   Github, 
@@ -8,11 +9,10 @@ import {
   Globe
 } from 'lucide-react';
 
-interface SocialLinksDisplayProps {
-  profile: UserProfile;
-}
-
-export default function SocialLinksDisplay({ profile }: SocialLinksDisplayProps) {
+export default function SocialLinksDisplay() {
+  const { profile } = useProfile();
+  
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {profile[FieldName.LINKEDIN] && (

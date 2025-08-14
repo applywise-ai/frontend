@@ -1,6 +1,7 @@
 'use client';
 
-import { UserProfile, FieldName, Project } from '@/app/types/profile';
+import { FieldName, Project } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Link as LinkIcon, PencilIcon, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { useState } from 'react';
@@ -10,16 +11,13 @@ import { useNotification } from '@/app/contexts/NotificationContext';
 import ProjectForm from './ProjectForm';
 import EditSectionModal from './EditSectionModal';
 
-interface ProjectDisplayProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
+export default function ProjectDisplay() {
+  const { profile, updateProfile, saveProfile, refreshProfile } = useProfile();
 
-export default function ProjectDisplay({ profile, updateProfile }: ProjectDisplayProps) {
   const [editingIndex, setEditingIndex] = useState<number | undefined>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
-  const projects = profile[FieldName.PROJECTS] as Project[] || [];
+  const projects = profile ? profile[FieldName.PROJECT] as Project[] : [];
   const { showSuccess } = useNotification();
 
   const handleEdit = (index: number) => {
@@ -29,34 +27,16 @@ export default function ProjectDisplay({ profile, updateProfile }: ProjectDispla
   const handleDelete = (index: number) => {
     const updatedProjects = [...projects];
     updatedProjects.splice(index, 1);
-    updateProfile({ [FieldName.PROJECTS]: updatedProjects });
+    updateProfile({ [FieldName.PROJECT]: updatedProjects }, true);
     showSuccess('Project deleted successfully!');
   };
   
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Get the new entry from profile
-      const newEntry = profile[FieldName.TEMP_PROJECT] as Project;
-          
-      const e = validateProject(newEntry);
-      if (Object.keys(e).length > 0) {
-        setErrors(e);
-        setIsSaving(false);
-        return;
-      }
+      // Save the profile
+      await saveProfile();
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const updatedProjects = [...(profile[FieldName.PROJECTS] || [])];
-      if (editingIndex !== undefined) {
-        // If editing, replace the specific project entry
-        updatedProjects[editingIndex] = newEntry;
-      }
-    
-      // Update the profile with the updated projects array
-      updateProfile({ [FieldName.PROJECTS]: updatedProjects });
       showSuccess('Project updated successfully!');
       setEditingIndex(undefined);
       setErrors({});
@@ -66,7 +46,7 @@ export default function ProjectDisplay({ profile, updateProfile }: ProjectDispla
   };
 
   const handleClose = () => {
-    updateProfile({ [FieldName.TEMP_PROJECT]: {} as Project });
+    refreshProfile();
     setEditingIndex(undefined);
     setErrors({});
   };
@@ -79,7 +59,7 @@ export default function ProjectDisplay({ profile, updateProfile }: ProjectDispla
   return (
     <>
       <div className="space-y-6">
-        {projects.length > 0 ? (
+        {projects && projects.length > 0 ? (
           projects.map((project, index) => (
             <div key={index} className={`${index > 0 ? 'pt-6 border-t border-gray-100' : ''}`}>
               <div className="flex items-start justify-between group">

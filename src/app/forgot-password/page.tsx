@@ -7,7 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
-import { authService } from '@/app/utils/firebase';
+import { authService } from '@/app/services/firebase';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/app/components/loading/LoadingScreen';
 

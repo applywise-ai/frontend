@@ -1,4 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
+import { Job, JOB_TYPE_OPTIONS, ROLE_LEVEL_OPTIONS, LOCATION_TYPE_OPTIONS } from '@/app/types/job';
+import { ApiJobResponse } from '@/app/services/jobs';
 
 /**
  * Converts a Firestore Timestamp to a relative time string
@@ -60,3 +62,89 @@ export function formatRelativeTime(timestamp: Timestamp | Date | string): string
 export function formatJobPostedDate(postedDate: string | Timestamp): string {
   return formatRelativeTime(postedDate);
 } 
+
+/**
+ * Convert API job response to Job interface
+ * Maps snake_case API fields to camelCase Job interface
+ */
+export function convertApiJobToJob(apiJob: ApiJobResponse): Job {
+  return {
+    id: apiJob.id || '',
+    title: apiJob.title,
+    company: apiJob.company,
+    logo: apiJob.logo,
+    companyDescription: apiJob.company_description,
+    companyUrl: apiJob.company_url,
+    location: apiJob.location,
+    salaryMinRange: apiJob.salary_min_range,
+    salaryMaxRange: apiJob.salary_max_range,
+    salaryCurrency: apiJob.salary_currency,
+    jobType: apiJob.job_type || 'fulltime',
+    description: apiJob.description || '',
+    postedDate: apiJob.posted_date || apiJob.created_at || '',
+    experienceLevel: apiJob.experience_level || '',
+    specialization: apiJob.specialization,
+    responsibilities: apiJob.responsibilities || [],
+    requirements: apiJob.requirements || [],
+    jobUrl: apiJob.job_url,
+    skills: apiJob.skills || [],
+    shortResponsibilities: apiJob.short_responsibilities,
+    shortQualifications: apiJob.short_qualifications,
+    isRemote: apiJob.is_remote || false,
+    isVerified: apiJob.is_verified || false,
+    isSponsored: apiJob.is_sponsored || false,
+    providesSponsorship: apiJob.provides_sponsorship || false,
+    expired: apiJob.expired || false
+  };
+}
+
+/**
+ * Format salary range for display
+ */
+export function formatSalaryRange(job: Job): string {
+  if (job.salaryMinRange && job.salaryMaxRange) {
+    const currency = job.salaryCurrency || '$';
+    return `${job.salaryMinRange.toLocaleString()} - ${job.salaryMaxRange.toLocaleString()} ${currency}`;
+  }
+  return 'Not specified';
+}
+
+/**
+ * Get job type label from value
+ */
+export function getJobTypeLabel(jobType?: string): string {
+  if (!jobType) return 'Not specified';
+  const option = JOB_TYPE_OPTIONS.find(type => type.value === jobType);
+  return option?.label || jobType;
+}
+
+/**
+ * Get experience level label from value
+ */
+export function getExperienceLevelLabel(experienceLevel?: string): string {
+  if (!experienceLevel) return 'Not specified';
+  const option = ROLE_LEVEL_OPTIONS.find(level => level.value === experienceLevel);
+  return option?.label || ROLE_LEVEL_OPTIONS.find(level => level.value === 'junior')?.label || 'Not specified';
+}
+
+/**
+ * Get location label from value
+ */
+export function getLocationLabel(location?: string): string {
+  if (!location) return 'Not specified';
+  const option = LOCATION_TYPE_OPTIONS.find(loc => loc.value === location);
+  return option?.label || location;
+}
+
+/**
+ * Get location label from job object
+ * Priority: Remote (if isRemote) > Location > Not specified
+ */
+export function getLocationLabelFromJob(job: Job): string {
+  if (job.isRemote) return 'Remote';
+  if (job.location) {
+    const option = LOCATION_TYPE_OPTIONS.find(loc => loc.value === job.location);
+    return option?.label || job.location;
+  }
+  return 'Not specified';
+}

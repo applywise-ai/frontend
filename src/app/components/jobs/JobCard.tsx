@@ -9,7 +9,7 @@ import { getBreakpoint } from '@/app/utils/breakpoints';
 import { getAvatarColor } from '@/app/utils/avatar';
 import { INDUSTRY_SPECIALIZATION_OPTIONS } from '@/app/types/job';
 import { useApplications } from '@/app/contexts/ApplicationsContext';
-import { formatJobPostedDate } from '@/app/utils/job';
+import { formatJobPostedDate, formatSalaryRange, getJobTypeLabel, getExperienceLevelLabel, getLocationLabelFromJob } from '@/app/utils/job';
 import { Job } from '@/app/types/job';
 
 interface JobCardProps {
@@ -41,8 +41,6 @@ export default function JobCard({
     title,
     company,
     logo,
-    location,
-    salary,
     jobType,
     postedDate,
     description,
@@ -199,15 +197,17 @@ export default function JobCard({
                   <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1">
                     <div className="flex items-center space-x-1">
                       <MapPin className="h-3 w-3" />
-                      <span className="truncate max-w-[110px]">{location}</span>
+                      <span className="truncate max-w-[110px]">{getLocationLabelFromJob(job)}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <DollarSign className="h-3 w-3" />
-                      <span className="truncate max-w-[60px]">{salary.split("-")[0]}</span>
+                      <span className="truncate max-w-[60px]">
+                        {formatSalaryRange(job)}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-3 w-3" />
-                      <span className="whitespace-nowrap">{formatJobPostedDate(postedDate)}</span>
+                      <span className="whitespace-nowrap">{postedDate ? formatJobPostedDate(postedDate) : 'Recently'}</span>
                     </div>
                   </div>
                 )}
@@ -231,10 +231,7 @@ export default function JobCard({
                 {experienceLevel && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border border-purple-200/50">
                     <GraduationCap className="mr-1.5 h-3 w-3" />
-                    {experienceLevel === 'senior' ? 'Senior' : 
-                     experienceLevel === 'mid' ? 'Mid-level' : 
-                     experienceLevel === 'entry' ? 'Entry-level' : 
-                     experienceLevel}
+                    {getExperienceLevelLabel(experienceLevel)}
                   </span>
                 )}
                 {providesSponsorship && (
@@ -294,25 +291,27 @@ export default function JobCard({
               <div className="p-1 bg-gray-100 rounded-lg">
                 <MapPin className="h-3.5 w-3.5 text-gray-500" />
               </div>
-              <span className="truncate">{location}</span>
+              <span className="truncate">{getLocationLabelFromJob(job)}</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
               <div className="p-1 bg-gray-100 rounded-lg">
                 <DollarSign className="h-3.5 w-3.5 text-gray-500" />
               </div>
-              <span className="truncate">{salary}</span>
+              <span className="truncate">
+                {formatSalaryRange(job)}
+              </span>
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
               <div className="p-1 bg-gray-100 rounded-lg">
                 <Briefcase className="h-3.5 w-3.5 text-gray-500" />
               </div>
-              <span className="truncate">{jobType}</span>
+              <span className="truncate">{getJobTypeLabel(jobType)}</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
               <div className="p-1 bg-gray-100 rounded-lg">
                 <Clock className="h-3.5 w-3.5 text-gray-500" />
               </div>
-              <span className="truncate">{formatJobPostedDate(postedDate)}</span>
+              <span className="truncate">{postedDate ? formatJobPostedDate(postedDate) : 'Recently'}</span>
             </div>
           </div>
         )}

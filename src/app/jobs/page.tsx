@@ -11,20 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Job } from '@/app/types/job';
 import { getBreakpoint } from '@/app/utils/breakpoints';
 import { useJobs } from '@/app/contexts/JobsContext';
-import { useApplications, ApplicationWithJob } from '@/app/contexts/ApplicationsContext';
+import { useApplications } from '@/app/contexts/ApplicationsContext';
 import { useJobFilters } from '@/app/hooks/useJobFilters';
+import JobCardSkeleton from '../components/loading/JobCardSkeleton';
 
 
 function JobsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sortOption, setSortOption] = useState('recent');
-  
-
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [loadingJobs] = useState<Set<number>>(new Set());
+  const [loadingJobs] = useState<Set<string>>(new Set());
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const lastJobRef = useRef<HTMLDivElement>(null);
   
@@ -52,28 +51,28 @@ function JobsPageContent() {
     fetchInitialJobs
   } = useJobs();
   
-  // Set filters when they change
+  // Set filters when they change and fetch jobs when applications are loaded
+  const hasInitiallyLoaded = useRef(false);
+  
   useEffect(() => {
     setJobFilters(filters);
   }, [filters, setJobFilters]);
 
-  // Fetch initial jobs when applications are loaded (only on initial load)
-  const hasInitiallyLoaded = useRef(false);
-  const initialApplicationsRef = useRef<ApplicationWithJob[] | null>(null);
-  
+  // Fetch initial jobs when applications are loaded and filters are set
   useEffect(() => {
-    // Only fetch on the very first load when applications become available
-    if (applications !== null && !hasInitiallyLoaded.current) {
-      console.log('JobsPage: Initial load - fetching jobs with applications:', applications.length);
-      hasInitiallyLoaded.current = true;
-      initialApplicationsRef.current = applications;
-      fetchInitialJobs(applications);
-    } else if (applications !== null && hasInitiallyLoaded.current) {
-      console.log('JobsPage: Applications changed after initial load - skipping refetch (cache will handle updates)');
+    // Only fetch when applications are loaded and we haven't fetched yet, or when filters change
+    if (applications !== null) {
+      if (!hasInitiallyLoaded.current) {
+        console.log('JobsPage: Initial load - fetching jobs with applications:', applications.length);
+        hasInitiallyLoaded.current = true;
+        fetchInitialJobs(applications);
+      } else if (filters) {
+        // If filters change after initial load, refetch with new filters
+        console.log('JobsPage: Filters changed - refetching jobs with applications:', applications.length);
+        fetchInitialJobs(applications);
+      }
     }
-    // Note: We don't refetch when applications change after initial load
-    // because updateJobCache in ApplicationsContext handles cache updates automatically
-  }, [applications !== null]); // Only depend on whether applications are loaded, not their contents
+  }, [applications !== null, filters, fetchInitialJobs]); // Depend on applications being loaded and filters
 
   // Use all jobs from server-side pagination
   const currentJobs = allJobs;
@@ -175,7 +174,7 @@ function JobsPageContent() {
   };
 
   // Show error state if there's an error fetching jobs
-  if (error && !allJobs.length) {
+  if (error && allJobs && allJobs.length === 0) {
     return (
       <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 h-screen w-full flex items-center justify-center">
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/30 p-12 text-center max-w-md">
@@ -299,25 +298,12 @@ function JobsPageContent() {
           <div className={`${selectedJob ? 'lg:w-2/5 lg:-ml-5' : 'w-full'} flex-shrink-0 h-full overflow-hidden flex flex-col`}>
             {/* Job Listings */}
             <div className={`flex-1 overflow-y-auto space-y-4 pb-8 ${isLoading ? 'animate-pulse' : ''}`}>
-              {isLoading ? (
-                // Modern skeleton cards
+              {isLoading || currentJobs === null ? (
+                // Show skeleton cards when loading or when no jobs are available yet
                 [...Array(5)].map((_, index) => (
-                  <div key={index} className="bg-white/60 backdrop-blur-sm rounded-xl border border-white/30 p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl"></div>
-                      <div className="flex-1 space-y-3">
-                        <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2"></div>
-                        <div className="flex flex-wrap gap-2">
-                          <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-20"></div>
-                          <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-24"></div>
-                          <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-16"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <JobCardSkeleton key={index} />
                 ))
-              ) : currentJobs.length > 0 ? (
+              ) : currentJobs && currentJobs.length > 0 ? (
                 <>
                   {currentJobs.map((job, index) => (
                     <div
@@ -389,7 +375,6 @@ function JobsPageContent() {
                 job={selectedJob} 
                 onClose={() => setSelectedJob(null)} 
                 isLoading={isLoadingDetails}
-                hasApplied={false}
               />
             </div>
           )}

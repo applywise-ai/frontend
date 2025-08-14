@@ -6,22 +6,24 @@ import { FileText, Upload, Eye, AlertCircle, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Label } from '@/app/components/ui/label';
 import { useState } from 'react';
-import { storageService } from '@/app/utils/firebase';
+import { storageService } from '@/app/services/firebase';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import { useProfile } from '@/app/contexts/ProfileContext';
+import { readPdf } from "@/app/lib/parse-resume-from-pdf/read-pdf";
+import { groupTextItemsIntoLines } from "@/app/lib/parse-resume-from-pdf/group-text-items-into-lines";
+import { groupLinesIntoSections } from "@/app/lib/parse-resume-from-pdf/group-lines-into-sections";
+import { extractResumeFromSections } from "@/app/lib/parse-resume-from-pdf/extract-resume-from-sections";
+import { convertResumeToProfile } from "@/app/utils/resume-parser";
 
-interface ResumeDisplayProps {
-  profile: UserProfile;
-  updateProfile: (data: Partial<UserProfile>) => void;
-}
-
-export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayProps) {
+export default function ResumeDisplay() {
+  const { profile, updateProfile } = useProfile();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { showSuccess } = useNotification();
   const { user } = useAuth();
   const hasResume = Boolean(profile[FieldName.RESUME_URL] || profile[FieldName.RESUME]);
-
+  
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -30,6 +32,12 @@ export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayP
     setUploadError(null);
 
     try {
+      // Validate file
+      if (file.type !== 'application/pdf') {
+        throw new Error('Please upload a PDF file only.');
+      }
+
+      const localUrl = URL.createObjectURL(file);
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -51,38 +59,16 @@ export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayP
 
       // Show success notification
       showSuccess(`Resume uploaded successfully!`);
-
-      // Mock parsed profile data (you can integrate with a real resume parsing service later)
-      const parsedProfile = {
-        [FieldName.FULL_NAME]: 'Kaiz Nanji',
-        [FieldName.EMAIL]: 'k4nanji@uwaterloo.ca',
-        [FieldName.PHONE_NUMBER]: '4168784499',
-        [FieldName.CURRENT_LOCATION]: 'Toronto, ON',
-        [FieldName.LINKEDIN]: 'https://www.linkedin.com/in/kaiz-nanji',
-        [FieldName.GITHUB]: 'https://github.com/kaiznanji',
-        [FieldName.EDUCATION]: [
-          {
-            [FieldName.SCHOOL]: 'University of Waterloo',
-            [FieldName.DEGREE]: 'bachelor',
-            [FieldName.FIELD_OF_STUDY]: 'Computer Science',
-            [FieldName.EDUCATION_FROM]: '09/2020',
-            [FieldName.EDUCATION_TO]: '04/2025',
-          }
-        ],
-        [FieldName.EMPLOYMENT]: [
-          {
-            [FieldName.COMPANY]: 'Tech Company',
-            [FieldName.POSITION]: 'Software Engineer Intern',
-            [FieldName.EMPLOYMENT_FROM]: '05/2023',
-            [FieldName.EMPLOYMENT_TO]: '08/2023',
-            [FieldName.EMPLOYMENT_DESCRIPTION]: 'Worked on various projects using React and TypeScript'
-          }
-        ],
-        [FieldName.SKILLS]: ['Python', 'Java', 'JavaScript', 'React', 'TypeScript']
-      };
-
+      
       // If autofill is enabled, update the profile with parsed data
       if (profile[FieldName.RESUME_AUTOFILL]) {
+        // Resume parsing service
+        const textItems = await readPdf(localUrl);
+        const lines = groupTextItemsIntoLines(textItems || []);
+        const sections = groupLinesIntoSections(lines);
+        const resume = extractResumeFromSections(sections);
+
+        const parsedProfile = convertResumeToProfile(resume);
         updateProfile(parsedProfile);
         // Show additional notification for autofill
         showSuccess('Profile sections have been automatically populated from your resume!');
@@ -163,7 +149,7 @@ export default function ResumeDisplay({ profile, updateProfile }: ResumeDisplayP
               type="file"
               id="resume-upload"
               name="resume"
-              accept=".pdf,.doc,.docx"
+              accept=".pdf"
               onChange={handleFileChange}
               className="sr-only"
             />

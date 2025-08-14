@@ -1,14 +1,14 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
+import { useProfile } from '@/app/contexts/ProfileContext';
 import { Badge } from '@/app/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
 
-interface SkillsDisplayProps {
-  profile: UserProfile;
-}
-
-export default function SkillsDisplay({ profile }: SkillsDisplayProps) {
+export default function SkillsDisplay() {
+  const { profile } = useProfile();
+  
+  
   const skills = profile[FieldName.SKILLS] as string[] || [];
 
   return (

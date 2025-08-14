@@ -1,20 +1,21 @@
 import { ExternalLink, FileText } from 'lucide-react';
 import { ActionButtons } from './ActionButtons';
-import { getFileUrlFromAnswers } from '@/app/utils/application';
-
-type Answer = string | Record<string, string | number | boolean | null>;
+import { FormQuestion } from '@/app/types/application';
+import { getFileUrlBySection } from '@/app/utils/application';
+import { FormSectionType } from '../../types/application';
 
 interface ApplicationPreviewHeaderProps {
-    activeTab: "application" | "resume" | "coverLetter";
+    activeTab: FormSectionType | 'application';
     onSaveSubmit: () => void;
     isLoading: boolean;
     isDeleting?: boolean;
     isSaved: boolean;
     formChanged: boolean;
-    answers?: Record<string, Answer>;
+    answers?: Record<string, FormQuestion>;
     applicationId?: string;
     jobTitle?: string;
     companyName?: string;
+    screenshot?: string;
 }
 
 export function ApplicationPreviewHeader({
@@ -26,17 +27,19 @@ export function ApplicationPreviewHeader({
     answers = {},
     applicationId,
     jobTitle,
-    companyName
+    companyName,
+    screenshot
 }: ApplicationPreviewHeaderProps) {
     // Get the appropriate external link based on active tab
   const getExternalLink = () => {
+    const currentTime = new Date().getTime();
     switch (activeTab) {
       case 'application':
-        return '#'; // Placeholder for application link
+        return screenshot || '#'; // Placeholder for application link
       case 'resume':
-        return getFileUrlFromAnswers(answers, 'resume') || '#';
-      case 'coverLetter':
-        return getFileUrlFromAnswers(answers, 'coverLetter') || '#';
+        return getFileUrlBySection(answers, 'resume') + '&t=' + currentTime || '#';
+      case 'cover_letter':
+        return getFileUrlBySection(answers, 'cover_letter') + '?t=' + currentTime || '#';
       default:
         return '#';
     }
@@ -44,7 +47,7 @@ export function ApplicationPreviewHeader({
 
   // Get the appropriate color based on active tab
   const getButtonColor = () => {
-    return activeTab === 'coverLetter' ? 'text-indigo-600 hover:bg-indigo-50' : 'text-blue-600 hover:bg-blue-50';
+    return activeTab === 'cover_letter' ? 'text-indigo-600 hover:bg-indigo-50' : 'text-blue-600 hover:bg-blue-50';
   };
 
   const externalLink = getExternalLink();
@@ -67,7 +70,7 @@ export function ApplicationPreviewHeader({
               className={`bg-white rounded-md px-3 py-2.5 shadow-sm transition-colors border border-gray-200 ${getButtonColor()}`}
               title={`Open ${activeTab.toLowerCase()} in new tab`}
           >
-              <ExternalLink className={`h-4 w-4 ${activeTab === 'coverLetter' ? 'text-indigo-600' : 'text-blue-600'}`} />
+              <ExternalLink className={`h-4 w-4 ${activeTab === 'cover_letter' ? 'text-indigo-600' : 'text-blue-600'}`} />
               <span className="sr-only">Open in new tab</span>
           </a>
         ) : (
