@@ -5,14 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/ca
 import { Button } from '@/app/components/ui/button';
 import { PencilIcon, PlusIcon } from 'lucide-react';
 import EditSectionModal from './EditSectionModal';
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
 import { validateEmployment, validateEducation, validateProject } from '@/app/utils/validation';
 import { useNotification } from '@/app/contexts/NotificationContext';
 import { useProfile } from '@/app/contexts/ProfileContext';
 
 type EditContentProps = {
-  profile: Partial<UserProfile>;
-  updateProfile: (data: Partial<UserProfile>) => void;
   errors?: Partial<Record<string, string>>;
   setErrors?: React.Dispatch<React.SetStateAction<Partial<Record<string, string>>>>;
 };
@@ -32,9 +30,10 @@ export default function ProfileSection({
   displayContent,
   editContent
 }: ProfileSectionProps) {
-  const { saveProfile, refreshProfile, addInstance } = useProfile();
+  const { saveProfile, refreshProfile, addInstance, profile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const isAddSection = id === FieldName.EMPLOYMENT || id === FieldName.EDUCATION || id === FieldName.PROJECT;
   
   // Global notification hook
@@ -44,23 +43,56 @@ export default function ProfileSection({
     if (isAddSection) {
       addInstance(id);
     }
+    setErrors({}); // Clear any previous errors
     setIsEditing(true);
   };
 
   const handleClose = () => {
     refreshProfile();
+    setErrors({}); // Clear errors when closing
     setIsEditing(false);
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Validate the data before saving based on the section type
+      let validationErrors: Partial<Record<string, string>> = {};
+      
+      if (id === FieldName.EMPLOYMENT && profile.employment && profile.employment.length > 0) {
+        // Validate the most recent employment entry
+        const latestEmployment = profile.employment[profile.employment.length - 1];
+        validationErrors = validateEmployment(latestEmployment);
+      } else if (id === FieldName.EDUCATION && profile.education && profile.education.length > 0) {
+        // Validate the most recent education entry
+        const latestEducation = profile.education[profile.education.length - 1];
+        validationErrors = validateEducation(latestEducation);
+      } else if (id === FieldName.PROJECT && profile[FieldName.PROJECT] && profile[FieldName.PROJECT]!.length > 0) {
+        // Validate the most recent project entry
+        const latestProject = profile[FieldName.PROJECT]![profile[FieldName.PROJECT]!.length - 1];
+        validationErrors = validateProject(latestProject);
+      }
+      
+      // Check if there are validation errors
+      if (Object.keys(validationErrors).length > 0) {
+        // Set validation errors to display in the form
+        setErrors(validationErrors);
+        return; // Don't save if there are validation errors
+      }
+      
+      // Clear any previous errors
+      setErrors({});
+      
       // Update the db profile with the profile changes
       await saveProfile();
       setIsEditing(false);
       
       // Show success notification
       showSuccess(`${title} ${isAddSection ? "added" : "updated"} successfully!`);
+    } catch (error) {
+      // Handle other errors (not validation errors)
+      console.error('Error saving profile:', error);
+      setErrors({ general: 'Failed to save profile. Please try again.' });
     } finally {
       setIsSaving(false);
     }
@@ -103,7 +135,10 @@ export default function ProfileSection({
         isSaving={isSaving}
         isAddSection={isAddSection}
       >
-        {React.cloneElement(editContent as React.ReactElement<EditContentProps>)}
+        {React.cloneElement(editContent as React.ReactElement<EditContentProps>, {
+          errors,
+          setErrors
+        })}
       </EditSectionModal>
     </div>
   );

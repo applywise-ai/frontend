@@ -36,12 +36,30 @@ export default function EducationDisplay() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Validate the education entry being edited
+      if (editingIndex !== undefined && education[editingIndex]) {
+        const educationToValidate = education[editingIndex];
+        const validationErrors = validateEducation(educationToValidate);
+        
+        if (Object.keys(validationErrors).length > 0) {
+          // Set validation errors to display in the form
+          setErrors(validationErrors);
+          return; // Don't save if there are validation errors
+        }
+      }
+      
+      // Clear any previous errors
+      setErrors({});
+      
       // Save the profile
       await saveProfile();
 
       showSuccess('Education updated successfully!');
       setEditingIndex(undefined);
-      setErrors({});
+    } catch (error) {
+      // Handle other errors (not validation errors)
+      console.error('Error saving education:', error);
+      setErrors({ general: 'Failed to save education. Please try again.' });
     } finally {
       setIsSaving(false);
     }
@@ -124,8 +142,6 @@ export default function EducationDisplay() {
       >
         {editingIndex !== undefined && (
           <EducationForm
-            profile={profile}
-            updateProfile={updateProfile}
             editingIndex={editingIndex}
             errors={errors}
             setErrors={setErrors}

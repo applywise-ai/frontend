@@ -289,7 +289,7 @@ const Navbar = ({ isLoading = false }: NavbarProps) => {
                     pathname === '/login' ? 'font-bold' : ''
                   }`}
                 >
-                  Log in
+                  Sign in
                 </Link>
                 <Link 
                   href="/signup"

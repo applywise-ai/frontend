@@ -34,13 +34,15 @@ export default function EducationForm({
       index = educations.length - 1;
     }
     setEducation(educations[index]);
-  }, [profile]);
+  }, [profile, editingIndex, educations]);
 
   const handleEducationChange = (field: keyof Education, value: string) => {
+    if (!education) return;
+    
     const updatedEducation = {
       ...education,
       [field]: value
-    };
+    } as Education;
     setEducation(updatedEducation);
 
     // Clear error when field is updated
@@ -80,6 +82,13 @@ export default function EducationForm({
 
   return (
     <div className="space-y-6">
+      {/* General error display */}
+      {errors?.general && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-3 py-2">
+          {errors.general}
+        </div>
+      )}
+      
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
         <p className="text-sm text-gray-600 flex items-center">
           <GraduationCap className="h-4 w-4 text-teal-500 mr-2" />

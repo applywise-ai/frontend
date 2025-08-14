@@ -44,7 +44,7 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 ## Step 3: Create Stripe Products and Prices
 
-1. Log into your Stripe Dashboard
+1. Sign into your Stripe Dashboard
 2. Go to Products → Create Product
 3. Create a product called "ApplyWise Pro"
 4. Create three recurring prices:

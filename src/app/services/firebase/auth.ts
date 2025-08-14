@@ -48,7 +48,7 @@ class FirebaseAuthService {
     switch (firebaseError.code) {
       // Email/password signup errors
       case 'auth/email-already-in-use':
-        message = 'This email is already registered. Please use a different email or log in.';
+        message = 'This email is already registered. Please use a different email or Sign in.';
         break;
       case 'auth/invalid-email':
         message = 'The email address is not valid. Please check and try again.';

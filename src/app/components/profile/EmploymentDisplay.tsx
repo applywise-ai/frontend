@@ -35,12 +35,30 @@ export default function EmploymentDisplay() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Validate the employment entry being edited
+      if (editingIndex !== undefined && employment[editingIndex]) {
+        const employmentToValidate = employment[editingIndex];
+        const validationErrors = validateEmployment(employmentToValidate);
+        
+        if (Object.keys(validationErrors).length > 0) {
+          // Set validation errors to display in the form
+          setErrors(validationErrors);
+          return; // Don't save if there are validation errors
+        }
+      }
+      
+      // Clear any previous errors
+      setErrors({});
+      
       // Save the profile
       await saveProfile();
 
       showSuccess('Employment updated successfully!');
       setEditingIndex(undefined);
-      setErrors({});
+    } catch (error) {
+      // Handle other errors (not validation errors)
+      console.error('Error saving employment:', error);
+      setErrors({ general: 'Failed to save employment. Please try again.' });
     } finally {
       setIsSaving(false);
     }
@@ -138,8 +156,6 @@ export default function EmploymentDisplay() {
       >
         {editingIndex !== undefined && (
           <EmploymentForm
-            profile={profile}
-            updateProfile={updateProfile}
             editingIndex={editingIndex}
             errors={errors}
             setErrors={setErrors}

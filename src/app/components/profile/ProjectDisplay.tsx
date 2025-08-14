@@ -34,12 +34,30 @@ export default function ProjectDisplay() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Validate the project entry being edited
+      if (editingIndex !== undefined && projects[editingIndex]) {
+        const projectToValidate = projects[editingIndex];
+        const validationErrors = validateProject(projectToValidate);
+        
+        if (Object.keys(validationErrors).length > 0) {
+          // Set validation errors to display in the form
+          setErrors(validationErrors);
+          return; // Don't save if there are validation errors
+        }
+      }
+      
+      // Clear any previous errors
+      setErrors({});
+      
       // Save the profile
       await saveProfile();
 
       showSuccess('Project updated successfully!');
       setEditingIndex(undefined);
-      setErrors({});
+    } catch (error) {
+      // Handle other errors (not validation errors)
+      console.error('Error saving project:', error);
+      setErrors({ general: 'Failed to save project. Please try again.' });
     } finally {
       setIsSaving(false);
     }
@@ -137,8 +155,6 @@ export default function ProjectDisplay() {
       >
         {editingIndex !== undefined && (
           <ProjectForm
-            profile={profile}
-            updateProfile={updateProfile}
             editingIndex={editingIndex}
             errors={errors}
             setErrors={setErrors}

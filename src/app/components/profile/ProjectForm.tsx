@@ -26,10 +26,12 @@ export default function ProjectForm({
   const projects = profile[FieldName.PROJECT] || [];
 
   const handleProjectChange = (field: keyof Project, value: string) => {
+    if (!project) return;
+    
     const updatedProject = {
       ...project,
       [field]: value
-    };
+    } as Project;
     setProject(updatedProject);
 
     // Clear error when field is updated
@@ -57,7 +59,7 @@ export default function ProjectForm({
       index = projects.length - 1;
     }
     setProject(projects[index]);
-  }, [profile]);
+  }, [profile, editingIndex, projects]);
 
   const getFieldError = (field: keyof Project) => errors?.[field];
 
@@ -65,6 +67,13 @@ export default function ProjectForm({
 
   return (
     <div className="space-y-6">
+      {/* General error display */}
+      {errors?.general && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-3 py-2">
+          {errors.general}
+        </div>
+      )}
+      
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
         <p className="text-sm text-gray-600 flex items-center">
           <LinkIcon className="h-4 w-4 text-teal-500 mr-2" />

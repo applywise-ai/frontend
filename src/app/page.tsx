@@ -16,7 +16,6 @@ import {
   Calendar,
   Target,
   TrendingUp,
-  Star,
   Play,
   ChevronRight,
   Shield,
@@ -24,7 +23,10 @@ import {
   Globe,
   Brain,
   Lightbulb,
-  Timer
+  Timer,
+  Plus,
+  Minus,
+  HelpCircle
 } from 'lucide-react';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
@@ -34,36 +36,8 @@ export default function Home() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
   const [activeFeature, setActiveFeature] = useState(0);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-
-  // Define testimonials array before using it in useEffect
-  const testimonials = [
-    {
-      name: "Sarah Chen",
-      role: "Software Engineer",
-      company: "Google",
-      content: "ApplyWise helped me land my dream job at Google. The AI applications were so personalized, I got responses from 80% of companies I applied to.",
-      rating: 5,
-      avatar: "SC"
-    },
-    {
-      name: "Marcus Johnson",
-      role: "Product Manager",
-      company: "Microsoft",
-      content: "I went from 2 interviews in 6 months to 15 interviews in 3 weeks. The AI cover letters were game-changing.",
-      rating: 5,
-      avatar: "MJ"
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "Data Scientist",
-      company: "Netflix",
-      content: "The time I saved with ApplyWise allowed me to focus on interview prep. Best investment in my career!",
-      rating: 5,
-      avatar: "ER"
-    }
-  ];
+  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   useEffect(() => {
     // Redirect if user is already logged in
@@ -71,14 +45,6 @@ export default function Home() {
           router.push('/jobs');
         }
   }, [isLoading, isAuthenticated, router]);
-
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
 
   const features = [
     {
@@ -118,6 +84,33 @@ export default function Home() {
     { number: "30sec", label: "Application Time", icon: Timer }
   ];
 
+  const faqs = [
+    {
+      question: "How does ApplyWise's AI actually work?",
+      answer: "Our AI analyzes job descriptions to understand exactly what employers are looking for, then crafts personalized responses using your profile information. It matches your experience to job requirements and generates tailored applications that highlight your most relevant skills and achievements."
+    },
+    {
+      question: "Is my personal information secure?",
+      answer: "Absolutely. We use enterprise-grade encryption to protect your data. Your information is never shared with third parties without your explicit consent. We only use your data to improve your job applications and provide you with better matching opportunities."
+    },
+    {
+      question: "How many applications can I send with the free plan?",
+      answer: "The free plan includes 10 AI applications that refresh daily to let you experience the power of our platform. You can browse unlimited jobs and use our job matching features. Upgrade to Pro for unlimited AI applications and cover letter generation."
+    },
+    {
+      question: "Can I customize the AI-generated applications?",
+      answer: "Yes! While our AI creates highly personalized applications, you can always review and edit them before submitting. You have full control over what gets sent to employers, and you can adjust the tone and content to match your preferences."
+    },
+    {
+      question: "What job platforms does ApplyWise support?",
+      answer: "ApplyWise currently supports major job platforms including Greenhouse, Lever, Workable, and Ashby. We're continuously adding support for more platforms to ensure you can apply everywhere your dream job might be posted. More integrations coming soon!"
+    },
+    {
+      question: "Do I need to create separate profiles for different job types?",
+      answer: "No! ApplyWise automatically tailors your applications based on each job description. Our AI analyzes the specific requirements and highlights the most relevant parts of your experience, so one comprehensive profile works for all your applications across different roles and industries."
+    }
+  ];
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900" />
@@ -151,15 +144,14 @@ export default function Home() {
           </div>
           
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 sm:mb-8 leading-tight">
-            Land Your Dream Job{' '}
+          Your Job Search on <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-400 to-purple-400">
-              3.2x Faster
+            Autopilot
             </span>
           </h1>
           
-          <p className="mt-4 sm:mt-6 text-lg sm:text-xl lg:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 sm:px-0">
-            Stop spending hours on applications. Our system fills out applications for you with personalized responses with the simple click of a button, 
-            while you focus on landing interviews.
+          <p className="mt-4 sm:mt-6 text-base sm:text-lg text-gray-300 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 sm:px-0">
+          Our AI agent fills and personalizes applications so you can focus on landing offers.
           </p>
           
           {/* Interactive CTA Buttons */}
@@ -224,7 +216,7 @@ export default function Home() {
                 Job Search
               </span>
             </h2>
-            <p className="text-gray-400 text-lg sm:text-xl max-w-3xl mx-auto px-4 sm:px-0">
+            <p className="text-gray-400 text-base sm:text-lg max-w-3xl mx-auto px-4 sm:px-0">
               Watch our AI work its magic. From analyzing job descriptions to crafting perfect responses, 
               see how we make you stand out from the crowd.
             </p>
@@ -248,7 +240,7 @@ export default function Home() {
                       <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg sm:text-xl font-semibold text-white mb-1 sm:mb-2">{feature.title}</h3>
+                      <h3 className="text-xl sm:text-2xl font-semibold text-white mb-1 sm:mb-2">{feature.title}</h3>
                       <p className="text-gray-400 mb-2 sm:mb-3 text-sm sm:text-base">{feature.description}</p>
                       <div className="flex items-center gap-2 text-blue-400 text-xs sm:text-sm font-medium">
                         <Play className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -368,7 +360,7 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
               Success Stories from Early Users
             </h2>
-            <p className="text-gray-400 text-lg sm:text-xl px-4 sm:px-0">
+            <p className="text-gray-400 text-base sm:text-lg px-4 sm:px-0">
               See how ApplyWise is already transforming careers
             </p>
           </div>
@@ -388,7 +380,7 @@ export default function Home() {
                         <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 fill-current" />
                       ))}
                     </div>
-                    <blockquote className="text-lg sm:text-xl text-white mb-4 sm:mb-6 leading-relaxed">
+                    <blockquote className="text-base sm:text-lg text-white mb-4 sm:mb-6 leading-relaxed">
                       &ldquo;{testimonials[currentTestimonial].content}&rdquo;
                     </blockquote>
                     <div>
@@ -418,13 +410,88 @@ export default function Home() {
           </div>
         </div>
       </section> */}
+      
+      {/* FAQ Section */}
+      <section className="py-20 sm:py-32 px-4 sm:px-8 md:px-24 bg-gradient-to-br from-gray-800/50 to-gray-900/80">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-full bg-gradient-to-r from-blue-500/10 to-teal-500/10 text-blue-400 mb-4 sm:mb-6 md:mb-8 border border-blue-500/20">
+              <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm font-medium">Got Questions?</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 px-4 sm:px-0">
+              Frequently Asked{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">
+                Questions
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto px-4 sm:px-0 leading-relaxed">
+              Everything you need to know about ApplyWise and how it can transform your job search.
+            </p>
+          </div>
+
+          <div className="space-y-4 sm:space-y-6">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-r from-gray-800/50 to-gray-800/30 border border-gray-700 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300"
+              >
+                <button
+                  className="w-full px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 text-left flex items-start justify-between gap-3 sm:gap-4 hover:bg-gray-700/20 transition-colors duration-200"
+                  onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+                >
+                  <h3 className="text-lg sm:text-xl font-semibold text-white pr-4">
+                    {faq.question}
+                  </h3>
+                  <div className="flex-shrink-0">
+                    {openFAQ === index ? (
+                      <Minus className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400 transition-transform duration-200" />
+                    ) : (
+                      <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400 transition-transform duration-200" />
+                    )}
+                  </div>
+                </button>
+                
+                <div 
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    openFAQ === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="px-4 pb-4 sm:px-6 sm:pb-6 md:px-8 md:pb-8">
+                    <div className="border-t border-gray-700 pt-4 sm:pt-6">
+                      <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Additional Help CTA */}
+          <div className="text-center mt-8 sm:mt-12 md:mt-16 px-4 sm:px-0">
+            <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">
+              Still have questions? We&apos;re here to help.
+            </p>
+            <Link 
+              href="/signup" 
+              className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600/20 to-teal-600/20 text-blue-400 font-medium rounded-xl hover:from-blue-600/30 hover:to-teal-600/30 transition-all duration-300 border border-blue-500/30 hover:border-blue-500/50 text-sm sm:text-base"
+            >
+              <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
+              Get Started Free
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Teaser */}
       <section className="py-20 sm:py-32 px-4 sm:px-8 md:px-24 bg-gradient-to-br from-gray-800 to-gray-900">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
             Start Free, Upgrade When Ready
           </h2>
-          <p className="text-gray-400 text-lg sm:text-xl mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
+          <p className="text-gray-400 text-base sm:text-lg mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
             Get started with some AI applications. See the results, then unlock unlimited power.
           </p>
 
@@ -489,15 +556,6 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
-
-          <Link 
-            href="/signup" 
-            className="inline-flex items-center gap-2 sm:gap-3 px-8 py-4 sm:px-12 sm:py-6 bg-gradient-to-r from-blue-600 to-teal-600 text-white font-semibold rounded-2xl hover:from-blue-700 hover:to-teal-700 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 text-sm sm:text-base"
-          >
-            <Brain className="h-5 w-5 sm:h-6 sm:w-6" />
-            Start Your AI-Powered Job Search
-            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
-          </Link>
         </div>
       </section>
 
@@ -512,7 +570,7 @@ export default function Home() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
             Ready to 3x Your Interview Rate?
           </h2>
-          <p className="text-gray-400 text-lg sm:text-xl mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
+          <p className="text-gray-400 text-base sm:text-lg mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
             Be among the first to use AI to land your dream job faster than ever before.
           </p>
           

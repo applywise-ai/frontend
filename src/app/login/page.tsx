@@ -90,7 +90,7 @@ export default function Login() {
               className="mb-2 hover:opacity-80 transition-opacity"
             />
           </Link>
-          <h1 className="text-center text-3xl font-bold text-white">Log in to your account</h1>
+          <h1 className="text-center text-3xl font-bold text-white">Sign in to your account</h1>
           <p className="text-center text-sm text-white/70">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-white underline hover:text-blue-300">
@@ -144,7 +144,7 @@ export default function Login() {
             className="w-full bg-white text-gray-900 hover:bg-blue-200 font-bold"
             disabled={loading}
           >
-            {loading ? 'Logging in...' : 'Log in'}
+            {loading ? 'Logging in...' : 'Sign in'}
           </Button>
 
           <div className="relative flex items-center justify-center gap-4">
