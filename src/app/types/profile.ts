@@ -21,7 +21,6 @@ export enum FieldName {
   // Personal Information
   RESUME = 'resume',
   RESUME_FILENAME = 'resumeFilename',
-  RESUME_URL = 'resumeUrl',
   RESUME_AUTOFILL = 'resumeAutofill',
   FULL_NAME = 'fullName',
   EMAIL = 'email',
@@ -131,7 +130,6 @@ export interface UserProfile {
   // Personal Information
   [FieldName.RESUME]?: string;
   [FieldName.RESUME_FILENAME]?: string;
-  [FieldName.RESUME_URL]?: string;
   [FieldName.RESUME_AUTOFILL]?: boolean;
   [FieldName.FULL_NAME]: string;
   [FieldName.EMAIL]: string;

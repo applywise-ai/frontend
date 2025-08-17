@@ -111,7 +111,7 @@ export default function EducationForm({
                     <Input
                       type="text"
                       id="school"
-                      value={education[FieldName.SCHOOL]}
+                      value={education[FieldName.SCHOOL] ?? ""}
                       onChange={(e) => handleEducationChange(FieldName.SCHOOL, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.SCHOOL) ? 'border-red-500' : ''}`}
                       placeholder="School name"
@@ -148,7 +148,7 @@ export default function EducationForm({
                     </Select>
                     {getFieldError(FieldName.DEGREE) && (
                       <p className="mt-1 text-sm text-red-600">{getFieldError(FieldName.DEGREE)}</p>
-        )}
+                    )}
                   </div>
                 </div>
 
@@ -162,14 +162,14 @@ export default function EducationForm({
                     <Input
                       type="text"
                       id="fieldOfStudy"
-                      value={education[FieldName.FIELD_OF_STUDY]}
+                      value={education[FieldName.FIELD_OF_STUDY] ?? ""}
                       onChange={(e) => handleEducationChange(FieldName.FIELD_OF_STUDY, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.FIELD_OF_STUDY) ? 'border-red-500' : ''}`}
                       placeholder="e.g., Computer Science"
-        />
+                    />
                     {getFieldError(FieldName.FIELD_OF_STUDY) && (
                       <p className="mt-1 text-sm text-red-600">{getFieldError(FieldName.FIELD_OF_STUDY)}</p>
-        )}
+                    )}
                   </div>
                 </div>
 
@@ -180,16 +180,16 @@ export default function EducationForm({
                     From
                   </Label>
                   <div className="mt-1">
-          <MonthPicker
+                    <MonthPicker
                       date={parseDate(education[FieldName.EDUCATION_FROM])}
                       setDate={(date) => handleEducationChange(FieldName.EDUCATION_FROM, formatDate(date))}
-            placeholder="Select start month"
+                      placeholder="Select start month"
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.EDUCATION_FROM) ? 'border-red-500' : ''}`}
-          />
+                    />
                     <p className="text-xs text-gray-500 mt-1">Enter education start month</p>
                     {getFieldError(FieldName.EDUCATION_FROM) && (
                       <p className="mt-1 text-sm text-red-600">{getFieldError(FieldName.EDUCATION_FROM)}</p>
-          )}
+                    )}
                   </div>
                 </div>
 
@@ -200,11 +200,11 @@ export default function EducationForm({
                     To
                   </Label>
                   <div className="mt-1">
-          <MonthPicker
+                    <MonthPicker
                       date={parseDate(education[FieldName.EDUCATION_TO])}
                       setDate={(date) => handleEducationChange(FieldName.EDUCATION_TO, formatDate(date))}
-            placeholder="Select end month"
-          />
+                      placeholder="Select end month"
+                    />
                     <p className="text-xs text-gray-500 mt-1">Leave empty if you&apos;re currently studying</p>
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export default function EducationForm({
                     <Input
                       type="text"
                       id="gpa"
-                      value={education[FieldName.EDUCATION_GPA] || ''}
+                      value={education[FieldName.EDUCATION_GPA] ?? ""}
                       onChange={(e) => handleEducationChange(FieldName.EDUCATION_GPA, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.EDUCATION_GPA) ? 'border-red-500' : ''}`}
                       placeholder="e.g., 3.8"
@@ -232,8 +232,8 @@ export default function EducationForm({
                   </div>
                 </div>
               </div>
-        </div>
-      </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

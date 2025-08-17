@@ -1,4 +1,5 @@
 import { UserProfile, FieldName, Project, Education, Employment } from '@/app/types/profile';
+import { format, parse } from 'date-fns';
 
 export type ProfileCompletionState = 'complete' | 'partial' | 'incomplete';
 
@@ -9,12 +10,12 @@ export const emptyProject: Project = {
 };
 
 export const emptyEducation: Education = {
-  [FieldName.COMPANY]: '',
-  [FieldName.POSITION]: '',
-  [FieldName.EMPLOYMENT_FROM]: '',
-  [FieldName.EMPLOYMENT_TO]: '',
-  [FieldName.EMPLOYMENT_DESCRIPTION]: '',
-  [FieldName.EMPLOYMENT_LOCATION]: '',
+  [FieldName.SCHOOL]: '',
+  [FieldName.DEGREE]: '',
+  [FieldName.EDUCATION_FROM]: '',
+  [FieldName.EDUCATION_TO]: '',
+  [FieldName.FIELD_OF_STUDY]: '',
+  [FieldName.EDUCATION_GPA]: ''
 };
 
 export const emptyEmployment: Employment = {
@@ -97,6 +98,19 @@ export const isFieldFilled = (profile: UserProfile, field: string): boolean => {
 // Helper function to get label from value
 export const getLabelFromValue = (value: string, options: readonly { readonly value: string; readonly label: string }[]) => {
   return options.find(option => option.value === value)?.label || value;
+};
+
+// Date formatting utilities for employment and education
+export const formatDateForDisplay = (dateStr: string | undefined): string => {
+  if (!dateStr) return '';
+  try {
+    // Parse the stored MM/yyyy format and display as MMM yyyy
+    const date = parse(dateStr, 'MM/yyyy', new Date());
+    return format(date, 'MMM yyyy');
+  } catch {
+    // Return original string if parsing fails
+    return dateStr;
+  }
 };
 
 export const getProfileCompletionState = (profile: UserProfile): ProfileCompletionState => {

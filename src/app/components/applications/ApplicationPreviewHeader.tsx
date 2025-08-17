@@ -1,8 +1,10 @@
 import { ExternalLink, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { ActionButtons } from './ActionButtons';
 import { FormQuestion } from '@/app/types/application';
 import { getFileUrlBySection } from '@/app/utils/application';
 import { FormSectionType } from '../../types/application';
+import storageService from '@/app/services/firebase/storage';
 
 interface ApplicationPreviewHeaderProps {
     activeTab: FormSectionType | 'application';
@@ -30,28 +32,53 @@ export function ApplicationPreviewHeader({
     companyName,
     screenshot
 }: ApplicationPreviewHeaderProps) {
-    // Get the appropriate external link based on active tab
-  const getExternalLink = () => {
-    const currentTime = new Date().getTime();
-    switch (activeTab) {
-      case 'application':
-        return screenshot || '#'; // Placeholder for application link
-      case 'resume':
-        return getFileUrlBySection(answers, 'resume') + '&t=' + currentTime || '#';
-      case 'cover_letter':
-        return getFileUrlBySection(answers, 'cover_letter') + '?t=' + currentTime || '#';
-      default:
-        return '#';
-    }
-  };
+    const [externalLink, setExternalLink] = useState<string>('#');
 
-  // Get the appropriate color based on active tab
-  const getButtonColor = () => {
-    return activeTab === 'cover_letter' ? 'text-indigo-600 hover:bg-indigo-50' : 'text-blue-600 hover:bg-blue-50';
-  };
 
-  const externalLink = getExternalLink();
-  const hasValidLink = externalLink !== '#';
+
+    // Load external link dynamically based on active tab
+    useEffect(() => {
+        const loadExternalLink = async () => {
+
+            const currentTime = new Date().getTime();
+            
+            try {
+                switch (activeTab) {
+                    case 'application':
+                        if (screenshot) {
+                            const screenshotUrl = await storageService.generateUrlFromPath(screenshot);
+                            setExternalLink(screenshotUrl || '#');
+                        } else {
+                            setExternalLink('#');
+                        }
+                        break;
+                    case 'resume':
+                        const resumeUrl = await getFileUrlBySection(answers, 'resume');
+                        setExternalLink(resumeUrl ? `${resumeUrl}&t=${currentTime}` : '#');
+                        break;
+                    case 'cover_letter':
+                        const coverLetterUrl = await getFileUrlBySection(answers, 'cover_letter');
+                        setExternalLink(coverLetterUrl ? `${coverLetterUrl}?t=${currentTime}` : '#');
+                        break;
+                    default:
+                        setExternalLink('#');
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading external link:', error);
+                setExternalLink('#');
+            }
+        };
+
+        loadExternalLink();
+    }, [activeTab, answers, screenshot]);
+
+    // Get the appropriate color based on active tab
+    const getButtonColor = () => {
+        return activeTab === 'cover_letter' ? 'text-indigo-600 hover:bg-indigo-50' : 'text-blue-600 hover:bg-blue-50';
+    };
+
+    const hasValidLink = externalLink !== '#';
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-3.5 flex justify-between items-center sticky top-0 z-10">

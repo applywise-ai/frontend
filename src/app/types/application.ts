@@ -5,7 +5,7 @@
 // Form question types
 export type QuestionType = 'text' | 'textarea' | 'select' | 'multiselect' | 'date' | 'file' | 'checkbox' | 'number';
 export type FormSectionType = 'personal' | 'education' | 'experience' | 'resume' | 'cover_letter' | 'additional' | 'demographic';
-export type ApplicationStatus = 'Draft' | 'Applied' | 'Saved' | 'Rejected' | 'Interviewing' | 'Expired' | 'Accepted' | 'Pending' | 'Failed' | 'Not Found';
+export type ApplicationStatus = 'Draft' | 'Applied' | 'Saved' | 'Rejected' | 'Interviewing' | 'Expired' | 'Accepted' | 'Pending' | 'Failed' | 'Not Found' | 'Processing';
 
 // Form question structure
 export interface FormQuestion {
@@ -16,7 +16,7 @@ export interface FormQuestion {
   placeholder?: string;
   options?: string[];
   section: FormSectionType;
-  file_url?: string;
+  file_path?: string;
   file_name?: string;
   required?: boolean;
   pruned?: boolean;
@@ -48,7 +48,7 @@ export interface FirestoreApplication extends Omit<Application, 'createdAt' | 'l
  * Helper functions for applications
  */
 export const unmodifiable = (status: string): boolean => {
-  return status === 'Draft' || status === 'Saved' || status === 'Expired' || status === 'Pending' || status === 'Failed' || status === 'Not Found';
+  return status === 'Draft' || status === 'Saved' || status === 'Expired' || status === 'Pending' || status === 'Failed' || status === 'Not Found' || status === 'Processing';
 };
 
 export const isSubmitted = (status: string): boolean => {

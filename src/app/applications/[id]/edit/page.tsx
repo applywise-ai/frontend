@@ -22,9 +22,7 @@ import { EditApplicationPageSkeleton } from '@/app/components/loading/EditApplic
 
 // Define a type for unwrapped params
 type ParamsType = {
-  params: {
-    id: string;
-  };
+  id: string;
 };
 
 function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
@@ -42,7 +40,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   
   // Global notification hook
   const { showSuccess } = useNotification();
-  const { 
+  const {
     fetchApplication,
     updateApplication,
     submitApplication 
@@ -133,7 +131,6 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
         };
       }
     }
-    console.log(currentAnswers.current)
     setFormChanged(true);
   }, []);
   
@@ -189,7 +186,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
           return {
             ...q,
             answer: currentAnswer.answer,
-            file_url: currentAnswer.file_url,
+            file_path: currentAnswer.file_path,
             file_name: currentAnswer.file_name,
           };
         }

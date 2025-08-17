@@ -49,6 +49,7 @@ export default function ReviewApplicationModal({
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [coverLetterUrl, setCoverLetterUrl] = useState<string | null>(coverLetterUrlProp || null);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const { showSuccess } = useNotification();
   const { submitApplication, applyToJob, generateCoverLetter, deleteApplication } = useApplications();
   const { updateStatus, applicationUpdate } = useReviewApplicationModal();
@@ -57,6 +58,8 @@ export default function ReviewApplicationModal({
 
   // Use the job hook to fetch job details
   const { job, loading: jobLoading } = useGetJob(jobId || null);
+
+
 
   const handleClose = () => {
     setOpen(false);
@@ -78,6 +81,34 @@ export default function ReviewApplicationModal({
   useEffect(() => {
     setCoverLetterUrl(coverLetterUrlProp || null);
   }, [coverLetterUrlProp]);
+
+  // Generate screenshot URL from path when applicationUpdate changes
+  useEffect(() => {
+    console.log(applicationUpdate?.details)
+    const loadScreenshotUrl = async () => {
+      if (applicationUpdate?.details.screenshot_path) {
+        const url = await storageService.generateUrlFromPath(applicationUpdate.details.screenshot_path);
+        console.log(url)
+        setScreenshotUrl(url);
+      } else {
+        setScreenshotUrl(null);
+      }
+    };
+
+    loadScreenshotUrl();
+  }, [applicationUpdate?.details.screenshot_path]);
+  
+  // Generate cover letter URL from path when it's a path (not already a URL)
+  useEffect(() => {
+    const loadCoverLetterUrl = async () => {
+      if (coverLetterUrl && !coverLetterUrl.startsWith('http')) {
+        const url = await storageService.generateUrlFromPath(coverLetterUrl);
+        setCoverLetterUrl(url);
+      }
+    };
+
+    loadCoverLetterUrl();
+  }, [coverLetterUrl]);
 
   const handleSubmit = async () => {
     if (!applicationUpdate?.able_to_submit || !applicationId) return;
@@ -136,7 +167,7 @@ export default function ReviewApplicationModal({
     setIsGenerating(true);
     try {
       const response = await generateCoverLetter(jobId, prompt || '');
-      setCoverLetterUrl(response.cover_letter_url);
+      setCoverLetterUrl(response.cover_letter_path);
       setApplicationId(response.application_id);
       updateStatus('cover_letter_generated');
     } catch (error) {
@@ -182,7 +213,6 @@ export default function ReviewApplicationModal({
   // Screen components
   const ApplyingScreen = () => {
     const { timerSeconds } = useReviewApplicationModal();
-    console.log(timerSeconds)
     const progressSteps = [
       'Analyzing Job Posting',
       'Preparing Your Resume & Profile', 
@@ -301,9 +331,9 @@ export default function ReviewApplicationModal({
               </div>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 overflow-auto max-h-96">
-              {applicationUpdate?.details.screenshot_url ? (
+              {screenshotUrl ? (
                 <img
-                  src={applicationUpdate.details.screenshot_url}
+                  src={screenshotUrl}
                   alt="Filled Job Application Preview"
                   className="w-full object-contain min-h-full"
                   style={{ 
@@ -658,9 +688,11 @@ export default function ReviewApplicationModal({
     }}>
       <DialogContent className={`max-w-3xl w-full ${
         status === 'failed' || status === 'not_found'
-          ? 'h-[100vh] sm:h-[60vh]'
-          : status === 'cover_letter' || status === 'cover_letter_generated' || status === 'applying' || status == 'submitted' 
+          ? 'h-[100vh] sm:h-[55vh]'
+          : status === 'cover_letter' || status === 'cover_letter_generated' || status === 'applying'
           ? 'h-[100vh] sm:h-[45vh]' 
+          : status === 'submitted'
+          ? 'h-[100vh] sm:h-[70vh]' 
           : 'h-[100vh] sm:h-[85vh]'
       } flex flex-col bg-white ${className}`}>
         {status === 'cover_letter' || status === 'cover_letter_generated' ? (

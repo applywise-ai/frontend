@@ -15,7 +15,7 @@ interface JobApplicationUpdate {
   able_to_submit?: boolean;
   details: {
     message: string;
-    screenshot_url?: string;
+    screenshot_path?: string;
   };
 }
 

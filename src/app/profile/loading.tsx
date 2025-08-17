@@ -3,7 +3,7 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <div className="bg-gray-50 min-h-screen pb-16">
+    <div className="bg-gray-50 min-h-screen pb-16 w-full">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <Skeleton className="h-8 w-48" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { UserProfile, FieldName } from '@/app/types/profile';
+import { FieldName } from '@/app/types/profile';
 import { Button } from '@/app/components/ui/button';
 import { FileText, Upload, Eye, AlertCircle, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/app/components/ui/checkbox';
@@ -20,9 +20,29 @@ export default function ResumeDisplay() {
   const { profile, updateProfile } = useProfile();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false);
   const { showSuccess } = useNotification();
   const { user } = useAuth();
-  const hasResume = Boolean(profile[FieldName.RESUME_URL] || profile[FieldName.RESUME]);
+  const hasResume = Boolean(profile[FieldName.RESUME]);
+  
+  const handlePreview = async () => {
+    if (!user || !profile[FieldName.RESUME]) return;
+    
+    setIsLoadingUrl(true);
+    try {
+      const resumeUrl = await storageService.getResumeUrl(user.uid);
+      if (resumeUrl) {
+        window.open(resumeUrl, '_blank');
+      } else {
+        throw new Error('Resume not found');
+      }
+    } catch (error) {
+      console.error('Error getting resume URL:', error);
+      setUploadError('Failed to load resume. Please try again.');
+    } finally {
+      setIsLoadingUrl(false);
+    }
+  };
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,7 +73,6 @@ export default function ResumeDisplay() {
       // Update profile with new resume file
       updateProfile({
         [FieldName.RESUME_FILENAME]: uploadResult.filename,
-        [FieldName.RESUME_URL]: uploadResult.url,
         [FieldName.RESUME]: uploadResult.path // Store the storage path for future reference
       });
 
@@ -78,13 +97,6 @@ export default function ResumeDisplay() {
       console.error('Error uploading resume:', error);
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const handlePreview = () => {
-    const resumeUrl = profile[FieldName.RESUME_URL] || profile[FieldName.RESUME];
-    if (resumeUrl) {
-      window.open(resumeUrl, '_blank');
     }
   };
 
@@ -169,10 +181,11 @@ export default function ResumeDisplay() {
           {hasResume && (
             <Button 
               onClick={handlePreview}
+              disabled={isLoadingUrl}
               className="h-11 bg-teal-600 hover:bg-teal-700 text-white font-medium px-6"
             >
               <Eye className="h-4 w-4 mr-2" />
-              Preview
+              {isLoadingUrl ? 'Loading...' : 'Preview'}
             </Button>
           )}
         </div>

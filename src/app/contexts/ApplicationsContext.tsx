@@ -17,6 +17,7 @@ export interface ApplicationWithJob extends Application {
 interface ApplicationsContextType {
   applications: ApplicationWithJob[] | null;
   isLoading: boolean;
+  loaded: boolean;
   error: string | null;
   // CRUD operations
   fetchApplication: (applicationId: string) => Promise<ApplicationWithJob>;
@@ -30,7 +31,7 @@ interface ApplicationsContextType {
   toggleSave: (jobId: string, currentIsSaved: boolean) => Promise<void>;
   applyToJob: (jobId: string) => Promise<string>;
   submitApplication: (applicationId: string) => Promise<Application>;
-  generateCoverLetter: (jobId: string, prompt: string) => Promise<{ application_id: string; cover_letter_url: string; message: string }>;
+  generateCoverLetter: (jobId: string, prompt: string) => Promise<{ application_id: string; cover_letter_path: string; message: string }>;
   generateCustomAnswer: (jobDescription: string, question: string, prompt: string) => Promise<{ answer: string; message: string }>;
 }
 
@@ -42,6 +43,7 @@ interface ApplicationsProviderProps {
 
 export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   const [applications, setApplications] = useState<ApplicationWithJob[] | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
@@ -98,6 +100,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   useEffect(() => {
     if (user) {
       loadApplications();
+      setLoaded(true);
     }
   }, [user, loadApplications]);
 
@@ -394,7 +397,7 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   }, [user, applications, updateJobCache]);
 
   // Generate a cover letter
-  const generateCoverLetter = useCallback(async (jobId: string, prompt: string): Promise<{ application_id: string; cover_letter_url: string; message: string }> => {
+  const generateCoverLetter = useCallback(async (jobId: string, prompt: string): Promise<{ application_id: string; cover_letter_path: string; message: string }> => {
     console.log(`ApplicationsContext: generateCoverLetter(${jobId})`);
     if (!user) {
       throw new Error('User not authenticated');
@@ -561,11 +564,13 @@ export function ApplicationsProvider({ children }: ApplicationsProviderProps) {
   }, [saveJob, unsaveJob]);
 
   const value: ApplicationsContextType = {
+    loaded,
     applications,
     isLoading,
     error,
     fetchApplication,
     deleteApplication,
+    loadApplications,
     updateApplication,
     updateApplicationStatus,
     unsaveJob,

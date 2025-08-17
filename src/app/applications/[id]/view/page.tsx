@@ -10,6 +10,7 @@ import { ApplicationWithJob, useApplications } from '@/app/contexts/Applications
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { getStatusColor } from '@/app/types/application';
 import { format } from 'date-fns';
+import storageService from '@/app/services/firebase/storage';
 
 // Define a type for unwrapped params
 type ParamsType = {
@@ -20,6 +21,8 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
   const router = useRouter();
   const [application, setApplication] = useState<ApplicationWithJob | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [submittedScreenshotUrl, setSubmittedScreenshotUrl] = useState<string | null>(null);
   
   const { fetchApplication } = useApplications();
   
@@ -43,6 +46,31 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
     };
     loadApplicationData();
   }, [applicationId, fetchApplication]);
+
+  // Generate screenshot URLs from paths
+  useEffect(() => {
+    const generateScreenshotUrls = async () => {
+      if (!application) return;
+
+      // Generate original screenshot URL
+      if (application.screenshot) {
+        const url = await storageService.generateUrlFromPath(application.screenshot);
+        setScreenshotUrl(url);
+      } else {
+        setScreenshotUrl(null);
+      }
+
+      // Generate submitted screenshot URL
+      if (application.submittedScreenshot) {
+        const url = await storageService.generateUrlFromPath(application.submittedScreenshot);
+        setSubmittedScreenshotUrl(url);
+      } else {
+        setSubmittedScreenshotUrl(null);
+      }
+    };
+
+    generateScreenshotUrls();
+  }, [application]);
 
   if (isLoading) {
     return (
@@ -72,15 +100,13 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
   }
 
   const { job } = application;
-  const hasScreenshot = !!application.screenshot;
-  const hasSubmittedScreenshot = !!application.submittedScreenshot;
+  const hasScreenshot = !!screenshotUrl;
+  const hasSubmittedScreenshot = !!submittedScreenshotUrl;
   const isSuccess = application.status === 'Applied' || application.status === 'Interviewing' || application.status === 'Accepted';
   const isError = application.status === 'Failed' || application.status === 'Rejected' || application.status === 'Not Found';
   const isPending = application.status === 'Pending';
 
-
-
-    return (
+  return (
     <div className="fixed top-16 bottom-0 left-0 right-0 bg-gray-50">
       <div className="max-w-[1400px] mx-auto h-full px-6 py-6 flex flex-col">
         {/* Screenshots Comparison */}
@@ -135,7 +161,7 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
                   <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
                     {hasScreenshot ? (
                       <img
-                        src={`${application.screenshot}?t=${Date.now()}`}
+                        src={`${screenshotUrl}&t=${Date.now()}`}
                         alt="Original application screenshot"
                         className="w-full h-auto object-contain"
                       />
@@ -159,7 +185,7 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
                   <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
                     {hasSubmittedScreenshot ? (
                       <img
-                        src={`${application.submittedScreenshot}?t=${Date.now()}`}
+                        src={`${submittedScreenshotUrl}&t=${Date.now()}`}
                         alt="Submitted application screenshot"
                         className="w-full h-auto object-contain"
                       />

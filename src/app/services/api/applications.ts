@@ -30,7 +30,7 @@ interface GenerateCoverLetterRequest {
 
 interface GenerateCoverLetterResponse {
   application_id: string;
-  cover_letter_url: string;
+  cover_letter_path: string;
   message: string;
 }
 

@@ -14,9 +14,11 @@ import { useNotification } from '@/app/contexts/NotificationContext';
 
 function ApplicationsPageContent() {
   const {
+    loaded,
     applications,
     isLoading,
     error,
+    loadApplications,
     updateApplicationStatus,
     unsaveJob,
   } = useApplications();
@@ -119,6 +121,13 @@ function ApplicationsPageContent() {
       rejected: applications.filter(app => app.status === 'Rejected').length
     };
   }, [applications]);
+
+  useEffect(() => {
+    // Only load on subsequent loads after we first load applications
+    if (loaded) {
+      loadApplications();
+    }
+  }, [])
   
   // Add this function before the return statement
   const getVisiblePages = (currentPage: number, totalPages: number) => {

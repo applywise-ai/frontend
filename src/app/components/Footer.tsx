@@ -52,7 +52,7 @@ export default function Footer() {
               <li>
                 <a href="mailto:support@applywise.com" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  support@applywise.com
+                  applywise.help@gmail.com
                 </a>
               </li>
             </ul>

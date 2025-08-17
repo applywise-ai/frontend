@@ -80,7 +80,7 @@ export function NoCreditsModal({
             </DialogTitle>
           </div>
           <DialogDescription className="text-gray-600">
-            You&apos;ve used all your AI credits for today. Credits refresh daily at 12am EST.
+            You&apos;ve used all your AI credits for today. <strong>10</strong> credits refresh daily at 12am EST.
           </DialogDescription>
         </DialogHeader>
 

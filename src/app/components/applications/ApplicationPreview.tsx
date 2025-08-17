@@ -1,9 +1,11 @@
 import { Loader2, FileText, Download } from 'lucide-react';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { FormQuestion } from '@/app/types/application';
 import { getFileUrlBySection } from '@/app/utils/application';
+import storageService from '@/app/services/firebase/storage';
 
 interface ApplicationPreviewProps {
   isLoading: boolean;
@@ -22,10 +24,48 @@ export function ApplicationPreview({
   setActiveTab,
   screenshot
 }: ApplicationPreviewProps) {
-  const currentTime = new Date().getTime();
-  // Get file URLs using utility functions
-  const resumeUrl = getFileUrlBySection(answers, 'resume') + '&t' + currentTime;
-  const coverLetterUrl = getFileUrlBySection(answers, 'cover_letter') + '?t=' + currentTime;
+  const [resumeUrl, setResumeUrl] = useState<string>('');
+  const [coverLetterUrl, setCoverLetterUrl] = useState<string>('');
+  const [screenshotUrl, setScreenshotUrl] = useState<string>('');
+
+
+
+  // Load file URLs dynamically
+  useEffect(() => {
+    const loadFileUrls = async () => {
+      
+      try {
+        const currentTime = new Date().getTime();
+        
+        // Get URLs dynamically
+        const resumeUrlResult = await getFileUrlBySection(answers, 'resume');
+        const coverLetterUrlResult = await getFileUrlBySection(answers, 'cover_letter');
+        
+        setResumeUrl(resumeUrlResult ? `${resumeUrlResult}&t=${currentTime}` : '');
+        setCoverLetterUrl(coverLetterUrlResult ? `${coverLetterUrlResult}?t=${currentTime}` : '');
+      } catch (error) {
+        console.error('Error loading file URLs:', error);
+        setResumeUrl('');
+        setCoverLetterUrl('');
+      }
+    };
+
+    loadFileUrls();
+  }, [answers]);
+
+  // Load screenshot URL from path
+  useEffect(() => {
+    const loadScreenshotUrl = async () => {
+      if (screenshot) {
+        const url = await storageService.generateUrlFromPath(screenshot);
+        setScreenshotUrl(url || '');
+      } else {
+        setScreenshotUrl('');
+      }
+    };
+
+    loadScreenshotUrl();
+  }, [screenshot]);
 
   // Check if a file is a PDF
   const isPdf = (file: string) => {
@@ -115,9 +155,9 @@ export function ApplicationPreview({
               <TabsContent value="application" className="flex-1 m-0 p-0 overflow-auto">
                 <div className="px-6 py-6 h-full">
                   <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 h-full overflow-auto relative">
-                    {screenshot && (
+                    {screenshotUrl && (
                       <Image
-                        src={screenshot}
+                        src={screenshotUrl}
                         alt="Application Preview"
                         width={1200}
                         height={1600}

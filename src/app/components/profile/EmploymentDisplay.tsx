@@ -7,6 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { useState } from 'react';
 import { validateEmployment } from '@/app/utils/validation';
 import { useNotification } from '@/app/contexts/NotificationContext';
+import { formatDateForDisplay } from '@/app/utils/profile';
 
 import EmploymentForm from './EmploymentForm';
 import EditSectionModal from './EditSectionModal';
@@ -97,7 +98,7 @@ export default function EmploymentDisplay() {
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-2.5 py-0.5 rounded-full">
                         <Calendar className="h-3.5 w-3.5 text-gray-400 mr-1.5" />
-                        <span className="font-medium">{job[FieldName.EMPLOYMENT_FROM]} - {job[FieldName.EMPLOYMENT_TO] || 'Present'}</span>
+                        <span className="font-medium">{formatDateForDisplay(job[FieldName.EMPLOYMENT_FROM])} - {job[FieldName.EMPLOYMENT_TO] ? formatDateForDisplay(job[FieldName.EMPLOYMENT_TO]) : 'Present'}</span>
                       </div>
                     {job[FieldName.EMPLOYMENT_LOCATION] && (
                         <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-2.5 py-0.5 rounded-full">

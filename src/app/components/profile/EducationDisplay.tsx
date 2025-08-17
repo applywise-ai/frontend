@@ -11,7 +11,7 @@ import { useNotification } from '@/app/contexts/NotificationContext';
 
 import EducationForm from './EducationForm';
 import EditSectionModal from './EditSectionModal';
-import { getLabelFromValue } from '@/app/utils/profile';
+import { getLabelFromValue, formatDateForDisplay } from '@/app/utils/profile';
 
 export default function EducationDisplay() {
   const { profile, updateProfile, saveProfile, refreshProfile } = useProfile();
@@ -93,7 +93,7 @@ export default function EducationDisplay() {
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-2.5 py-0.5 rounded-full">
                         <Calendar className="h-3.5 w-3.5 text-gray-400 mr-1.5" />
-                        <span className="font-medium">{edu[FieldName.EDUCATION_FROM]} - {edu[FieldName.EDUCATION_TO] || 'Present'}</span>
+                        <span className="font-medium">{formatDateForDisplay(edu[FieldName.EDUCATION_FROM])} - {edu[FieldName.EDUCATION_TO] ? formatDateForDisplay(edu[FieldName.EDUCATION_TO]) : 'Present'}</span>
                       </div>
                       {edu[FieldName.EDUCATION_GPA] && (
                         <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-2.5 py-0.5 rounded-full">

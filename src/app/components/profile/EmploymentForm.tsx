@@ -112,7 +112,7 @@ export default function EmploymentForm({
                     <Input
                       type="text"
                       id="company"
-                      value={employment[FieldName.COMPANY]}
+                      value={employment[FieldName.COMPANY] ?? ""}
                       onChange={(e) => handleEmploymentChange(FieldName.COMPANY, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.COMPANY) ? 'border-red-500' : ''}`}
                       placeholder="Company name"
@@ -133,7 +133,7 @@ export default function EmploymentForm({
                     <Input
                       type="text"
                       id="position"
-                      value={employment[FieldName.POSITION]}
+                      value={employment[FieldName.POSITION] ?? ""}
                       onChange={(e) => handleEmploymentChange(FieldName.POSITION, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.POSITION) ? 'border-red-500' : ''}`}
                       placeholder="Job title"
@@ -191,7 +191,7 @@ export default function EmploymentForm({
                       id="location"
                       type="text"
                       placeholder="City, Country or Remote"
-                      value={employment[FieldName.EMPLOYMENT_LOCATION]}
+                      value={employment[FieldName.EMPLOYMENT_LOCATION] ?? ""}
                       onChange={(e) => handleEmploymentChange(FieldName.EMPLOYMENT_LOCATION, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.EMPLOYMENT_LOCATION) ? 'border-red-500' : ''}`}
                     />
@@ -210,7 +210,7 @@ export default function EmploymentForm({
                   <div className="mt-1">
                     <Textarea
                       id="description"
-                      value={employment[FieldName.EMPLOYMENT_DESCRIPTION]}
+                      value={employment[FieldName.EMPLOYMENT_DESCRIPTION] ?? ""}
                       onChange={(e) => handleEmploymentChange(FieldName.EMPLOYMENT_DESCRIPTION, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.EMPLOYMENT_DESCRIPTION) ? 'border-red-500' : ''}`}
                       placeholder="Describe your responsibilities and achievements"

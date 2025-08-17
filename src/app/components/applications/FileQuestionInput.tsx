@@ -87,7 +87,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
       // Update question with file details
       const updatedQuestion = {
         ...question,
-        file_url: uploadResult.url,
+        file_path: uploadResult.path,
         file_name: uploadResult.filename
       };
       
@@ -97,7 +97,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
       if (applicationId) {
         try {
           await updateApplicationAnswer(applicationId, question.unique_label_id, {
-            file_url: uploadResult.url,
+            file_path: uploadResult.path,
             file_name: uploadResult.filename
           });
           onSuccess?.('File uploaded and saved successfully!');
@@ -130,15 +130,15 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
   
   // Handle file removal
   const handleRemove = async () => {
-    if (question.file_url) {
+    if (question.file_path) {
       try {
         // Delete from storage
         if (question.section === 'resume') {
-          await storageService.deleteResume(question.file_url);
+          await storageService.deleteResume(question.file_path);
         } else if (question.section === 'cover_letter') {
-          await storageService.deleteCoverLetter(question.file_url);
+          await storageService.deleteCoverLetter(question.file_path);
         } else {
-          await storageService.deleteFile(question.file_url);
+          await storageService.deleteFile(question.file_path);
         }
       } catch (error) {
         console.error('Error deleting file:', error);
@@ -150,7 +150,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
     // Clear file details
     const updatedQuestion = {
       ...question,
-      file_url: '',
+      file_path: '',
       file_name: ''
     };
     
@@ -160,7 +160,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
     if (applicationId) {
       try {
         await updateApplicationAnswer(applicationId, question.unique_label_id, {
-          file_url: '',
+          file_path: '',
           file_name: ''
         });
         onSuccess?.('File removed and saved successfully!');
@@ -196,12 +196,15 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
         }
       }
       
+      // Use the default resume path from profile
+      const defaultResumePath = profile?.[FieldName.RESUME] || '';
+      
       // Clear the current file details
-      setFileName(profile?.resumeFilename || '');
+      setFileName(profile?.[FieldName.RESUME_FILENAME] || '');
       const updatedQuestion = {
         ...question,
-        file_url: profile?.resumeUrl || '',
-        file_name: profile?.resumeFilename || ''
+        file_path: defaultResumePath,
+        file_name: profile?.[FieldName.RESUME_FILENAME] || ''
       };
       onChange(question.unique_label_id, updatedQuestion);
       
@@ -209,8 +212,8 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
       if (applicationId) {
         try {
           await updateApplicationAnswer(applicationId, question.unique_label_id, {
-            file_url: profile?.resumeUrl,
-            file_name: profile?.resumeFilename
+            file_path: defaultResumePath,
+            file_name: profile?.[FieldName.RESUME_FILENAME]
           });
           onSuccess?.('Using default resume from your profile');
         } catch (saveError) {
@@ -260,7 +263,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
       // Update question with the generated cover letter details
       const updatedQuestion = {
         ...question,
-        file_url: response.cover_letter_url,
+        file_path: response.cover_letter_path,
         file_name: 'cover_letter.pdf'
       };
       
@@ -271,7 +274,7 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
       if (applicationId) {
         try {
           await updateApplicationAnswer(applicationId, question.unique_label_id, {
-            file_url: response.cover_letter_url,
+            file_path: response.cover_letter_path,
             file_name: 'cover_letter.pdf'
           });
         } catch (saveError) {

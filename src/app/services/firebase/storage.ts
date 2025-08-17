@@ -2,7 +2,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebas
 import { storage } from './config';
 
 export interface UploadResult {
-  url: string;
+  url?: string; // Optional - only provided for cover letters and other files, not resumes
   filename: string;
   path: string;
 }
@@ -45,29 +45,9 @@ class StorageService {
       };
 
       // Upload file with metadata
-      const snapshot = await uploadBytes(storageRef, file, metadata);
-      
-      // Get download URL with retry logic for CORS issues
-      let downloadURL: string;
-      let retries = 3;
-      
-      while (retries > 0) {
-        try {
-          downloadURL = await getDownloadURL(snapshot.ref);
-          break;
-        } catch (urlError) {
-          console.warn(`Attempt ${4 - retries} failed to get download URL:`, urlError);
-          retries--;
-          if (retries === 0) {
-            throw urlError;
-          }
-          // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
+      await uploadBytes(storageRef, file, metadata);
 
       return {
-        url: downloadURL!,
         filename: file.name, // Keep original filename for display
         path: filePath
       };
@@ -254,13 +234,23 @@ class StorageService {
   }
 
   /**
+   * Get resume download URL from Firebase Storage
+   * @param userId - The user ID
+   * @param applicationId - The application ID (optional, defaults to looking for resume.pdf)
+   * @returns Promise<string | null> - Download URL if file exists, null otherwise
+   */
+  async getResumeUrl(userId: string, applicationId?: string): Promise<string | null> {
+    return this.getDownloadUrl('resumes', userId, applicationId);
+  }
+
+  /**
    * Get download URL for a file in Firebase Storage
    * @param folder - The folder name (e.g., 'cover-letters', 'resumes')
    * @param userId - The user ID
-   * @param applicationId - The application ID
+   * @param applicationId - The application ID (optional, defaults to 'resume' for resumes)
    * @returns Promise<string | null> - Download URL if file exists, null otherwise
    */
-  async getDownloadUrl(folder: string, userId: string, applicationId: string): Promise<string | null> {
+  async getDownloadUrl(folder: string, userId: string, applicationId?: string): Promise<string | null> {
     try {
       // Create the folder path: folder/{userId}/
       const folderPath = `${folder}/${userId}`;
@@ -269,10 +259,17 @@ class StorageService {
       // List all files in the folder
       const result = await listAll(folderRef);
       
-      // Find the file that contains the applicationId in its name
+      // Find the file based on applicationId or default to resume.pdf
       const matchingFile = result.items.find(item => {
         const fileName = item.name;
-        return fileName.includes(applicationId);
+        
+        if (applicationId) {
+          // Look for files that contain the applicationId
+          return fileName.includes(applicationId);
+        } else {
+          // Default to looking for resume.pdf (or resume.{extension})
+          return fileName.startsWith('resume.');
+        }
       });
       
       if (matchingFile) {
@@ -324,6 +321,27 @@ class StorageService {
         return 'Word Document (not supported)';
       default:
         return 'Document';
+    }
+  }
+
+  /**
+   * Generate download URL from Firebase Storage path
+   * @param path - The Firebase Storage path or existing URL
+   * @returns Promise<string | null> - Download URL if successful, null otherwise
+   */
+  async generateUrlFromPath(path: string): Promise<string | null> {
+    try {
+      // If it's already a URL, return as is
+      if (path.startsWith('http')) {
+        return path;
+      }
+      
+      // Generate URL from Firebase Storage path
+      const storageRef = ref(storage, path);
+      return await getDownloadURL(storageRef);
+    } catch (error) {
+      console.error('Error generating URL from path:', error);
+      return null;
     }
   }
 }

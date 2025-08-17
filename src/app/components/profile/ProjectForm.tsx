@@ -96,7 +96,7 @@ export default function ProjectForm({
                     <Input
                       type="text"
                       id={FieldName.PROJECT_NAME}
-                      value={project[FieldName.PROJECT_NAME]}
+                      value={project[FieldName.PROJECT_NAME] ?? ""}
                       onChange={(e) => handleProjectChange(FieldName.PROJECT_NAME, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.PROJECT_NAME) ? 'border-red-500' : ''}`}
                       placeholder="Enter project name"
@@ -116,7 +116,7 @@ export default function ProjectForm({
                   <div className="mt-1">
                     <Textarea
                       id={FieldName.PROJECT_DESCRIPTION}
-                      value={project[FieldName.PROJECT_DESCRIPTION]}
+                      value={project[FieldName.PROJECT_DESCRIPTION] ?? ""}
                       onChange={(e) => handleProjectChange(FieldName.PROJECT_DESCRIPTION, e.target.value)}
                       className={`shadow-sm focus:ring-teal-500 focus:border-teal-500 ${getFieldError(FieldName.PROJECT_DESCRIPTION) ? 'border-red-500' : ''}`}
                       placeholder="Describe your project"
@@ -138,7 +138,7 @@ export default function ProjectForm({
                     <Input
                       type="url"
                       id={FieldName.PROJECT_LINK}
-                      value={project[FieldName.PROJECT_LINK]}
+                      value={project[FieldName.PROJECT_LINK] ?? ""}
                       onChange={(e) => handleProjectChange(FieldName.PROJECT_LINK, e.target.value)}
                       className="shadow-sm focus:ring-teal-500 focus:border-teal-500"
                       placeholder="https://github.com/username/project"
