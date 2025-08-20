@@ -1,7 +1,7 @@
-type Object = { [key: string]: any };
+type ObjectType = Record<string, unknown>;
 
-const isObject = (item: any): item is Object => {
-  return item && typeof item === "object" && !Array.isArray(item);
+const isObject = (item: unknown): item is ObjectType => {
+  return item !== null && typeof item === "object" && !Array.isArray(item);
 };
 
 /**
@@ -9,7 +9,7 @@ const isObject = (item: any): item is Object => {
  * It returns a new object and doesn't modify any object in place since
  * it deep clones the target object first.
  */
-export const deepMerge = (target: Object, source: Object, level = 0) => {
+export const deepMerge = (target: ObjectType, source: ObjectType, level = 0) => {
   const copyTarget = level === 0 ? structuredClone(target) : target;
   for (const key in source) {
     const sourceValue = source[key];

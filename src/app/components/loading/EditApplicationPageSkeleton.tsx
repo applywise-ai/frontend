@@ -1,4 +1,4 @@
-import { ArrowLeft, Briefcase, FileText } from 'lucide-react';
+// No imports needed - skeleton uses plain divs
 
 export function EditApplicationPageSkeleton() {
   return (

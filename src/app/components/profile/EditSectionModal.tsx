@@ -9,7 +9,7 @@ import {
 } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { SaveIcon, PlusIcon } from 'lucide-react';
-import { FieldName } from '@/app/types/profile';
+// FieldName type is not used in this component
 
 interface EditSectionModalProps {
   isOpen: boolean;

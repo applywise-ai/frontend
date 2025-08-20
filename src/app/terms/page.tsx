@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Scale, Shield, Users, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Scale, Users, AlertCircle } from 'lucide-react';
 
 export default function TermsOfService() {
   return (
@@ -48,8 +48,8 @@ export default function TermsOfService() {
             </div>
 
             <p className="text-gray-300 leading-relaxed mb-6">
-              Welcome to ApplyWise! These Terms of Service ("Terms", "Agreement") govern your use of our AI-powered job application platform 
-              operated by ApplyWise Corp. ("us", "we", or "our"), a Canadian corporation. By accessing or using our service, you agree to be bound by these Terms.
+              Welcome to ApplyWise! These Terms of Service (&ldquo;Terms&rdquo;, &ldquo;Agreement&rdquo;) govern your use of our AI-powered job application platform 
+              operated by ApplyWise Corp. (&ldquo;us&rdquo;, &ldquo;we&rdquo;, or &ldquo;our&rdquo;), a Canadian corporation. By accessing or using our service, you agree to be bound by these Terms.
             </p>
           </section>
 
@@ -206,7 +206,7 @@ export default function TermsOfService() {
             </div>
             
             <div className="space-y-4 text-gray-300 text-sm">
-              <p>• The Service is provided "as is" without warranties of any kind</p>
+              <p>• The Service is provided &ldquo;as is&rdquo; without warranties of any kind</p>
               <p>• We do not guarantee the accuracy of AI-generated content</p>
               <p>• Job listings may be outdated or no longer available</p>
               <p>• We are not responsible for actions taken by third-party job platforms</p>

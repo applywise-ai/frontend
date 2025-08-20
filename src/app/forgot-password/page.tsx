@@ -60,8 +60,8 @@ export default function ForgotPassword() {
       } else {
         setSuccess('Password reset email sent! Please check your inbox.');
       }
-    } catch (err: any) {
-      setError(err?.message || 'Failed to send password reset email.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Failed to send password reset email.');
     } finally {
       setLoading(false);
     }

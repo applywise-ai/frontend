@@ -34,7 +34,7 @@ export default function ResetPassword() {
         } else {
           setError(result.message);
         }
-      } catch (err: any) {
+      } catch {
         setError('Invalid or expired reset code. Please request a new password reset link.');
       }
     };
@@ -71,8 +71,8 @@ export default function ResetPassword() {
           router.push('/login');
         }, 2000);
       }
-    } catch (err: any) {
-      setError(err?.message || 'Failed to reset password.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Failed to reset password.');
     } finally {
       setLoading(false);
     }

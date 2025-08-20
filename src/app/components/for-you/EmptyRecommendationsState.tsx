@@ -31,7 +31,7 @@ export default function EmptyRecommendationsState() {
 
       {/* Description */}
       <p className="text-gray-600 mb-8 max-w-md">
-        We couldn't find any jobs that match your current preferences. 
+        We couldn&apos;t find any jobs that match your current preferences. 
         Try expanding your search or updating your profile to see more opportunities.
       </p>
 

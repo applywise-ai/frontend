@@ -28,14 +28,16 @@ interface CreateCheckoutRequest {
   stripeCustomerId: string;
 }
 
-function validateRequest(data: any): data is CreateCheckoutRequest {
+function validateRequest(data: unknown): data is CreateCheckoutRequest {
+  if (!data || typeof data !== 'object') return false;
+  const obj = data as Record<string, unknown>;
   return (
-    typeof data.priceId === 'string' &&
-    typeof data.planId === 'string' &&
-    ['weekly', 'monthly', 'quarterly'].includes(data.planId) &&
-    typeof data.planName === 'string' &&
-    typeof data.amount === 'number' &&
-    data.amount > 0
+    typeof obj.priceId === 'string' &&
+    typeof obj.planId === 'string' &&
+    ['weekly', 'monthly', 'quarterly'].includes(obj.planId) &&
+    typeof obj.planName === 'string' &&
+    typeof obj.amount === 'number' &&
+    obj.amount > 0
   );
 }
 
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
     let requestData;
     try {
       requestData = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }
