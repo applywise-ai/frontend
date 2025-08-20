@@ -36,7 +36,7 @@ export function GlobalNotification() {
       <div
         className={`
           bg-teal-600 text-white rounded-lg shadow-xl border border-teal-500
-          max-w-sm w-full mx-auto px-3 py-2.5 flex items-center gap-2.5
+          max-w-2xl w-full mx-auto px-4 py-3 flex items-center gap-3
           transform transition-all duration-300 ease-out pointer-events-auto
           ${isAnimating 
             ? 'translate-y-0 opacity-100 scale-100' 
@@ -51,7 +51,7 @@ export function GlobalNotification() {
         
         {/* Message */}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-white leading-relaxed truncate">
+          <p className="text-sm font-medium text-white leading-relaxed break-words">
             {notification.message}
           </p>
         </div>

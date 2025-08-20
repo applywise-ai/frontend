@@ -25,6 +25,7 @@ import { FieldName } from '@/app/types/profile';
 import MembershipPanel from '@/app/components/settings/MembershipPanel';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { SettingsPageSkeleton } from '@/app/components/loading/SettingsPageSkeleton';
+import stripeService from '@/app/services/api/stripe';
 
 function SettingsPageContent() {
   const router = useRouter();
@@ -36,6 +37,7 @@ function SettingsPageContent() {
   
   // Profile hook for notification preferences
   const { profile, updateProfile, isLoading: profileLoading, deleteUser } = useProfile();
+  const isPro = profile?.[FieldName.IS_PRO_MEMBER] || false;
   
   // Form states
   const [email, setEmail] = useState('');
@@ -192,6 +194,16 @@ function SettingsPageContent() {
       if ('error' in reAuthResult) {
         setDeleteAccountError(reAuthResult.message);
         return;
+      }
+      
+      // Delete customer from Stripe and Firestore if user has subscription
+      if (isPro && user) {
+        try {
+          await stripeService.deleteCustomer(user.uid);
+        } catch (stripeError) {
+          console.error('Error deleting Stripe customer:', stripeError);
+          // Continue with account deletion even if Stripe deletion fails
+        }
       }
       
       // Delete user profile and applications from Firestore
@@ -421,6 +433,18 @@ function SettingsPageContent() {
                   <DialogTitle className="text-red-600">Are you sure?</DialogTitle>
                   <DialogDescription>
                     This action is irreversible. All your data will be permanently deleted.
+                    {isPro && (
+                      <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                        <p className="text-amber-800 font-medium text-sm">
+                          ⚠️ You have an active Pro membership. Deleting your account will:
+                        </p>
+                        <ul className="text-amber-700 text-sm mt-1 ml-4 list-disc">
+                          <li>Cancel your membership immediately</li>
+                          <li>Remove access to all Pro features</li>
+                          <li>Delete your subscription from our records</li>
+                        </ul>
+                      </div>
+                    )}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">

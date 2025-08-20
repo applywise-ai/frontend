@@ -6,6 +6,7 @@ import JobSearchBar from '@/app/components/jobs/JobSearchBar';
 import JobCard from '@/app/components/jobs/JobCard';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
 import WelcomeModal from '@/app/components/WelcomeModal';
+import WelcomeToProModal from '@/app/components/WelcomeToProModal';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Job } from '@/app/types/job';
@@ -13,6 +14,7 @@ import { getBreakpoint } from '@/app/utils/breakpoints';
 import { useJobs } from '@/app/contexts/JobsContext';
 import { useApplications } from '@/app/contexts/ApplicationsContext';
 import { useJobFilters } from '@/app/hooks/useJobFilters';
+import { stripeService } from '@/app/services/api';
 import JobCardSkeleton from '../components/loading/JobCardSkeleton';
 
 
@@ -25,7 +27,36 @@ function JobsPageContent() {
   const [isMobile, setIsMobile] = useState(false);
   const [loadingJobs] = useState<Set<string>>(new Set());
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showWelcomeToProModal, setShowWelcomeToProModal] = useState(false);
   const lastJobRef = useRef<HTMLDivElement>(null);
+  
+  // Check for session_id parameter and show welcome modal if payment succeeded
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (sessionId) {
+      // Check session payment status
+      const checkSessionStatus = async () => {
+        try {
+          const sessionInfo = await stripeService.getSessionInfo(sessionId);
+          if (sessionInfo.is_paid) {
+            setShowWelcomeToProModal(true);
+          }
+          // Clean up URL by removing the session_id parameter
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('session_id');
+          router.replace(newUrl.pathname + newUrl.search);
+        } catch (error) {
+          console.error('Error checking session status:', error);
+          // Clean up URL even if there was an error
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('session_id');
+          router.replace(newUrl.pathname + newUrl.search);
+        }
+      };
+      
+      checkSessionStatus();
+    }
+  }, [searchParams, router]);
   
   // Get filters from URL parameters
   const { filters: urlFilters } = useJobFilters();
@@ -387,6 +418,11 @@ function JobsPageContent() {
           onClose={handleWelcomeModalClose}
         />
       )}
+
+      <WelcomeToProModal
+        isOpen={showWelcomeToProModal}
+        onClose={() => setShowWelcomeToProModal(false)}
+      />
     </div>
   );
 }

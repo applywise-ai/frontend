@@ -8,7 +8,6 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-05-28.basil',
   typescript: true,
 });
 
@@ -25,6 +24,8 @@ interface CreateCheckoutRequest {
   planId: 'weekly' | 'monthly' | 'quarterly';
   planName: string;
   amount: number;
+  userId: string;
+  stripeCustomerId: string;
 }
 
 function validateRequest(data: any): data is CreateCheckoutRequest {
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { priceId, planId, planName, amount } = requestData;
+    const { priceId, planId, planName, amount, userId, stripeCustomerId } = requestData;
 
     // Security: Validate that the priceId matches our allowed price IDs
     console.log('priceId', priceId, ALLOWED_PRICE_IDS);
@@ -115,12 +116,12 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'subscription',
+      customer: stripeCustomerId,
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/jobs?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/jobs?canceled=true`,
-      allow_promotion_codes: true,
-      billing_address_collection: 'required',
       metadata: {
         planId,
+        userId,
         planName,
         amount: amount.toString(),
         created_at: new Date().toISOString(),
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
       subscription_data: {
         metadata: {
           planId,
+          userId,
           planName,
           amount: amount.toString(),
         },

@@ -5,7 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/componen
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
-import { Check, Zap, Target, FileText, Calendar, Bot, Loader2, AlertCircle, X, Star, User } from 'lucide-react';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { useProfile } from '@/app/contexts/ProfileContext';
+import { useNotification } from '@/app/contexts/NotificationContext';
+import { stripeService, subscriptionService } from '@/app/services/api';
+import { FieldName } from '@/app/types/profile';
+import { Check, Zap, Target, FileText, Bot, Loader2, AlertCircle, X, Star, User } from 'lucide-react';
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -124,6 +129,7 @@ const reviews: Review[] = [
     verified: true
   }
 ];
+
 
 // Secure plan configurations with environment variables for price IDs
 const plans: PlanConfig[] = [
@@ -248,13 +254,19 @@ function ReviewsCarousel() {
   );
 }
 
+
 export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { showSuccess } = useNotification();
+  const isPro = profile?.[FieldName.IS_PRO_MEMBER] || false;
   const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'monthly' | 'quarterly'>('monthly');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubscribe = async () => {
     const plan = plans.find(p => p.id === selectedPlan);
+    if (!user) return;
     if (!plan) {
       setError('Invalid plan selected');
       return;
@@ -266,37 +278,61 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
       return;
     }
 
+    // Validate user email
+    if (!user.email) {
+      setError('User email is required for subscription.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      // Call our secure API endpoint
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: plan.priceId,
-          planId: plan.id,
-          planName: plan.name,
-          amount: plan.totalPrice,
-        }),
-      });
+      if (isPro) {
+        // For existing pro users, update their subscription
+        await subscriptionService.updateSubscription({
+          user_id: user.uid,
+          new_price_id: plan.priceId,
+          proration_behavior: 'none',
+        });
+        
+        // Close modal and show success notification
+        onClose();
+        showSuccess(`Plan change scheduled successfully! Your new ${plan.name} plan will be active at the next billing cycle.`);
+      } else {
+        // For new users, create a new subscription via checkout
+        // First, get or create Stripe customer
+        const stripeCustomerId = await stripeService.getOrCreateCustomer(user.email);
 
-      const data = await response.json();
+        // Then call our secure API endpoint to create checkout session
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            priceId: plan.priceId,
+            planId: plan.id,
+            userId: user.uid,
+            planName: plan.name,
+            amount: plan.totalPrice,
+            stripeCustomerId: stripeCustomerId,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create checkout session');
+        }
+
+        if (!data.url) {
+          throw new Error('No checkout URL received');
+        }
+
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
       }
-
-      if (!data.url) {
-        throw new Error('No checkout URL received');
-      }
-
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
-
     } catch (err) {
       console.error('Subscription error:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -325,7 +361,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
               <X className="h-4 w-4" />
             </Button>
             <DialogTitle className="text-xl font-bold text-center">
-              Supercharge Your Job Search
+              {isPro ? 'Change Your Plan' : 'Supercharge Your Job Search'}
             </DialogTitle>
             <div className="text-center">
               <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -395,7 +431,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
           </div>
 
           {/* Reviews Carousel Section */}
-          {/* <ReviewsCarousel /> */}
+          <ReviewsCarousel />
 
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-10 md:gap-4 md:pt-3">
@@ -481,6 +517,8 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...
               </>
+            ) : isPro ? (
+              `Change to ${plans.find(p => p.id === selectedPlan)?.name} - $${plans.find(p => p.id === selectedPlan)?.weeklyPrice.toFixed(2)}/week`
             ) : (
               `Upgrade to Pro - $${plans.find(p => p.id === selectedPlan)?.weeklyPrice.toFixed(2)}/week`
             )}
