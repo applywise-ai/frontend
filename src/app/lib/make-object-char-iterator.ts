@@ -1,6 +1,6 @@
 import { deepClone } from "@/app/lib/deep-clone";
 
-type Object = { [key: string]: any };
+type ObjectType = { [key: string]: string | ObjectType | string[] };
 
 /**
  * makeObjectCharIterator is a generator function that iterates a start object to
@@ -17,18 +17,18 @@ type Object = { [key: string]: any };
  * iterator.next().value // {a : "ab"}
  * iterator.next().value // {a : "abc"}
  */
-export function* makeObjectCharIterator<T extends Object>(
+export function* makeObjectCharIterator<T extends ObjectType>(
   start: T,
   end: T,
   level = 0
 ) {
-  // Have to manually cast Object type and return T type due to https://github.com/microsoft/TypeScript/issues/47357
-  const object: Object = level === 0 ? deepClone(start) : start;
+  // Have to manually cast ObjectType type and return T type due to https://github.com/microsoft/TypeScript/issues/47357
+  const object: ObjectType = level === 0 ? deepClone(start) : start;
   for (const [key, endValue] of Object.entries(end)) {
     if (typeof endValue === "object") {
       const recursiveIterator = makeObjectCharIterator(
-        object[key],
-        endValue,
+        object[key] as ObjectType,
+        endValue as ObjectType,
         level + 1
       );
       while (true) {
@@ -47,11 +47,11 @@ export function* makeObjectCharIterator<T extends Object>(
   }
 }
 
-export const countObjectChar = (object: Object) => {
+export const countObjectChar = (object: ObjectType) => {
   let count = 0;
   for (const value of Object.values(object)) {
     if (typeof value === "object") {
-      count += countObjectChar(value);
+      count += countObjectChar(value as ObjectType);
     } else if (typeof value === "string") {
       count += value.length;
     }

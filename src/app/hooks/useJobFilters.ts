@@ -50,7 +50,7 @@ export function useJobFilters() {
   const hasFilters = useMemo(() => {
     return Object.keys(filters).length > 0;
   }, [filters]);
-
+  console.log('hook: ',filters)
   return {
     filters,
     hasFilters

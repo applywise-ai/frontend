@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Briefcase, FileText } from 'lucide-react';
@@ -20,12 +21,8 @@ import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import { navigateAndForget } from '@/app/utils/navigation';
 import { EditApplicationPageSkeleton } from '@/app/components/loading/EditApplicationPageSkeleton';
 
-// Define a type for unwrapped params
-type ParamsType = {
-  id: string;
-};
 
-function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
+function EditJobApplicationPageContent({params}: {params: Promise<{ id: string }>}) {
   const router = useRouter();
   // UI-only state
   const [isLoading, setIsLoading] = useState(false);
@@ -46,9 +43,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
     submitApplication 
   } = useApplications();
   
-  // Use React.use() to unwrap params before accessing properties
-  const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
-  const applicationId = unwrappedParams.id;
+  const { id: applicationId } = use(params);
   
   // Application and job data from context
   const [application, setApplication] = useState<ApplicationWithJob | null>(null);
@@ -595,7 +590,7 @@ function EditJobApplicationPageContent({ params }: { params: ParamsType }) {
   );
 }
 
-export default function EditJobApplicationPage({ params }: { params: ParamsType }) {
+export default function EditJobApplicationPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <ProtectedPage>
       <EditJobApplicationPageContent params={params} />

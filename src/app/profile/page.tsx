@@ -49,6 +49,23 @@ function ProfilePageContent() {
 
   // Set up scroll listener
   useEffect(() => {
+    // Simple scroll handler
+    const handleScroll = (event: Event) => {
+      const scrollContainer = event.target as HTMLElement;
+      const scrollPosition = scrollContainer.scrollTop + 100; // Add offset for better detection
+
+      // Find the current section based on scroll position
+      for (const [id, ref] of Object.entries(sectionRefs)) {
+        if (ref.current) {
+          const { offsetTop, offsetHeight } = ref.current;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(id);
+            break;
+          }
+        }
+      }
+    };
+
     const setupScrollListener = () => {
       if (!scrollContainerRef.current) {
         setTimeout(setupScrollListener, 200);
@@ -67,23 +84,6 @@ function ProfilePageContent() {
 
     setupScrollListener();
   }, []);
-
-  // Simple scroll handler
-  const handleScroll = (event: Event) => {
-    const scrollContainer = event.target as HTMLElement;
-    const scrollPosition = scrollContainer.scrollTop + 100; // Add offset for better detection
-
-    // Find the current section based on scroll position
-    for (const [id, ref] of Object.entries(sectionRefs)) {
-      if (ref.current) {
-        const { offsetTop, offsetHeight } = ref.current;
-        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-          setActiveSection(id);
-          break;
-        }
-      }
-    }
-  };
 
   // Simple scroll to section function
   const scrollToSection = (sectionId: string) => {

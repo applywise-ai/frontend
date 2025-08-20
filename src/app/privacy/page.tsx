@@ -48,7 +48,7 @@ export default function PrivacyPolicy() {
             </div>
 
             <p className="text-gray-300 leading-relaxed mb-6">
-              This Privacy Policy describes how ApplyWise Corp. ("we", "us", or "our"), a Canadian corporation, collects, uses, and protects your personal information 
+              This Privacy Policy describes how ApplyWise Corp. (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), a Canadian corporation, collects, uses, and protects your personal information 
               when you use our AI-powered job application platform. By using ApplyWise, you consent to the data practices described in this policy.
             </p>
           </section>
@@ -317,7 +317,7 @@ export default function PrivacyPolicy() {
 
           {/* Children's Privacy */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">9. Children's Privacy</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">9. Children&apos;s Privacy</h2>
             
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6">
               <p className="text-gray-300 text-sm">
@@ -341,7 +341,7 @@ export default function PrivacyPolicy() {
                 <div className="space-y-2 text-sm">
                   <p>• Email notification for material changes</p>
                   <p>• In-app notifications when you next log in</p>
-                  <p>• Updated "Last updated" date at the top of this policy</p>
+                  <p>• Updated &quot;Last updated&quot; date at the top of this policy</p>
                   <p>• 30-day notice period for significant changes</p>
                 </div>
               </div>

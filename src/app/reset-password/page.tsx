@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/app/components/ui/button';
@@ -9,7 +9,7 @@ import { Label } from '@/app/components/ui/label';
 import { authService } from '@/app/services/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ResetPassword() {
+function ResetPasswordContent() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -155,5 +155,32 @@ export default function ResetPassword() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 bg-gray-900 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 to-gray-900 z-0"></div>
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+        <div className="w-full max-w-xl space-y-8 relative z-10">
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <Link href="/">
+              <Image 
+                src="/images/logo_icon.png"
+                alt="Logo"
+                width={80}
+                height={80}
+                className="mb-2 hover:opacity-80 transition-opacity"
+              />
+            </Link>
+            <h1 className="text-center text-3xl font-bold text-white">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 } 

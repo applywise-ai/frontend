@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Job, JobFilters } from '@/app/types/job';
 import jobsService from '@/app/services/api/jobs';
 import { ApplicationWithJob } from './ApplicationsContext';
@@ -19,7 +19,7 @@ interface JobsContextType {
   totalJobs: number;
   filteredJobsCount: number;
   refetchAllJobs: (newFilters?: JobFilters, applications?: ApplicationWithJob[] | null) => void;
-  fetchInitialJobs: (applications?: ApplicationWithJob[] | null) => Promise<void>;
+  fetchInitialJobs: (applications?: ApplicationWithJob[] | null, filters?: JobFilters) => Promise<void>;
   fetchMoreJobs: (applications?: ApplicationWithJob[] | null) => Promise<void>;
   setJobFilters: (filters?: JobFilters) => void;
   
@@ -90,7 +90,7 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
   }, [allJobs]);
 
   // All jobs functions
-  const fetchInitialJobs = useCallback(async (applications?: ApplicationWithJob[] | null) => { 
+  const fetchInitialJobs = useCallback(async (applications?: ApplicationWithJob[] | null, filters?: JobFilters) => { 
     console.log('JobsContext: fetchInitialJobs()');   
     setIsLoadingAllJobs(true);
     setAllJobsError(null);
@@ -111,8 +111,8 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
       
       // Fetch initial jobs excluding applied jobs, and total count in parallel
       const [paginatedResult, filteredCount, totalCount] = await Promise.all([
-        jobsService.getJobsPaginated(10, 0, currentFilters, new Set(appliedJobIds)),
-        jobsService.getFilteredJobsCount(currentFilters, appliedJobIds.length),
+        jobsService.getJobsPaginated(10, 0, filters, new Set(appliedJobIds)),
+        jobsService.getFilteredJobsCount(filters, appliedJobIds),
         jobsService.getTotalAvailableJobsCount(appliedJobIds.length)
       ]);
 
@@ -209,20 +209,22 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     // Update count only if the job array actually changed
     if (shouldUpdateCounts) {
       if (add) {
+        setFilteredJobsCount(prev => prev + 1);
         setTotalJobs(prevTotal => prevTotal + 1);
       } else {
+        setFilteredJobsCount(prev => Math.max(0, prev - 1));
         setTotalJobs(prevTotal => Math.max(0, prevTotal - 1));
       }
     }
   }, []);
 
   // Update filteredJobsCount when all jobs are loaded
-  useEffect(() => {
-    if (!hasMoreJobs && !isLoadingAllJobs && allJobs && allJobs.length > 0) {
-      // When all jobs are loaded, use the actual displayed count
-      setFilteredJobsCount(allJobs.length);
-    }
-  }, [hasMoreJobs, isLoadingAllJobs, allJobs?.length]);
+  // useEffect(() => {
+  //   if (!hasMoreJobs && !isLoadingAllJobs && allJobs && allJobs.length > 0) {
+  //     // When all jobs are loaded, use the actual displayed count
+  //     setFilteredJobsCount(allJobs.length);
+  //   }
+  // }, [hasMoreJobs, isLoadingAllJobs, allJobs?.length]);
 
   // Context value
   const contextValue: JobsContextType = {

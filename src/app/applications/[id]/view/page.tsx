@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Image, FileText, Calendar, ExternalLink } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
@@ -12,12 +12,8 @@ import { getStatusColor } from '@/app/types/application';
 import { format } from 'date-fns';
 import storageService from '@/app/services/firebase/storage';
 
-// Define a type for unwrapped params
-type ParamsType = {
-  id: string;
-};
 
-function ApplicationViewPageContent({ params }: { params: ParamsType }) {
+function ApplicationViewPageContent({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [application, setApplication] = useState<ApplicationWithJob | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,9 +22,7 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
   
   const { fetchApplication } = useApplications();
   
-  // Use React.use() to unwrap params before accessing properties
-  const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
-  const applicationId = unwrappedParams.id;
+  const { id: applicationId } = use(params);
   
   // Load application data
   useEffect(() => {
@@ -232,7 +226,7 @@ function ApplicationViewPageContent({ params }: { params: ParamsType }) {
   );
 }
 
-export default function ApplicationViewPage({ params }: { params: ParamsType }) {
+export default function ApplicationViewPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <ProtectedPage>
       <ApplicationViewPageContent params={params} />

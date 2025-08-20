@@ -93,7 +93,7 @@ export const resumeSlice = createSlice({
     ) => {
       const { idx, field, value } = action.payload;
       const workExperience = draft.workExperiences[idx];
-      workExperience[field] = value as any;
+      (workExperience as Record<string, unknown>)[field] = value;
     },
     changeEducations: (
       draft,
@@ -101,7 +101,7 @@ export const resumeSlice = createSlice({
     ) => {
       const { idx, field, value } = action.payload;
       const education = draft.educations[idx];
-      education[field] = value as any;
+      (education as Record<string, unknown>)[field] = value;
     },
     changeProjects: (
       draft,
@@ -109,7 +109,7 @@ export const resumeSlice = createSlice({
     ) => {
       const { idx, field, value } = action.payload;
       const project = draft.projects[idx];
-      project[field] = value as any;
+      (project as Record<string, unknown>)[field] = value;
     },
     changeSkills: (
       draft,

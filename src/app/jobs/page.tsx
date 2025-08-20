@@ -81,7 +81,7 @@ function JobsPageContent() {
     setJobFilters,
     fetchInitialJobs
   } = useJobs();
-  
+
   // Set filters when they change and fetch jobs when applications are loaded
   const hasInitiallyLoaded = useRef(false);
   
@@ -91,19 +91,25 @@ function JobsPageContent() {
 
   // Fetch initial jobs when applications are loaded and filters are set
   useEffect(() => {
-    // Only fetch when applications are loaded and we haven't fetched yet, or when filters change
+    // Only run if applications are loaded
     if (applications !== null) {
+      // Initial fetch when applications first load
       if (!hasInitiallyLoaded.current) {
         console.log('JobsPage: Initial load - fetching jobs with applications:', applications.length);
+        fetchInitialJobs(applications);
         hasInitiallyLoaded.current = true;
-        fetchInitialJobs(applications);
-      } else if (filters) {
-        // If filters change after initial load, refetch with new filters
-        console.log('JobsPage: Filters changed - refetching jobs with applications:', applications.length);
-        fetchInitialJobs(applications);
       }
+      // Fetch again only if filters change after initial load
     }
-  }, [applications !== null, filters, fetchInitialJobs]); // Depend on applications being loaded and filters
+  }, [applications]); // only triggers when applications first becomes non-null
+  
+  useEffect(() => {
+    // Skip if initial load hasn't happened yet
+    if (!hasInitiallyLoaded.current) return;
+  
+    console.log('JobsPage: Filters changed to ', filters, ' - refetching jobs');
+    fetchInitialJobs(applications, filters);
+  }, [filters]); // only triggers when filters change
 
   // Use all jobs from server-side pagination
   const currentJobs = allJobs;

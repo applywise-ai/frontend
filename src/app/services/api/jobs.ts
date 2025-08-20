@@ -107,15 +107,15 @@ class JobsService {
         params.append('excluded_job_ids', Array.from(excludedJobIds).join(','));
       }
       
-      const data = await apiService.get(`/jobs/paginated?${params.toString()}`);
+      const data = await apiService.get(`/jobs/paginated?${params.toString()}`) as { jobs: ApiJobResponse[]; has_more: boolean; total_count: number };
       
       // Transform API response to match our Job interface
       const jobs: Job[] = data.jobs.map((apiJob: ApiJobResponse) => convertApiJobToJob(apiJob));
       
       return {
         jobs,
-        hasMore: data.hasMore,
-        totalCount: data.totalCount || 0
+        hasMore: data.has_more,
+        totalCount: data.total_count
       };
     } catch (error) {
       console.error('Error in getJobsPaginated:', error);
@@ -137,7 +137,7 @@ class JobsService {
         params.append('exclude_applied_count', excludedJobIdsCount.toString());
       }
       
-      const count = await apiService.get(`/jobs/total-available-count?${params.toString()}`);
+      const count = await apiService.get(`/jobs/total-available-count?${params.toString()}`) as number;
       return count;
     } catch (error) {
       console.error('Error getting total available jobs count:', error);
@@ -261,7 +261,7 @@ class JobsService {
   /**
    * Get count of jobs that match current filters (excludes saved jobs)
    */
-  async getFilteredJobsCount(filters?: JobFilters, excludedJobIdsCount?: number): Promise<number> {
+  async getFilteredJobsCount(filters?: JobFilters, excludedJobIds?: string[]): Promise<number> {
     try {
       const params = new URLSearchParams();
       
@@ -290,11 +290,12 @@ class JobsService {
         params.append('provides_sponsorship', filters.sponsorship === 'yes' ? 'true' : 'false');
       }
       
-      if (excludedJobIdsCount && excludedJobIdsCount > 0) {
-        params.append('exclude_applied_count', excludedJobIdsCount.toString());
+      // Add excluded job IDs if provided
+      if (excludedJobIds && excludedJobIds.length > 0) {
+        params.append('excluded_job_ids', excludedJobIds.join(','));
       }
       
-      const count = await apiService.get(`/jobs/filtered-count?${params.toString()}`);
+      const count = await apiService.get(`/jobs/filtered-count?${params.toString()}`) as number;
       return count;
     } catch (error) {
       console.error('Error getting filtered jobs count:', error);

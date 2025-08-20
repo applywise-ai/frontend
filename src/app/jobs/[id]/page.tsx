@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { use } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import ProtectedPage from '@/app/components/auth/ProtectedPage';
 import JobDetailsPanel from '@/app/components/jobs/JobDetailsPanel';
@@ -8,15 +8,13 @@ import Link from 'next/link';
 
 import { useGetJob } from '@/app/hooks/useGetJob';
 
-function JobDetailPageContent() {
-  const params = useParams();
-  const jobId = params.id as string;
+
+function JobDetailPageContent({ params }: { params: Promise<{ id: string }> }) {
+  const { id: jobId } = use(params);
   
   // Use our hooks
   const { job, error: jobError, loading: jobLoading } = useGetJob(jobId);
 
-
-  
   if ((!job && !jobLoading) || jobError) {
     return (
       <div className="bg-gray-50 min-h-screen">
@@ -74,10 +72,10 @@ function JobDetailPageContent() {
   );
 }
 
-export default function JobDetailPage() {
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <ProtectedPage>
-      <JobDetailPageContent />
+      <JobDetailPageContent params={params} />
     </ProtectedPage>
   );
 } 

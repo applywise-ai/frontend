@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import { Job, JOB_TYPE_OPTIONS, ROLE_LEVEL_OPTIONS, LOCATION_TYPE_OPTIONS } from '@/app/types/job';
-import { ApiJobResponse } from '@/app/services/jobs';
+import { ApiJobResponse } from '@/app/services/api/jobs';
 
 /**
  * Converts a Firestore Timestamp to a relative time string
@@ -124,7 +124,7 @@ export function getJobTypeLabel(jobType?: string): string {
 export function getExperienceLevelLabel(experienceLevel?: string): string {
   if (!experienceLevel) return 'Not specified';
   const option = ROLE_LEVEL_OPTIONS.find(level => level.value === experienceLevel);
-  return option?.label || ROLE_LEVEL_OPTIONS.find(level => level.value === 'junior')?.label || 'Not specified';
+  return option?.label || 'Not specified';
 }
 
 /**

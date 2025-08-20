@@ -21,7 +21,7 @@ export const deepMerge = (target: ObjectType, source: ObjectType, level = 0) => 
       if (!isObject(copyTarget[key])) {
         copyTarget[key] = {};
       }
-      deepMerge(copyTarget[key], sourceValue, level + 1);
+      deepMerge(copyTarget[key] as ObjectType, sourceValue, level + 1);
     }
   }
   return copyTarget;

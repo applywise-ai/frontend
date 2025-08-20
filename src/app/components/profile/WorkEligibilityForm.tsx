@@ -1,6 +1,6 @@
 'use client';
 
-import { FieldName } from '@/app/types/profile';
+import { FieldName, UserProfile } from '@/app/types/profile';
 import { useProfile } from '@/app/contexts/ProfileContext';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Label } from '@/app/components/ui/label';

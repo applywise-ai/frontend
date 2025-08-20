@@ -20,8 +20,6 @@ export { default as ProfileSectionResume } from './ProfileSectionResume';
 export { default as ProjectForm } from './ProjectForm';
 export { default as ProjectDisplay } from './ProjectDisplay';
 export { default as EditSectionModal } from './EditSectionModal';
-export { default as AccountForm } from './AccountForm';
-export { default as AccountDisplay } from './AccountDisplay';
 export { default as ResumeDisplay } from './ResumeDisplay';
 export { default as LocationSearch } from './LocationSearch';
 export { default as SkillSearch } from './SkillSearch'; 

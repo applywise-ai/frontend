@@ -16,6 +16,7 @@ import {
   type Settings,
 } from "@/app/lib/redux/settingsSlice";
 import { deepMerge } from "@/app/lib/deep-merge";
+type ObjectType = Record<string, unknown>;
 import type { Resume } from "@/app/lib/redux/types";
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
@@ -43,17 +44,17 @@ export const useSetInitialStore = () => {
       // backward compatibility, since new fields might be added to
       // the initial state over time.
       const mergedResumeState = deepMerge(
-        initialResumeState,
-        state.resume
-      ) as Resume;
+        initialResumeState as unknown as ObjectType,
+        state.resume as unknown as ObjectType
+      ) as unknown as Resume;
       dispatch(setResume(mergedResumeState));
     }
     if (state.settings) {
       const mergedSettingsState = deepMerge(
-        initialSettings,
-        state.settings
-      ) as Settings;
+        initialSettings as unknown as ObjectType,
+        state.settings as unknown as ObjectType
+      ) as unknown as Settings;
       dispatch(setSettings(mergedSettingsState));
     }
-  }, []);
+  }, [dispatch]);
 };

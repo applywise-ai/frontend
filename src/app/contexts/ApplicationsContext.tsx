@@ -25,6 +25,8 @@ interface ApplicationsContextType {
   updateApplication: (applicationId: string, updates: Partial<Application>) => void;
   updateApplicationAnswer: (applicationId: string, questionId: string, answer: string | null | Partial<FormQuestion>) => Promise<Application>;
   updateApplicationStatus: (applicationId: string, status: Application['status']) => Promise<Application>;
+  loadApplications: () => void;
+
   // Job-specific operations
   unsaveJob: (jobId: string) => Promise<boolean>;
   isJobSaved: (jobId: string) => Promise<boolean>;

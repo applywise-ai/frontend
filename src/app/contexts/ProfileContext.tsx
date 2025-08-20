@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { UserProfile } from '@/app/types/profile';
+import { Project, Employment, Education, UserProfile } from '@/app/types/profile';
 import { profileService } from '@/app/services/firebase';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { emptyEducation, emptyEmployment, emptyProject } from '@/app/utils/profile';
@@ -92,15 +92,15 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
       [FieldName.EMPLOYMENT]: emptyEmployment,
       [FieldName.EDUCATION]: emptyEducation,
       [FieldName.PROJECT]: emptyProject
-    };
+    } as const;
 
     try {
-      const emptyInstance = idToEmptyInstance[id];
+      const emptyInstance = idToEmptyInstance[id as keyof typeof idToEmptyInstance];
       if (!emptyInstance) {
         throw Error('Unable to add instance, incorrect instance id provided!')
       }
       console.log(profile, id)
-      updateProfile({ [id]: [...profile[id], emptyInstance] })
+      updateProfile({ [id]: [...(profile[id as keyof UserProfile] as (Employment[] | Education[] | Project[])), emptyInstance] })
     } catch (err) {
       console.error('Error updating profile:', err);
       setError('Failed to update profile');

@@ -57,7 +57,7 @@ class ApiService {
   /**
    * Make an authenticated GET request
    */
-  async get<T = any>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
+  async get<T = unknown>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = await this.createHeaders(options);
     
@@ -77,7 +77,7 @@ class ApiService {
   /**
    * Make an authenticated POST request
    */
-  async post<T = any>(endpoint: string, data?: any, options: ApiRequestOptions = {}): Promise<T> {
+  async post<T = unknown>(endpoint: string, data?: unknown, options: ApiRequestOptions = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = await this.createHeaders(options);
     
@@ -98,7 +98,7 @@ class ApiService {
   /**
    * Make an authenticated PUT request
    */
-  async put<T = any>(endpoint: string, data?: any, options: ApiRequestOptions = {}): Promise<T> {
+  async put<T = unknown>(endpoint: string, data?: unknown, options: ApiRequestOptions = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = await this.createHeaders(options);
     
@@ -119,7 +119,7 @@ class ApiService {
   /**
    * Make an authenticated PATCH request
    */
-  async patch<T = any>(endpoint: string, data?: any, options: ApiRequestOptions = {}): Promise<T> {
+  async patch<T = unknown>(endpoint: string, data?: unknown, options: ApiRequestOptions = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = await this.createHeaders(options);
     
@@ -140,7 +140,7 @@ class ApiService {
   /**
    * Make an authenticated DELETE request
    */
-  async delete<T = any>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
+  async delete<T = unknown>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = await this.createHeaders(options);
     
@@ -160,7 +160,7 @@ class ApiService {
   /**
    * Make a raw fetch request with authentication
    */
-  async fetch<T = any>(endpoint: string, options: ApiRequestOptions = {}): Promise<Response> {
+  async fetch(endpoint: string, options: ApiRequestOptions = {}): Promise<Response> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = await this.createHeaders(options);
     

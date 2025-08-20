@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ApplicationSubmittedContent from '@/app/components/applications/ApplicationSubmittedContent';
@@ -8,17 +9,10 @@ import { useApplications } from '@/app/contexts/ApplicationsContext';
 import { useGetJob } from '@/app/hooks/useGetJob';
 import { Application } from '@/app/types/application';
 
-// Define a type for unwrapped params
-type ParamsType = {
-  id: string;
-};
-
-function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
+function ApplicationSubmittedPageContent({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   
-  // Use React.use() to unwrap params before accessing properties
-  const unwrappedParams = React.use(params as unknown as Promise<ParamsType>);
-  const applicationId = unwrappedParams.id;
+  const { id: applicationId } = use(params);
   
   // Use hooks to fetch application and job details
   const { applications, isLoading: applicationsLoading } = useApplications();
@@ -81,7 +75,7 @@ function ApplicationSubmittedPageContent({ params }: { params: ParamsType }) {
   );
 }
 
-export default function ApplicationSubmittedPage({ params }: { params: ParamsType }) {
+export default function ApplicationSubmittedPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <ProtectedPage>
       <ApplicationSubmittedPageContent params={params} />
