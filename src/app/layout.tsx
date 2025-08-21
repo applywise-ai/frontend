@@ -17,6 +17,7 @@ import { JobsProvider } from "./contexts/JobsContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ReviewApplicationModalProvider } from "./contexts/ReviewApplicationModalContext";
 import { RecommenderProvider } from "./contexts/RecommenderContext";
+import DynamicThemeColor from "./components/DynamicThemeColor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,11 @@ export default function RootLayout({
         <link rel="icon" href="/images/logo_icon_dark.svg" />
         <link rel="shortcut icon" href="/images/logo_icon_dark.svg" />
         <link rel="apple-touch-icon" href="/images/logo_icon_dark.svg" />
+        
+        {/* Initial meta tags for mobile status bar - will be updated dynamically */}
+        <meta name="theme-color" content="#111827" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-gray-50 ${noScrollPage ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col`}
@@ -72,6 +78,7 @@ export default function RootLayout({
                 <ApplicationsProvider>
                   <RecommenderProvider>
                     <ReviewApplicationModalProvider>
+                      <DynamicThemeColor />
                       <Navbar isLoading={layoutLoading} />
                       <GlobalNotification />
                       <main className={`${isAuthPage ? '' : 'pt-16'} ${noScrollPage ? 'flex-1 overflow-hidden' : 'flex-grow'}`}>
