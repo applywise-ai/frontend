@@ -59,8 +59,6 @@ export default function ReviewApplicationModal({
   // Use the job hook to fetch job details
   const { job, loading: jobLoading } = useGetJob(jobId || null);
 
-
-
   const handleClose = () => {
     setOpen(false);
     setIsEditing(false);
@@ -84,7 +82,7 @@ export default function ReviewApplicationModal({
 
   // Generate screenshot URL from path when applicationUpdate changes
   useEffect(() => {
-    console.log(applicationUpdate?.details)
+    console.log(applicationUpdate)
     const loadScreenshotUrl = async () => {
       if (applicationUpdate?.details.screenshot_path) {
         const url = await storageService.generateUrlFromPath(applicationUpdate.details.screenshot_path);
@@ -302,12 +300,35 @@ export default function ReviewApplicationModal({
               <h4 className="font-semibold text-sm mb-1">
                 {applicationUpdate?.able_to_submit ? 'Application Successfully Generated' : 'Application Needs Attention'}
               </h4>
+
               <p className="text-sm leading-relaxed">
-                {applicationUpdate?.able_to_submit 
-                  ? 'All required fields have been automatically filled based on your profile. Review the application below and submit when ready.'
-                  : 'Some required fields could not be automatically filled. Please review and edit the application to complete any missing information before submitting.'
-                }
+                {applicationUpdate?.able_to_submit ? (
+                  <>
+                    {/* Mobile text */}
+                    <span className="block sm:hidden">
+                      All fields filled. Review & submit.
+                    </span>
+                    {/* Desktop text */}
+                    <span className="hidden sm:block">
+                      All required fields have been automatically filled based on your profile.
+                      Review the application below and submit when ready.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {/* Mobile text */}
+                    <span className="block sm:hidden">
+                      Missing fields. Please complete & submit.
+                    </span>
+                    {/* Desktop text */}
+                    <span className="hidden sm:block">
+                      Some required fields could not be automatically filled. Please review and
+                      edit the application to complete any missing information before submitting.
+                    </span>
+                  </>
+                )}
               </p>
+
               {!applicationUpdate?.able_to_submit && (
                 <div className="mt-2 text-xs text-amber-700 bg-amber-100 px-2 py-1 rounded">
                   💡 Tip: Update your profile to improve auto-fill accuracy for future applications
@@ -368,14 +389,14 @@ export default function ReviewApplicationModal({
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-between">
+          <div className="flex flex-row gap-3 justify-between">
             <DeleteApplicationDialog
               applicationId={applicationId || ''}
               jobTitle={job?.title}
               companyName={job?.company}
               onDelete={handleDelete}
               redirectTo="/jobs"
-              size="md"
+              size="sm"
             />
 
             <div className="flex gap-3 order-1 sm:order-2">
@@ -392,7 +413,8 @@ export default function ReviewApplicationModal({
                 ) : (
                   <>
                     <Pencil className="h-4 w-4 mr-2" />
-                    Edit Application
+                    <span className="sm:hidden">Edit</span>
+                    <span className="hidden sm:inline">Edit Application</span>
                   </>
                 )}
               </button>
@@ -420,7 +442,8 @@ export default function ReviewApplicationModal({
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Submit Application
+                    <span className="sm:hidden">Submit</span>
+                    <span className="hidden sm:inline">Submit Application</span>
                   </>
                 )}
               </button>
@@ -562,7 +585,8 @@ export default function ReviewApplicationModal({
               onClick={handleViewApplications}
               className="px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200 text-xs sm:text-sm"
             >
-              View Applications
+              <span className="sm:hidden">View Apps</span>
+              <span className="hidden sm:inline">View Applications</span>
             </button>
             
             <button
@@ -688,12 +712,12 @@ export default function ReviewApplicationModal({
     }}>
       <DialogContent className={`max-w-3xl w-full ${
         status === 'failed' || status === 'not_found'
-          ? 'h-[100vh] sm:h-[55vh]'
+          ? 'h-[90vh] sm:h-[55vh]'
           : status === 'cover_letter' || status === 'cover_letter_generated' || status === 'applying'
-          ? 'h-[100vh] sm:h-[45vh]' 
+          ? 'h-[90vh] sm:h-[45vh]' 
           : status === 'submitted'
-          ? 'h-[100vh] sm:h-[70vh]' 
-          : 'h-[100vh] sm:h-[85vh]'
+          ? 'h-[90vh] sm:h-[70vh]' 
+          : 'h-[90vh] sm:h-[85vh]'
       } flex flex-col bg-white ${className}`}>
         {status === 'cover_letter' || status === 'cover_letter_generated' ? (
           <>

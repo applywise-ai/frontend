@@ -507,7 +507,10 @@ function EditJobApplicationPageContent({params}: {params: Promise<{ id: string }
             <Link href="/applications" className="text-gray-600 hover:text-gray-900 mr-3 sm:mr-4">
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Link>
-            <h1 className="text-xl sm:text-2xl font-bold">Edit Application</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">
+              <span className="sm:hidden">Edit</span>
+              <span className="hidden sm:inline">Edit Application</span>
+            </h1>
           </div>
           
           <ActionButtons

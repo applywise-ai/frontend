@@ -87,31 +87,8 @@ export default function LocationSearch({
     try {
       // The API key should ideally be stored in an environment variable
       // For demo purposes, we're using a limited key with restricted usage
-      const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY || 'YOUR_OPENCAGE_API_KEY'; 
+      const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY; 
       const encodedQuery = encodeURIComponent(query);
-      
-      // Detect if we should show the demo suggestions (for development without API key)
-      if (apiKey === 'YOUR_OPENCAGE_API_KEY') {
-        // Mock API response with sample data
-        console.log('Using mock location data (no API key provided)');
-        await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
-        
-        const mockResults = [
-          { formatted: 'New York, NY, United States' },
-          { formatted: 'New Delhi, India' },
-          { formatted: 'Newark, NJ, United States' },
-          { formatted: 'New Orleans, LA, United States' }
-        ].filter(item => item.formatted.toLowerCase().includes(query.toLowerCase()));
-        
-        const suggestions = [
-          ...defaultSuggestions.filter(s => s.toLowerCase().includes(query.toLowerCase())),
-          ...mockResults.map(r => r.formatted)
-        ];
-        
-        setFilteredSuggestions(suggestions);
-        setIsLoading(false);
-        return;
-      }
 
       const response = await fetch(
         `https://api.opencagedata.com/geocode/v1/json?q=${encodedQuery}&key=${apiKey}&limit=5`

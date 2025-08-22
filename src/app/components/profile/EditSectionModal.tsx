@@ -47,7 +47,7 @@ export default function EditSectionModal({
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="px-4"
+            className="px-4 border border-gray-300"
           >
             Cancel
           </Button>

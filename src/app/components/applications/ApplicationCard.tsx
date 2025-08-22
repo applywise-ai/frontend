@@ -179,7 +179,7 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 companyName={displayCompany}
                 variant="button"
                 buttonText="Delete"
-                size="sm"
+                size="wide"
                 redirectTo="/applications"
                 className="w-24"
               />
@@ -207,7 +207,7 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 companyName={displayCompany}
                 variant="button"
                 buttonText="Delete"
-                size="sm"
+                size="wide"
                 redirectTo="/applications"
                 className="w-24"
               />
@@ -227,7 +227,7 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 companyName={displayCompany}
                 variant="button"
                 buttonText="Delete"
-                size="sm"
+                size="wide"
                 redirectTo="/applications"
                 className="w-24"
               />
@@ -247,7 +247,7 @@ const ApplicationCard: FC<ApplicationCardProps> = ({ application, onStatusChange
                 companyName={displayCompany}
                 variant="button"
                 buttonText="Delete"
-                size="sm"
+                size="wide"
                 redirectTo="/applications"
                 className="w-24"
               />

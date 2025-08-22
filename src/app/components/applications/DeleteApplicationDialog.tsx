@@ -22,7 +22,7 @@ interface DeleteApplicationDialogProps {
   companyName?: string;
   onDelete?: () => void;
   variant?: 'button' | 'icon';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'wide' | 'lg';
   redirectTo?: string;
   buttonText?: string;
   className?: string;
@@ -34,7 +34,7 @@ export default function DeleteApplicationDialog({
   companyName,
   onDelete,
   variant = 'button',
-  size = 'md',
+  size = 'sm',
   redirectTo = '/applications',
   buttonText = 'Delete Application',
   className = '',
@@ -65,12 +65,12 @@ export default function DeleteApplicationDialog({
 
     const getSizeClasses = () => {
         switch (size) {
-        case 'sm':
-            return 'px-3 text-sm';
+        case 'wide':
+            return 'px-3 text-xs sm:text-sm';
         case 'lg':
-            return 'px-6 py-3 text-base';
+            return 'px-6 py-3 text-base sm:text-lg';
         default:
-            return 'px-4 py-2.5 text-sm';
+            return 'px-4 py-2.5 text-xs sm:text-sm';
         }
     };
 
@@ -104,7 +104,8 @@ export default function DeleteApplicationDialog({
             className={`inline-flex items-center justify-center rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 hover:text-red-800 font-medium transition-all duration-200 shadow-sm ${getSizeClasses()} ${className}`}
         >
             <Trash2 className={`${getIconSize()}`} />
-            {buttonText}
+            <span className="sm:hidden">Delete</span>
+            <span className="hidden sm:inline">{buttonText}</span>
         </button>
         );
     };

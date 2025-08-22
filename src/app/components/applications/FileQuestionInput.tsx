@@ -364,28 +364,6 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
                 {isUploading ? 'Uploading...' : 'Change File'}
               </span>
             </button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handlePreview}
-              className={`min-w-fit flex items-center gap-1.5 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors ${accentColor} ${errorBorderClass}`}
-              disabled={!fileName || isUploading}
-            >
-              <Eye className="h-4 w-4" />
-              <span>Preview</span>
-            </Button>
-            {question.section === 'resume' && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleUseDefaultResume}
-                className="h-10 flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700 whitespace-nowrap"
-                disabled={isUploading}
-              >
-                <File className="h-4 w-4" />
-                Use Default
-              </Button>
-            )}
             {shouldShowAiGenerate && (
               <Button
                 type="button"
@@ -399,44 +377,67 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
               </Button>
             )}
           </div>
-          {question.section !== 'resume' && (
+          {question.section === 'resume' ? (
             <div className="flex flex-row gap-2 w-full md:w-auto lg:w-full">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRemove}
-                className="flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
-                disabled={isUploading}
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handlePreview}
+                className={`flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors ${accentColor} ${errorBorderClass}`}
+                disabled={!fileName || isUploading}
               >
-                <Trash2 className="h-4 w-4" />
-                <span>Remove</span>
+                <Eye className="h-4 w-4" />
+                <span>Preview</span>
               </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="flex-1 flex items-center border border-dashed border-gray-300 rounded-md px-3 py-2 text-sm text-gray-500 bg-gray-50">
-            <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>{isUploading ? 'Uploading...' : 'No file selected'}</span>
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            {question.section === 'resume' && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleUseDefaultResume}
-                className="h-10 flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700 whitespace-nowrap"
+                className="flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
                 disabled={isUploading}
               >
                 <File className="h-4 w-4" />
-                Use Default
+                <span>Use Default</span>
               </Button>
-            )}
-            <div className="flex-1 sm:flex-none">
+            </div>
+          ) : (
+            <>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handlePreview}
+                className={`md:w-auto lg:w-full min-w-fit flex items-center gap-1.5 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors ${accentColor} ${errorBorderClass}`}
+                disabled={!fileName || isUploading}
+              >
+                <Eye className="h-4 w-4" />
+                <span>Preview</span>
+              </Button>
+              <div className="flex flex-row gap-2 w-full md:w-auto lg:w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleRemove}
+                  className="flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  disabled={isUploading}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Remove</span>
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col md:flex-row lg:flex-col items-stretch md:items-center lg:items-stretch gap-2">
+          <div className="flex gap-2 flex-1">
+            <div className="flex-1 flex items-center border border-dashed border-gray-300 rounded-md px-3 py-2 text-sm text-gray-500 bg-gray-50">
+              <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>{isUploading ? 'Uploading...' : 'No file selected'}</span>
+            </div>
+            <div className="flex-shrink-0">
               <label 
                 htmlFor={`file-${question.unique_label_id}`}
-                className={`h-10 flex w-full justify-center items-center gap-1.5 cursor-pointer px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 ${accentColor} ${errorBorderClass} ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`h-10 flex justify-center items-center gap-1.5 cursor-pointer px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 ${accentColor} ${errorBorderClass} ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Plus className="h-4 w-4" />
                 {isUploading ? 'Uploading...' : 'Upload file'}
@@ -455,6 +456,20 @@ export function FileQuestionInput({ question, onChange, onPreview, hasError, onS
               </Button>
             )}
           </div>
+          {question.section === 'resume' && (
+            <div className="flex flex-row gap-2 w-full md:w-auto lg:w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleUseDefaultResume}
+                className="flex-1 md:flex-none lg:flex-1 min-w-fit flex items-center gap-1.5 border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
+                disabled={isUploading}
+              >
+                <File className="h-4 w-4" />
+                <span>Use Default</span>
+              </Button>
+            </div>
+          )}
         </div>
       )}
       

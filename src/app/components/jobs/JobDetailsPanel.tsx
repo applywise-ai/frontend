@@ -74,7 +74,7 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
     if (!applicationStatus) {
       return (
         <AnimatedApplyButton
-          size="sm"
+          size={fullPage ? "md" : "sm"}
           jobId={job.id.toString()}
           onShowSubscriptionModal={() => setShowSubscriptionModal(true)}
         />
@@ -140,16 +140,9 @@ export default function JobDetailsPanel({ job, onClose, isLoading = false, fullP
             <span className="font-medium">Not Found</span>
           </div>
         );
-      case 'Saved':
-        return (
-          <AnimatedApplyButton 
-            jobId={job.id.toString()}
-            onShowSubscriptionModal={() => setShowSubscriptionModal(true)}
-          />
-        );
       default:
         return (
-          <AnimatedApplyButton 
+          <AnimatedApplyButton
             jobId={job.id.toString()}
             onShowSubscriptionModal={() => setShowSubscriptionModal(true)}
           />

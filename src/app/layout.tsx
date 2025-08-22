@@ -1,6 +1,8 @@
 'use client';
 
 import { Geist, Geist_Mono } from "next/font/google";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Analytics } from "@vercel/analytics/next"
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";

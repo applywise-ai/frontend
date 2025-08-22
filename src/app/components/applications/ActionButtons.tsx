@@ -30,7 +30,7 @@ export function ActionButtons({
             jobTitle={jobTitle}
             companyName={companyName}
             buttonText="Delete"
-            size="md"
+            size="sm"
           />
         )}
         

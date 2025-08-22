@@ -32,7 +32,15 @@ export default function ResumeDisplay() {
     try {
       const resumeUrl = await storageService.getResumeUrl(user.uid);
       if (resumeUrl) {
-        window.open(resumeUrl, '_blank');
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+          // Navigate in the same tab on mobile
+          window.location.href = resumeUrl;
+        } else {
+          // Open in a new tab on desktop
+          window.open(resumeUrl, '_blank');
+        }
       } else {
         throw new Error('Resume not found');
       }
