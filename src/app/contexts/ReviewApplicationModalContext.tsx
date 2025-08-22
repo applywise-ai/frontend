@@ -120,7 +120,16 @@ export function ReviewApplicationModalProvider({ children }: { children: ReactNo
       wsRef.current.close();
     }
     
-    const ws = new WebSocket(`ws://localhost:8000/ws/${user.uid}`);
+    const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+    // Strip http:// or https://
+    const API_BASE_URL = rawUrl.replace(/^https?:\/\//, '');
+
+    // Use the correct protocol for WebSocket
+    const wsProtocol = rawUrl.startsWith('https') ? 'wss' : 'ws';
+
+    // Build WebSocket URL dynamically
+    const ws = new WebSocket(`${wsProtocol}://${API_BASE_URL}/ws/${user.uid}`);
     wsRef.current = ws;
     
     ws.onopen = () => {
