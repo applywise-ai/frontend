@@ -113,7 +113,7 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
       const [paginatedResult, filteredCount, totalCount] = await Promise.all([
         jobsService.getJobsPaginated(10, 0, filters, new Set(appliedJobIds)),
         jobsService.getFilteredJobsCount(filters, appliedJobIds),
-        jobsService.getTotalAvailableJobsCount(appliedJobIds.length)
+        jobsService.getTotalAvailableJobsCount(new Set(appliedJobIds))
       ]);
 
       // Update state

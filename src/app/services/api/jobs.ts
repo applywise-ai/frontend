@@ -130,11 +130,12 @@ class JobsService {
   /**
    * Get total count of jobs available to the user (excludes saved jobs)
    */
-  async getTotalAvailableJobsCount(excludedJobIdsCount?: number): Promise<number> {
+  async getTotalAvailableJobsCount(excludedJobIds?: Set<string>): Promise<number> {
     try {
       const params = new URLSearchParams();
-      if (excludedJobIdsCount && excludedJobIdsCount > 0) {
-        params.append('exclude_applied_count', excludedJobIdsCount.toString());
+      // Exclude job IDs
+      if (excludedJobIds && excludedJobIds.size > 0) {
+        params.append('excluded_job_ids', Array.from(excludedJobIds).join(','));
       }
       
       const count = await apiService.get(`/jobs/total-available-count?${params.toString()}`) as number;
